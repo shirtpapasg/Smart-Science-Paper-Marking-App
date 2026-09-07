@@ -1,0 +1,8 @@
+{
+  "name": "smart-science-marking",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

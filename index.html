@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Science Marking</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400..800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1a1a; --bg:#faf9f7; --surface:#f0eeea; --rule:#d8d4cd;
+    --mid:#6b6660; --accent:#b3402b; --accent-bg:#f7e8e4;
+    --round:'Comic Neue','Comic Sans MS',ui-rounded,system-ui,sans-serif;
+    --body:'Nunito',ui-rounded,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
+  h1{font-family:var(--round);font-weight:700;font-size:26px;line-height:1.2;margin:0}
+  h2{font-family:var(--round);font-weight:700;font-size:22px;line-height:1.25;margin:0}
+  .eyebrow{font-family:var(--round);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+  .hd{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--rule);padding-bottom:12px;margin-bottom:24px}
+  .muted{color:var(--mid);font-size:15px}
+  label{display:block;font-family:var(--round);font-weight:700;font-size:17px;margin-bottom:10px}
+  textarea,select{width:100%;font-family:var(--body);font-size:18px;line-height:1.65;padding:14px;
+    background:#fff;color:var(--ink);border:2px solid var(--rule);border-radius:0}
+  textarea{min-height:150px;font-family:var(--round);font-weight:700}
+  textarea:focus,select:focus{outline:none;border-color:var(--ink)}
+  button{font-family:var(--round);font-weight:700;font-size:18px;padding:16px 20px;min-height:60px;
+    width:100%;text-align:left;border:2px solid var(--ink);border-radius:0;cursor:pointer;margin-top:12px}
+  .primary{background:var(--ink);color:var(--bg)}
+  .secondary{background:transparent;color:var(--ink)}
+  .ghost{background:transparent;color:var(--accent);border-color:transparent;min-height:48px;font-size:16px;padding-left:0}
+  button:disabled{opacity:.5;cursor:default}
+  .card{border-left:4px solid var(--ink);background:var(--surface);padding:14px 18px;margin-top:20px}
+  .card.flag{border-left-color:var(--accent);background:var(--accent-bg)}
+  .dark{background:var(--ink);color:var(--bg);padding:18px;margin-top:20px}
+  .dark .eyebrow{color:#e8a08e}
+  .row{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--rule)}
+  .tick{width:14px;height:14px;flex:none;margin-top:6px;background:var(--ink)}
+  .tick.open{background:transparent;border:2px solid var(--accent)}
+  .steps{display:flex;gap:6px;margin-left:auto}
+  .steps i{width:28px;height:6px;background:var(--rule);display:block}
+  .steps i.on{background:var(--ink)}
+  .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
+    background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
+  .hide{display:none}
+  .err{border-left:4px solid var(--accent);background:var(--accent-bg);padding:14px 18px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hd">
+    <span class="eyebrow">Science marking</span>
+    <span class="steps"><i id="s1" class="on"></i><i id="s2"></i><i id="s3"></i></span>
+  </div>
+
+  <!-- stage 1 -->
+  <section id="stage-ask">
+    <h1>Answer the question.</h1>
+    <p class="muted">Write it the way you would on paper. Nothing here is timed.</p>
+
+    <div style="margin-top:24px">
+      <label for="q">Which question?</label>
+      <select id="q"></select>
+    </div>
+
+    <div style="margin-top:24px">
+      <label for="a1">Your answer</label>
+      <textarea id="a1" placeholder="Type your answer here…"></textarea>
+    </div>
+
+    <button class="primary" id="go1">I'm done</button>
+  </section>
+
+  <!-- stage 2 -->
+  <section id="stage-fb" class="hide">
+    <span class="eyebrow" id="verdict"></span>
+    <h2 id="headline" style="margin-top:8px"></h2>
+
+    <div class="card">
+      <span class="eyebrow" style="color:var(--mid)">What you wrote</span>
+      <div id="yours" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div>
+    </div>
+
+    <div id="hits-box" class="hide" style="margin-top:24px">
+      <span class="eyebrow" style="color:var(--mid)">Already there — keep this</span>
+      <div id="hits"></div>
+    </div>
+
+    <div id="gaps-box" class="hide" style="margin-top:24px">
+      <span class="eyebrow">Not finished yet</span>
+      <div id="gaps"></div>
+    </div>
+
+    <div class="dark" id="ponder-box">
+      <span class="eyebrow">A question to ponder</span>
+      <div id="ponder" style="margin-top:8px;font-size:18px"></div>
+    </div>
+
+    <button class="primary" id="go2">Try again</button>
+    <button class="ghost" id="peek">Show me the answer instead</button>
+  </section>
+
+  <!-- stage 3 -->
+  <section id="stage-2nd" class="hide">
+    <h2>Now write it again.</h2>
+    <div class="card">
+      <span class="eyebrow" style="color:var(--mid)">First attempt</span>
+      <div id="first-again" style="margin-top:8px"></div>
+    </div>
+    <div class="dark">
+      <span class="eyebrow">Keep this in mind</span>
+      <div id="ponder2" style="margin-top:8px;font-size:18px"></div>
+    </div>
+    <div style="margin-top:24px">
+      <label for="a2">Second attempt</label>
+      <textarea id="a2" placeholder="Write the whole answer again…"></textarea>
+    </div>
+    <button class="primary" id="go3">Submit</button>
+  </section>
+
+  <!-- stage 4 -->
+  <section id="stage-done" class="hide">
+    <span class="eyebrow" id="verdict2"></span>
+    <h2 id="headline2" style="margin-top:8px"></h2>
+    <div id="gained-box" class="hide" style="margin-top:20px">
+      <span class="eyebrow" style="color:var(--mid)">You found this second time</span>
+      <div id="gained"></div>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <span class="eyebrow" style="color:var(--mid)">Model answer</span>
+      <div id="model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div>
+      <div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:15px">
+        This is our model answer, not the official one. Your school teacher may want it worded
+        differently — always check with them if yours looks different.
+      </div>
+    </div>
+    <div id="mc-box" class="hide card flag">
+      <span class="eyebrow">A common mix-up</span>
+      <div id="mc-belief" style="margin-top:8px"></div>
+      <div id="mc-fix" class="muted" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)"></div>
+    </div>
+    <div id="tutor-box" style="margin-top:24px;border-top:2px solid var(--rule);padding-top:16px">
+      <button class="ghost" id="showmarks">Show marks and notes · tutor</button>
+      <div id="marks-panel" class="hide">
+        <div style="font-family:var(--round);font-weight:700;font-size:28px" id="marks"></div>
+        <div class="muted" id="tutornote" style="margin-top:12px"></div>
+        <div class="muted" id="early" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <button class="secondary" id="restart">Mark another answer</button>
+  </section>
+
+  <div id="err" class="err hide"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let QS = [], r1 = null, a1txt = '';
+
+function show(name){
+  ['ask','fb','2nd','done'].forEach(n => $('stage-'+n).classList.toggle('hide', n !== name));
+  const step = {ask:1, fb:2, '2nd':2, done:3}[name];
+  [1,2,3].forEach(n => $('s'+n).classList.toggle('on', n <= step));
+  window.scrollTo(0,0);
+}
+function fail(msg){ $('err').textContent = msg; $('err').classList.remove('hide'); }
+function clearFail(){ $('err').classList.add('hide'); }
+
+async function post(body){
+  const res = await fetch('/api/mark', {
+    method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Marking failed');
+  return data;
+}
+
+function listRows(el, items, open){
+  el.innerHTML = '';
+  items.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = '<span class="tick' + (open ? ' open' : '') + '"></span>' +
+      '<div style="flex:1">' + (open ? '' : '<span class="rainbow">') + t + (open ? '' : '</span>') + '</div>';
+    el.appendChild(row);
+  });
+}
+
+(async () => {
+  try {
+    const res = await fetch('/api/questions');
+    QS = (await res.json()).questions || [];
+    $('q').innerHTML = QS.map(q =>
+      '<option value="' + q.i + '">' + q.level + ' ' + q.chapter + ' · ' +
+      (q.q.length > 70 ? q.q.slice(0,70) + '…' : q.q) + '</option>').join('');
+  } catch (e) { fail('Could not load the question list. Is the server running?'); }
+})();
+
+$('go1').onclick = async () => {
+  clearFail();
+  a1txt = $('a1').value.trim();
+  if (!a1txt) return fail('Write an answer first.');
+  $('go1').disabled = true; $('go1').textContent = 'Checking…';
+  try {
+    r1 = await post({ questionIndex: +$('q').value, answer: a1txt, attempt: 1 });
+    $('verdict').textContent = r1.verdict || 'Checked';
+    $('headline').textContent = r1.headline || '';
+    $('yours').textContent = a1txt;
+    const hits = (r1.keywords || []).filter(k => k.hit).map(k => k.phrase);
+    $('hits-box').classList.toggle('hide', !hits.length);
+    if (hits.length) listRows($('hits'), hits, false);
+    const gaps = r1.gaps || [];
+    $('gaps-box').classList.toggle('hide', !gaps.length);
+    if (gaps.length) listRows($('gaps'), gaps, true);
+    $('ponder').textContent = r1.ponder || '';
+    $('ponder-box').classList.toggle('hide', !r1.ponder);
+    show('fb');
+  } catch (e) { fail(e.message); }
+  $('go1').disabled = false; $('go1').textContent = "I'm done";
+};
+
+$('go2').onclick = () => {
+  $('first-again').textContent = a1txt;
+  $('ponder2').textContent = r1.ponder || '';
+  show('2nd');
+};
+
+// The answer on request. Allowed — but the request is recorded.
+$('peek').onclick = async () => {
+  clearFail();
+  try {
+    const r = await post({ questionIndex: +$('q').value, answer: a1txt, attempt: 1, revealAnswer: true });
+    renderDone(r, r1);
+  } catch (e) { fail(e.message); }
+};
+
+$('go3').onclick = async () => {
+  clearFail();
+  const a2 = $('a2').value.trim();
+  if (!a2) return fail('Write your second attempt first.');
+  $('go3').disabled = true; $('go3').textContent = 'Checking…';
+  try {
+    const r2 = await post({ questionIndex: +$('q').value, answer: a2, attempt: 2, firstAnswer: a1txt });
+    renderDone(r2, r1);
+  } catch (e) { fail(e.message); }
+  $('go3').disabled = false; $('go3').textContent = 'Submit';
+};
+
+function renderDone(r2, first){
+  $('verdict2').textContent = r2.verdict || '';
+  $('headline2').textContent = r2.headline || '';
+  const missedFirst = new Set((first?.keywords || []).filter(k => !k.hit).map(k => (k.phrase||'').toLowerCase()));
+  const gained = (r2.keywords || []).filter(k => k.hit && missedFirst.has((k.phrase||'').toLowerCase())).map(k => k.phrase);
+  $('gained-box').classList.toggle('hide', !gained.length);
+  if (gained.length) listRows($('gained'), gained, false);
+  $('model').textContent = r2.modelAnswer || '';
+  if (r2.misconception){
+    $('mc-box').classList.remove('hide');
+    $('mc-belief').textContent = r2.misconception.belief;
+    $('mc-fix').textContent = 'Corrected by: ' + r2.misconception.fix;
+  } else $('mc-box').classList.add('hide');
+  $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
+  $('tutornote').textContent = r2.tutorNote || '';
+  $('early').textContent = r2.answerRequestedEarly
+    ? 'Note: the answer was requested before a second attempt.' : '';
+  show('done');
+}
+
+$('showmarks').onclick = () => {
+  $('marks-panel').classList.remove('hide');
+  $('showmarks').classList.add('hide');
+};
+$('restart').onclick = () => {
+  $('a1').value = ''; $('a2').value = ''; r1 = null; a1txt = '';
+  $('marks-panel').classList.add('hide'); $('showmarks').classList.remove('hide');
+  clearFail(); show('ask');
+};
+</script>
+</body>
+</html>
