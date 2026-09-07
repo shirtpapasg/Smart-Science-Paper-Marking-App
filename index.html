@@ -46,157 +46,348 @@
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
   .hide{display:none}
   .err{border-left:4px solid var(--accent);background:var(--accent-bg);padding:14px 18px;margin-top:20px}
+
+  .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:2px solid var(--ink);
+    display:flex;z-index:20}
+  .nav button{flex:1;margin:0;min-height:64px;border:none;background:transparent;color:var(--mid);
+    font-size:14px;text-align:center;padding:8px 4px}
+  .nav button.on{color:var(--ink);background:var(--surface)}
+  .nav b{display:block;font-size:19px;line-height:1.1}
+  .wrap{padding-bottom:96px}
+  .stat{display:flex;border-top:2px solid var(--rule);border-bottom:2px solid var(--rule);margin-top:20px}
+  .stat div{flex:1;padding:14px 12px;border-left:1px solid var(--rule)}
+  .stat div:first-child{border-left:none}
+  .stat b{display:block;font-family:var(--round);font-weight:700;font-size:26px;line-height:1}
+  .stat span{font-size:13px;color:var(--mid);text-transform:uppercase;letter-spacing:.04em}
+  .bar{height:9px;background:var(--rule);margin-top:7px}
+  .bar i{display:block;height:9px;background:var(--accent)}
+  .bar i.ok{background:var(--ink)}
+  .item{padding:14px 0;border-top:1px solid var(--rule)}
+  .item.flag{border-left:4px solid var(--accent);padding-left:14px}
+  .day{font-family:var(--round);font-weight:700;font-size:14px;color:var(--mid);
+    text-transform:uppercase;letter-spacing:.05em;margin-top:26px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .chip{border:2px solid var(--rule);padding:8px 14px;font-size:15px;cursor:pointer;font-family:var(--round);font-weight:700}
+  .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .empty{padding:32px 0;color:var(--mid);font-size:16px;line-height:1.6}
 </style>
-</head>
-<body>
+</head><body>
 <div class="wrap">
 
-  <div class="hd">
-    <span class="eyebrow">Science marking</span>
-    <span class="steps"><i id="s1" class="on"></i><i id="s2"></i><i id="s3"></i></span>
+<!-- ══ MARK ══ -->
+<section id="v-mark">
+  <div class="hd"><span class="eyebrow">Mark an answer</span>
+    <span class="steps"><i id="s1" class="on"></i><i id="s2"></i><i id="s3"></i></span></div>
+
+  <div id="stage-ask">
+    <h1>Answer the question.</h1>
+    <p class="muted">Write it the way you would on paper.</p>
+    <div style="margin-top:24px"><label for="q">Which question?</label><select id="q"></select></div>
+    <div style="margin-top:24px"><label for="a1">Your answer</label>
+      <textarea id="a1" placeholder="Type your answer here…"></textarea></div>
+    <button class="primary" id="go1">I'm done</button>
   </div>
 
-  <!-- stage 1 -->
-  <section id="stage-ask">
-    <h1>Answer the question.</h1>
-    <p class="muted">Write it the way you would on paper. Nothing here is timed.</p>
-
-    <div style="margin-top:24px">
-      <label for="q">Which question?</label>
-      <select id="q"></select>
-    </div>
-
-    <div style="margin-top:24px">
-      <label for="a1">Your answer</label>
-      <textarea id="a1" placeholder="Type your answer here…"></textarea>
-    </div>
-
-    <button class="primary" id="go1">I'm done</button>
-  </section>
-
-  <!-- stage 2 -->
-  <section id="stage-fb" class="hide">
+  <div id="stage-fb" class="hide">
     <span class="eyebrow" id="verdict"></span>
     <h2 id="headline" style="margin-top:8px"></h2>
-
-    <div class="card">
-      <span class="eyebrow" style="color:var(--mid)">What you wrote</span>
-      <div id="yours" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div>
-    </div>
-
+    <div class="card"><span class="eyebrow" style="color:var(--mid)">What you wrote</span>
+      <div id="yours" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
     <div id="hits-box" class="hide" style="margin-top:24px">
-      <span class="eyebrow" style="color:var(--mid)">Already there — keep this</span>
-      <div id="hits"></div>
-    </div>
-
+      <span class="eyebrow" style="color:var(--mid)">Already there — keep this</span><div id="hits"></div></div>
     <div id="gaps-box" class="hide" style="margin-top:24px">
-      <span class="eyebrow">Not finished yet</span>
-      <div id="gaps"></div>
-    </div>
-
-    <div class="dark" id="ponder-box">
-      <span class="eyebrow">A question to ponder</span>
-      <div id="ponder" style="margin-top:8px;font-size:18px"></div>
-    </div>
-
+      <span class="eyebrow">Not finished yet</span><div id="gaps"></div></div>
+    <div class="dark" id="ponder-box"><span class="eyebrow">A question to ponder</span>
+      <div id="ponder" style="margin-top:8px;font-size:18px"></div></div>
     <button class="primary" id="go2">Try again</button>
     <button class="ghost" id="peek">Show me the answer instead</button>
-  </section>
+  </div>
 
-  <!-- stage 3 -->
-  <section id="stage-2nd" class="hide">
+  <div id="stage-2nd" class="hide">
     <h2>Now write it again.</h2>
-    <div class="card">
-      <span class="eyebrow" style="color:var(--mid)">First attempt</span>
-      <div id="first-again" style="margin-top:8px"></div>
-    </div>
-    <div class="dark">
-      <span class="eyebrow">Keep this in mind</span>
-      <div id="ponder2" style="margin-top:8px;font-size:18px"></div>
-    </div>
-    <div style="margin-top:24px">
-      <label for="a2">Second attempt</label>
-      <textarea id="a2" placeholder="Write the whole answer again…"></textarea>
-    </div>
+    <div class="card"><span class="eyebrow" style="color:var(--mid)">First attempt</span>
+      <div id="first-again" style="margin-top:8px"></div></div>
+    <div class="dark"><span class="eyebrow">Keep this in mind</span>
+      <div id="ponder2" style="margin-top:8px;font-size:18px"></div></div>
+    <div style="margin-top:24px"><label for="a2">Second attempt</label>
+      <textarea id="a2" placeholder="Write the whole answer again…"></textarea></div>
     <button class="primary" id="go3">Submit</button>
-  </section>
+  </div>
 
-  <!-- stage 4 -->
-  <section id="stage-done" class="hide">
+  <div id="stage-done" class="hide">
     <span class="eyebrow" id="verdict2"></span>
     <h2 id="headline2" style="margin-top:8px"></h2>
     <div id="gained-box" class="hide" style="margin-top:20px">
-      <span class="eyebrow" style="color:var(--mid)">You found this second time</span>
-      <div id="gained"></div>
-    </div>
-    <div class="card" style="margin-top:24px">
-      <span class="eyebrow" style="color:var(--mid)">Model answer</span>
+      <span class="eyebrow" style="color:var(--mid)">You found this second time</span><div id="gained"></div></div>
+    <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Model answer</span>
       <div id="model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div>
       <div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:15px">
         This is our model answer, not the official one. Your school teacher may want it worded
-        differently — always check with them if yours looks different.
-      </div>
-    </div>
-    <div id="mc-box" class="hide card flag">
-      <span class="eyebrow">A common mix-up</span>
+        differently — always check with them if yours looks different.</div></div>
+    <div id="mc-box" class="hide card flag"><span class="eyebrow">A common mix-up</span>
       <div id="mc-belief" style="margin-top:8px"></div>
-      <div id="mc-fix" class="muted" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)"></div>
-    </div>
-    <div id="tutor-box" style="margin-top:24px;border-top:2px solid var(--rule);padding-top:16px">
+      <div id="mc-fix" class="muted" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)"></div></div>
+    <div style="margin-top:24px;border-top:2px solid var(--rule);padding-top:16px">
       <button class="ghost" id="showmarks">Show marks and notes · tutor</button>
       <div id="marks-panel" class="hide">
         <div style="font-family:var(--round);font-weight:700;font-size:28px" id="marks"></div>
         <div class="muted" id="tutornote" style="margin-top:12px"></div>
-        <div class="muted" id="early" style="margin-top:10px"></div>
-      </div>
-    </div>
+        <div class="muted" id="early" style="margin-top:10px"></div></div></div>
     <button class="secondary" id="restart">Mark another answer</button>
-  </section>
-
+  </div>
   <div id="err" class="err hide"></div>
+</section>
+
+<!-- ══ QUESTIONS ══ -->
+<section id="v-qs" class="hide">
+  <div class="hd"><span class="eyebrow">Question bank</span></div>
+
+  <div id="qs-home">
+    <h1>Your questions.</h1>
+    <p class="muted">Add any question and the app writes its mark scheme. Source questions stay
+      private. Extra practice is what a pupil is allowed to see.</p>
+    <div class="chips">
+      <span class="chip on" data-folder="source">Source · private</span>
+      <span class="chip" data-folder="twin">Extra practice</span>
+    </div>
+    <div id="qs-note" class="card" style="margin-top:20px"></div>
+    <div id="qs-list"></div>
+    <button class="primary" id="qs-add">Add a question</button>
+  </div>
+
+  <div id="qs-new" class="hide">
+    <h2>Add a question.</h2>
+    <p class="muted">Type it or paste it exactly as the paper says. The app writes the mark scheme;
+      you check it before anything is marked against it.</p>
+    <div style="margin-top:24px"><label for="nq">The question</label>
+      <textarea id="nq" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
+    <button class="primary" id="nq-go">Write the mark scheme</button>
+    <button class="ghost" id="nq-cancel">Cancel</button>
+    <div id="nq-err" class="err hide"></div>
+  </div>
+
+  <div id="qs-review" class="hide">
+    <span class="eyebrow">Check this before you use it</span>
+    <h2 id="rv-q" style="margin-top:10px"></h2>
+    <div id="rv-flag" class="card flag hide"></div>
+    <div class="stat">
+      <div><b id="rv-level">—</b><span>Level</span></div>
+      <div><b id="rv-type">—</b><span>Type</span></div>
+      <div><b id="rv-marks">—</b><span>Marks</span></div>
+    </div>
+    <div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">The unchanging concept</span>
+      <div id="rv-concept" style="margin-top:8px;font-size:17px;line-height:1.55"></div></div>
+    <div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What this question supplies</span>
+      <div id="rv-evidence" style="margin-top:8px"></div>
+      <div class="muted" style="margin-top:10px;font-size:14px">A pupil must use these, not repeat them.</div></div>
+    <div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Marking points</span>
+      <div id="rv-points"></div></div>
+    <div id="rv-dna-box" style="margin-top:24px"><span class="eyebrow">Do not accept</span>
+      <div id="rv-dna"></div>
+      <div class="muted" style="margin-top:10px;font-size:14px">Right words, wrong concept. These score zero.</div></div>
+    <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Model answer</span>
+      <div id="rv-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
+    <button class="primary" id="rv-save">Looks right · save to Source</button>
+    <button class="secondary" id="rv-retry">Write it again</button>
+    <button class="ghost" id="rv-cancel">Throw it away</button>
+  </div>
+
+  <div id="qs-twin" class="hide">
+    <span class="eyebrow">Extra practice · needs your approval</span>
+    <h2 id="tw-head" style="margin-top:10px">Making a new question…</h2>
+    <div id="tw-body"></div>
+    <div id="tw-err" class="err hide"></div>
+    <button class="ghost" id="tw-back">Back</button>
+  </div>
+</section>
+
+<!-- ══ MISTAKES ══ -->
+<section id="v-mist" class="hide">
+  <div class="hd"><span class="eyebrow">Mistake book</span></div>
+  <h1>Everything you got wrong.</h1>
+  <p class="muted">Kept as text, never deleted. A mistake from March is still here in September.</p>
+  <div class="stat">
+    <div><b id="m-total">0</b><span>Entries</span></div>
+    <div><b id="m-twice">0</b><span>Wrong twice</span></div>
+    <div><b id="m-secure">0</b><span>Fully fixed</span></div>
+  </div>
+  <div class="chips">
+    <span class="chip on" data-f="all">All</span>
+    <span class="chip" data-f="twice">Wrong twice</span>
+    <span class="chip" data-f="recent">Last 30 days</span>
+  </div>
+  <div id="m-list"></div>
+</section>
+
+<!-- ══ PRACTICE ══ -->
+<section id="v-prac" class="hide">
+  <div class="hd"><span class="eyebrow">Practice</span></div>
+  <div id="p-idle">
+    <h1>Practise what you missed.</h1>
+    <p class="muted">Built from your own mistake book. Say the answer from memory, then check.</p>
+    <div id="p-weak" style="margin-top:24px"></div>
+    <button class="primary" id="p-start">Start recall practice</button>
+    <div id="p-none" class="empty hide">Mark a few answers first — practice is built from what you actually got wrong.</div>
+  </div>
+  <div id="p-run" class="hide">
+    <div class="steps" style="margin-left:0;margin-bottom:20px"><i id="ps1"></i><i id="ps2"></i><i id="ps3"></i></div>
+    <span class="eyebrow" style="color:var(--mid)" id="p-topic"></span>
+    <h2 id="p-q" style="margin-top:10px"></h2>
+    <div style="margin-top:24px"><label>Say it out loud, then type it</label>
+      <textarea id="p-a" placeholder="From memory…"></textarea></div>
+    <button class="primary" id="p-check">Check my recall</button>
+    <div id="p-reveal" class="hide">
+      <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">Model answer</span>
+        <div id="p-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
+      <p class="muted" style="margin-top:20px">How did that feel?</p>
+      <button class="primary" data-g="smooth">Smooth</button>
+      <button class="secondary" data-g="hesitant">Hesitant</button>
+      <button class="secondary" data-g="blank">Blank</button>
+    </div>
+  </div>
+  <div id="p-done" class="hide">
+    <h1>Done for today.</h1>
+    <p class="muted" id="p-summary"></p>
+    <button class="secondary" id="p-again">Back</button>
+  </div>
+</section>
+
+<!-- ══ CLASS ══ -->
+<section id="v-stats" class="hide">
+  <div class="hd"><span class="eyebrow">Where marks are lost</span></div>
+  <h1 id="st-head">Not enough data yet.</h1>
+  <p class="muted" id="st-sub">Mark a few answers and the pattern appears here.</p>
+  <div class="stat">
+    <div><b id="st-n">0</b><span>Marked</span></div>
+    <div><b id="st-rec">—</b><span>Recovery</span></div>
+    <div><b id="st-top">—</b><span>Weakest topic</span></div>
+  </div>
+  <div id="st-kw-box" class="hide" style="margin-top:28px">
+    <span class="eyebrow" style="color:var(--mid)">Marking points most often missed</span>
+    <div id="st-kw"></div>
+  </div>
+  <div id="st-rec-box" class="hide" style="margin-top:28px">
+    <span class="eyebrow" style="color:var(--mid)">Missed, and whether it got fixed</span>
+    <div id="st-recov"></div>
+    <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">How to read this</span>
+      <div class="muted" style="margin-top:8px">Fixed on the second try means the knowledge was there — a wording
+      habit, and recall practice fixes it. Not fixed means the belief is wrong, and that needs teaching.</div></div>
+  </div>
+  <div id="st-topic-box" class="hide" style="margin-top:28px">
+    <span class="eyebrow" style="color:var(--mid)">By topic</span>
+    <div id="st-topic"></div>
+  </div>
+</section>
+
 </div>
 
+<nav class="nav">
+  <button class="on" data-v="mark"><b>✎</b>Mark</button>
+  <button data-v="qs"><b>▤</b>Questions</button>
+  <button data-v="mist"><b>◷</b>Mistakes</button>
+  <button data-v="prac"><b>↻</b>Practice</button>
+  <button data-v="stats"><b>◈</b>Class</button>
+</nav>
 <script>
 const $ = id => document.getElementById(id);
-let QS = [], r1 = null, a1txt = '';
+const KEY = 'sm-subs-v1', PKEY = 'sm-recall-v1';
+let QS = [], r1 = null, a1txt = '', filter = 'all';
 
+const load = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch(e){ return []; } };
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const subs = () => load(KEY);
+
+/* ── navigation ────────────────────────────────────────── */
+document.querySelectorAll('.nav button').forEach(b => b.onclick = () => {
+  const v = b.dataset.v;
+  document.querySelectorAll('.nav button').forEach(x => x.classList.toggle('on', x === b));
+  ['mark','qs','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
+  window.scrollTo(0,0);
+  if (v === 'qs') renderQs();
+  if (v === 'mist') renderMistakes();
+  if (v === 'prac') renderPractice();
+  if (v === 'stats') renderStats();
+});
+
+/* ── marking flow ──────────────────────────────────────── */
 function show(name){
   ['ask','fb','2nd','done'].forEach(n => $('stage-'+n).classList.toggle('hide', n !== name));
   const step = {ask:1, fb:2, '2nd':2, done:3}[name];
   [1,2,3].forEach(n => $('s'+n).classList.toggle('on', n <= step));
   window.scrollTo(0,0);
 }
-function fail(msg){ $('err').textContent = msg; $('err').classList.remove('hide'); }
-function clearFail(){ $('err').classList.add('hide'); }
+const fail = m => { $('err').textContent = m; $('err').classList.remove('hide'); };
+const clearFail = () => $('err').classList.add('hide');
 
-async function post(body){
-  const res = await fetch('/api/mark', {
-    method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body)
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Marking failed');
-  return data;
+async function callApi(path, body){
+  let res;
+  try {
+    res = await fetch(path, { method:'POST',
+      headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
+  } catch(e){ throw new Error('No connection to the server.'); }
+
+  const text = await res.text();
+  if (!text) throw new Error(res.status === 404
+    ? 'The server function ' + path + ' is missing. Upload the api folder to GitHub.'
+    : 'The server sent an empty reply (status ' + res.status + ').');
+
+  let d;
+  try { d = JSON.parse(text); }
+  catch(e){
+    if (/<!DOCTYPE|<html/i.test(text)) throw new Error(
+      'The server function ' + path + ' was not found. Check the api folder is uploaded and the Vercel preset is Other.');
+    throw new Error('The server reply could not be read.');
+  }
+  if (!res.ok) throw new Error(d.error || 'Request failed (status ' + res.status + ').');
+  return d;
 }
+
+const post = body => callApi('/api/mark', body);
 
 function listRows(el, items, open){
   el.innerHTML = '';
   items.forEach(t => {
     const row = document.createElement('div');
     row.className = 'row';
-    row.innerHTML = '<span class="tick' + (open ? ' open' : '') + '"></span>' +
-      '<div style="flex:1">' + (open ? '' : '<span class="rainbow">') + t + (open ? '' : '</span>') + '</div>';
+    row.innerHTML = '<span class="tick' + (open?' open':'') + '"></span><div style="flex:1">' +
+      (open ? t : '<span class="rainbow">' + t + '</span>') + '</div>';
     el.appendChild(row);
   });
+}
+
+function fillQuestionPicker(){
+  const opt = q => '<option value="bank:'+q.i+'">' + q.level + ' ' + q.chapter + ' · ' +
+    (q.q.length > 60 ? q.q.slice(0,60)+'…' : q.q) + '</option>';
+  const mine = load(SRC).map(r => '<option value="src:'+r.id+'">' +
+    (r.scheme.q.length > 60 ? r.scheme.q.slice(0,60)+'…' : r.scheme.q) + '</option>').join('');
+  const prac = load(TWN).filter(t => t.approved).map(r => '<option value="twin:'+r.id+'">' +
+    (r.stem.length > 60 ? r.stem.slice(0,60)+'…' : r.stem) + '</option>').join('');
+  $('q').innerHTML =
+    (mine ? '<optgroup label="My source questions">' + mine + '</optgroup>' : '') +
+    (prac ? '<optgroup label="Extra practice">' + prac + '</optgroup>' : '') +
+    '<optgroup label="Answer guide · 247">' + QS.map(opt).join('') + '</optgroup>';
+}
+
+function selected(){
+  const v = $('q').value || '';
+  if (v.startsWith('src:'))  { const r = load(SRC).find(x=>x.id===v.slice(4)); return r ? { scheme:r.scheme, meta:r.scheme } : null; }
+  if (v.startsWith('twin:')) { const r = load(TWN).find(x=>x.id===v.slice(5)); return r ? { scheme:r.scheme, meta:r.scheme } : null; }
+  const i = +v.replace('bank:','');
+  const q = QS.find(x=>x.i===i);
+  return q ? { questionIndex:i, meta:{ q:q.q, level:q.level, topic:q.chapter } } : null;
 }
 
 (async () => {
   try {
     const res = await fetch('/api/questions');
-    QS = (await res.json()).questions || [];
-    $('q').innerHTML = QS.map(q =>
-      '<option value="' + q.i + '">' + q.level + ' ' + q.chapter + ' · ' +
-      (q.q.length > 70 ? q.q.slice(0,70) + '…' : q.q) + '</option>').join('');
-  } catch (e) { fail('Could not load the question list. Is the server running?'); }
+    const text = await res.text();
+    if (!text || /<!DOCTYPE|<html/i.test(text)) throw new Error('not deployed');
+    QS = (JSON.parse(text).questions) || [];
+    fillQuestionPicker();
+  } catch(e){
+    fillQuestionPicker();
+    fail('The question list did not load. This page only works on your Vercel URL — the api folder needs to be uploaded to GitHub.');
+  }
 })();
 
 $('go1').onclick = async () => {
@@ -205,11 +396,13 @@ $('go1').onclick = async () => {
   if (!a1txt) return fail('Write an answer first.');
   $('go1').disabled = true; $('go1').textContent = 'Checking…';
   try {
-    r1 = await post({ questionIndex: +$('q').value, answer: a1txt, attempt: 1 });
+    const sel = selected();
+    if (!sel) return fail('Pick a question first.');
+    r1 = await post({ ...sel, meta:undefined, answer:a1txt, attempt:1 });
     $('verdict').textContent = r1.verdict || 'Checked';
     $('headline').textContent = r1.headline || '';
     $('yours').textContent = a1txt;
-    const hits = (r1.keywords || []).filter(k => k.hit).map(k => k.phrase);
+    const hits = (r1.keywords||[]).filter(k=>k.hit).map(k=>k.phrase);
     $('hits-box').classList.toggle('hide', !hits.length);
     if (hits.length) listRows($('hits'), hits, false);
     const gaps = r1.gaps || [];
@@ -218,7 +411,7 @@ $('go1').onclick = async () => {
     $('ponder').textContent = r1.ponder || '';
     $('ponder-box').classList.toggle('hide', !r1.ponder);
     show('fb');
-  } catch (e) { fail(e.message); }
+  } catch(e){ fail(e.message); }
   $('go1').disabled = false; $('go1').textContent = "I'm done";
 };
 
@@ -228,13 +421,10 @@ $('go2').onclick = () => {
   show('2nd');
 };
 
-// The answer on request. Allowed — but the request is recorded.
 $('peek').onclick = async () => {
   clearFail();
-  try {
-    const r = await post({ questionIndex: +$('q').value, answer: a1txt, attempt: 1, revealAnswer: true });
-    renderDone(r, r1);
-  } catch (e) { fail(e.message); }
+  try { const sel = selected(); renderDone(await post({ ...sel, meta:undefined, answer:a1txt, attempt:1, revealAnswer:true }), r1, true); }
+  catch(e){ fail(e.message); }
 };
 
 $('go3').onclick = async () => {
@@ -242,18 +432,16 @@ $('go3').onclick = async () => {
   const a2 = $('a2').value.trim();
   if (!a2) return fail('Write your second attempt first.');
   $('go3').disabled = true; $('go3').textContent = 'Checking…';
-  try {
-    const r2 = await post({ questionIndex: +$('q').value, answer: a2, attempt: 2, firstAnswer: a1txt });
-    renderDone(r2, r1);
-  } catch (e) { fail(e.message); }
+  try { const sel = selected(); renderDone(await post({ ...sel, meta:undefined, answer:a2, attempt:2, firstAnswer:a1txt }), r1, false, a2); }
+  catch(e){ fail(e.message); }
   $('go3').disabled = false; $('go3').textContent = 'Submit';
 };
 
-function renderDone(r2, first){
+function renderDone(r2, first, peeked, a2){
   $('verdict2').textContent = r2.verdict || '';
   $('headline2').textContent = r2.headline || '';
-  const missedFirst = new Set((first?.keywords || []).filter(k => !k.hit).map(k => (k.phrase||'').toLowerCase()));
-  const gained = (r2.keywords || []).filter(k => k.hit && missedFirst.has((k.phrase||'').toLowerCase())).map(k => k.phrase);
+  const missed1 = (first?.keywords||[]).filter(k=>!k.hit).map(k=>(k.phrase||'').toLowerCase());
+  const gained = (r2.keywords||[]).filter(k=>k.hit && missed1.includes((k.phrase||'').toLowerCase())).map(k=>k.phrase);
   $('gained-box').classList.toggle('hide', !gained.length);
   if (gained.length) listRows($('gained'), gained, false);
   $('model').textContent = r2.modelAnswer || '';
@@ -264,20 +452,352 @@ function renderDone(r2, first){
   } else $('mc-box').classList.add('hide');
   $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
   $('tutornote').textContent = r2.tutorNote || '';
-  $('early').textContent = r2.answerRequestedEarly
-    ? 'Note: the answer was requested before a second attempt.' : '';
+  $('early').textContent = r2.answerRequestedEarly ? 'Note: the answer was requested before a second attempt.' : '';
+
+  // ── save to the mistake book ──
+  const qm = (selected() || {}).meta || {};
+  const missedNow = (r2.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase);
+  const all = subs();
+  all.unshift({
+    ts: Date.now(), qi: $('q').value, level: qm.level || '', chapter: qm.chapter || qm.topic || '', q: qm.q || '',
+    a1: a1txt, a2: a2 || '', peeked: !!peeked,
+    marks1: first?.marks ?? null, marks2: r2.marks ?? null, maxMarks: r2.maxMarks ?? null,
+    missed1: (first?.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase),
+    missed2: missedNow, gained,
+    recovered: missedNow.length === 0 && (first?.keywords||[]).some(k => !k.hit),
+    modelAnswer: r2.modelAnswer || '',
+    mix: r2.misconception ? r2.misconception.belief : null,
+  });
+  save(KEY, all.slice(0, 400));
   show('done');
 }
 
-$('showmarks').onclick = () => {
-  $('marks-panel').classList.remove('hide');
-  $('showmarks').classList.add('hide');
-};
+$('showmarks').onclick = () => { $('marks-panel').classList.remove('hide'); $('showmarks').classList.add('hide'); };
 $('restart').onclick = () => {
-  $('a1').value = ''; $('a2').value = ''; r1 = null; a1txt = '';
+  $('a1').value=''; $('a2').value=''; r1=null; a1txt='';
   $('marks-panel').classList.add('hide'); $('showmarks').classList.remove('hide');
   clearFail(); show('ask');
 };
+
+/* ── question folders ─────────────────────────────────── */
+const SRC='sm-src-v1', TWN='sm-twin-v1';
+let folder='source', derived=null, twinSourceId=null;
+
+const qsShow = n => ['home','new','review','twin'].forEach(x =>
+  $('qs-'+x).classList.toggle('hide', x !== n));
+
+document.querySelectorAll('#v-qs .chip').forEach(c => c.onclick = () => {
+  document.querySelectorAll('#v-qs .chip').forEach(x => x.classList.toggle('on', x === c));
+  folder = c.dataset.folder; renderQs();
+});
+
+function renderQs(){
+  qsShow('home');
+  const src = load(SRC), twins = load(TWN);
+  const rows = folder === 'source' ? src : twins;
+  $('qs-note').innerHTML = folder === 'source'
+    ? '<span class="eyebrow" style="color:var(--mid)">Source questions</span><div class="muted" style="margin-top:8px">' +
+      'Questions from real papers. Kept for marking and for making practice. <strong>Never shown to a pupil.</strong></div>'
+    : '<span class="eyebrow" style="color:var(--mid)">Extra practice</span><div class="muted" style="margin-top:8px">' +
+      'New questions on the same concepts, in different situations. The only questions a pupil may be given.</div>';
+  if (!rows.length){
+    $('qs-list').innerHTML = '<div class="empty">' + (folder === 'source'
+      ? 'Nothing here yet. Add a question and the app writes its mark scheme.'
+      : 'Nothing here yet. Open a source question and make practice from it.') + '</div>';
+    return;
+  }
+  $('qs-list').innerHTML = rows.map(r => {
+    const q = r.scheme ? r.scheme.q : r.stem;
+    const meta = (r.scheme ? (r.scheme.level + ' · ' + r.scheme.topic) : (r.level + ' · ' + r.topic));
+    return '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + q + '</div>' +
+      '<div class="muted" style="margin-top:6px;font-size:14px">' + meta +
+      (folder === 'source' ? ' · ' + ((r.scheme.markingPoints||[]).length) + ' marking points' : '') +
+      (folder === 'twin' && !r.approved ? ' · <span style="color:var(--accent)">waiting for you</span>' : '') + '</div>' +
+      (folder === 'source'
+        ? '<button class="secondary" data-make="' + r.id + '" style="min-height:48px;font-size:15px">Make extra practice from this</button>'
+        : (!r.approved ? '<button class="primary" data-appr="' + r.id + '" style="min-height:48px;font-size:15px">Approve for pupils</button>' : '')) +
+      '</div>';
+  }).join('');
+  $('qs-list').querySelectorAll('[data-make]').forEach(b => b.onclick = () => makeTwin(b.dataset.make));
+  $('qs-list').querySelectorAll('[data-appr]').forEach(b => b.onclick = () => {
+    const t = load(TWN); const row = t.find(x => x.id === b.dataset.appr);
+    if (row) { row.approved = true; save(TWN, t); }
+    renderQs(); fillQuestionPicker();
+  });
+}
+
+$('qs-add').onclick = () => { $('nq').value=''; $('nq-err').classList.add('hide'); qsShow('new'); };
+$('nq-cancel').onclick = renderQs;
+$('rv-cancel').onclick = renderQs;
+$('tw-back').onclick = renderQs;
+$('rv-retry').onclick = () => deriveScheme($('nq').value.trim());
+
+$('nq-go').onclick = () => deriveScheme($('nq').value.trim());
+
+async function deriveScheme(text){
+  if (!text) { $('nq-err').textContent = 'Type the question first.'; $('nq-err').classList.remove('hide'); return; }
+  $('nq-go').disabled = true; $('nq-go').textContent = 'Writing the scheme…';
+  try {
+    derived = await callApi('/api/derive', { questionText: text });
+    showReview(derived);
+  } catch(e){
+    $('nq-err').textContent = e.message; $('nq-err').classList.remove('hide'); qsShow('new');
+  }
+  $('nq-go').disabled = false; $('nq-go').textContent = 'Write the mark scheme';
+}
+
+function showReview(d){
+  $('rv-q').textContent = d.q || '';
+  $('rv-level').textContent = d.level || '—';
+  $('rv-type').textContent = d.questionType || '—';
+  $('rv-marks').textContent = d.marks || '—';
+  $('rv-concept').textContent = d.concept || '';
+  $('rv-evidence').innerHTML = (d.evidence||[]).map(e =>
+    '<div class="row"><span class="tick"></span><div style="flex:1">' + e + '</div></div>').join('') || '<div class="muted">None listed.</div>';
+  $('rv-points').innerHTML = (d.markingPoints||[]).map(m =>
+    '<div class="row"><div style="flex:1">' + m.point + '</div>' +
+    '<div style="font-family:var(--round);font-weight:700">' + m.marks + '</div></div>').join('');
+  $('rv-dna').innerHTML = (d.doNotAccept||[]).filter(Boolean).map(x =>
+    '<div class="row"><span class="tick open"></span><div style="flex:1">' + x + '</div></div>').join('') || '<div class="muted">None listed.</div>';
+  $('rv-model').textContent = d.modelAnswer || '';
+  const f = $('rv-flag');
+  if (d.outOfSyllabus){
+    f.classList.remove('hide');
+    f.innerHTML = '<span class="eyebrow">Outside the syllabus</span><div style="margin-top:8px">' + d.outOfSyllabus + '</div>';
+  } else f.classList.add('hide');
+  qsShow('review'); window.scrollTo(0,0);
+}
+
+$('rv-save').onclick = () => {
+  const all = load(SRC);
+  all.unshift({ id: 's' + Date.now(), ts: Date.now(), scheme: derived });
+  save(SRC, all.slice(0,200));
+  derived = null; renderQs(); fillQuestionPicker();
+};
+
+async function makeTwin(id){
+  const row = load(SRC).find(x => x.id === id);
+  if (!row) return;
+  twinSourceId = id;
+  qsShow('twin'); $('tw-err').classList.add('hide');
+  $('tw-head').textContent = 'Making new questions…';
+  $('tw-body').innerHTML = '<div class="empty">Holding the concept, changing the situation. This takes a moment.</div>';
+  const used = load(TWN).map(t => t.object).filter(Boolean);
+  try {
+    const d = await callApi('/api/twin', { scheme: row.scheme, avoid: used, count: 2 });
+    const kept = [];
+    (d.twins||[]).forEach(t => {
+      if (t.gate && (t.gate.reusedSourceWording || !t.gate.ceclComplete)) return;
+      kept.push(t);
+    });
+    const rejected = (d.twins||[]).length - kept.length;
+    $('tw-head').textContent = kept.length + ' new question' + (kept.length===1?'':'s') + ' to check.';
+    if (!kept.length){
+      $('tw-body').innerHTML = '<div class="empty">Both attempts failed the checks — they reused the source wording or left out part of the answer. Try again.</div>';
+      return;
+    }
+    const all = load(TWN);
+    kept.forEach(t => all.unshift({ id:'t'+Date.now()+Math.random().toString(36).slice(2,6), ts:Date.now(),
+      stem:t.stem, object:t.object, level:t.level, topic:t.topic, questionType:t.questionType,
+      approved:false, sourceId:id,
+      scheme:{ q:t.stem, level:t.level, topic:t.topic, questionType:t.questionType, marks:t.marks,
+        concept:t.concept, markingPoints:t.markingPoints, modelAnswer:t.modelAnswer } }));
+    save(TWN, all.slice(0,200));
+    $('tw-body').innerHTML = kept.map(t =>
+      '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.45">' + t.stem + '</div>' +
+      '<div class="muted" style="margin-top:8px;font-size:14px">' + (t.object||'') + ' · ' + (t.marks||'') + ' marks</div>' +
+      '<div style="margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">' +
+        ['choice','evidence','concept','link'].map((k,i) =>
+          '<div style="display:flex;gap:12px;margin-top:8px"><div style="font-family:var(--round);font-weight:700;width:18px">' +
+          'CECL'[i] + '</div><div style="flex:1;font-size:15px;line-height:1.5">' + ((t.cecl||{})[k]||'') + '</div></div>').join('') +
+      '</div></div>').join('') +
+      (rejected ? '<div class="muted" style="margin-top:16px;font-size:14px">' + rejected +
+        ' rejected before reaching you — reused wording or an incomplete answer.</div>' : '') +
+      '<div class="muted" style="margin-top:16px;font-size:14px">They are saved but not approved. Approve them in the Extra practice folder.</div>';
+  } catch(e){
+    $('tw-err').textContent = e.message; $('tw-err').classList.remove('hide');
+    $('tw-body').innerHTML = '';
+  }
+}
+
+/* ── mistake book ──────────────────────────────────────── */
+document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
+  document.querySelectorAll('#v-mist .chip').forEach(x => x.classList.toggle('on', x === c));
+  filter = c.dataset.f; renderMistakes();
+});
+
+function renderMistakes(){
+  const all = subs();
+  $('m-total').textContent = all.length;
+  $('m-twice').textContent = all.filter(s => (s.missed2||[]).length > 0).length;
+  $('m-secure').textContent = all.filter(s => s.recovered).length;
+
+  const cut = Date.now() - 30*864e5;
+  let rows = all;
+  if (filter === 'twice') rows = all.filter(s => (s.missed2||[]).length > 0);
+  if (filter === 'recent') rows = all.filter(s => s.ts > cut);
+
+  const el = $('m-list');
+  if (!rows.length){
+    el.innerHTML = '<div class="empty">' + (all.length ? 'Nothing here with that filter.'
+      : 'Nothing yet. Mark an answer and it appears here, dated.') + '</div>';
+    return;
+  }
+  let out = '', lastDay = '';
+  rows.forEach(s => {
+    const d = new Date(s.ts).toLocaleDateString('en-GB', { day:'numeric', month:'long' });
+    if (d !== lastDay){ out += '<div class="day">' + d + '</div>'; lastDay = d; }
+    const stillWrong = (s.missed2||[]).length > 0;
+    const note = stillWrong ? 'Still missing ' + s.missed2.length + ' point' + (s.missed2.length>1?'s':'')
+      : s.recovered ? 'Fixed on the second try' : 'Correct first time';
+    out += '<div class="item' + (stillWrong ? ' flag' : '') + '">' +
+      '<div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + s.q + '</div>' +
+      '<div class="muted" style="margin-top:6px;font-size:14px">' + s.level + ' ' + s.chapter + ' · ' + note +
+      (s.peeked ? ' · answer requested early' : '') + '</div>' +
+      (s.mix ? '<div class="muted" style="margin-top:6px;font-size:14px;color:var(--accent)">' + s.mix + '</div>' : '') +
+      '</div>';
+  });
+  el.innerHTML = out;
+}
+
+/* ── recall practice ───────────────────────────────────── */
+let queue = [], qIdx = 0, graded = [];
+
+function weakQuestions(){
+  const seen = new Map();
+  subs().forEach(s => {
+    const score = ((s.missed2||[]).length ? 3 : 0) + (s.recovered ? 1 : 0) + (s.peeked ? 2 : 0);
+    if (score > 0 && !seen.has(s.qi)) seen.set(s.qi, { qi:s.qi, q:s.q, level:s.level, chapter:s.chapter, model:s.modelAnswer, score });
+  });
+  return [...seen.values()].sort((a,b)=>b.score-a.score);
+}
+
+function renderPractice(){
+  const weak = weakQuestions();
+  $('p-run').classList.add('hide'); $('p-done').classList.add('hide'); $('p-idle').classList.remove('hide');
+  $('p-none').classList.toggle('hide', weak.length > 0);
+  $('p-start').classList.toggle('hide', weak.length === 0);
+  $('p-weak').classList.toggle('hide', weak.length === 0);
+  $('p-weak').innerHTML = weak.slice(0,5).map(w =>
+    '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' + w.q + '</div>' +
+    '<div class="muted" style="margin-top:5px;font-size:14px">' + w.level + ' ' + w.chapter + '</div></div>').join('');
+}
+
+$('p-start').onclick = () => {
+  queue = weakQuestions().slice(0,3); qIdx = 0; graded = [];
+  if (!queue.length) return;
+  $('p-idle').classList.add('hide'); $('p-run').classList.remove('hide');
+  showRecall();
+};
+
+function showRecall(){
+  const w = queue[qIdx];
+  [1,2,3].forEach(n => $('ps'+n).classList.toggle('on', n <= qIdx + 1));
+  $('p-topic').textContent = w.level + ' · ' + w.chapter;
+  $('p-q').textContent = w.q;
+  $('p-a').value = '';
+  $('p-reveal').classList.add('hide');
+  $('p-check').classList.remove('hide');
+  window.scrollTo(0,0);
+}
+
+$('p-check').onclick = () => {
+  $('p-model').textContent = queue[qIdx].model || '(no model answer stored for this one)';
+  $('p-reveal').classList.remove('hide');
+  $('p-check').classList.add('hide');
+};
+
+document.querySelectorAll('#p-reveal button').forEach(b => b.onclick = () => {
+  graded.push({ qi: queue[qIdx].qi, grade: b.dataset.g, ts: Date.now() });
+  qIdx++;
+  if (qIdx < queue.length) return showRecall();
+  const rec = load(PKEY).concat(graded);
+  save(PKEY, rec.slice(-300));
+  const smooth = graded.filter(g=>g.grade==='smooth').length;
+  $('p-run').classList.add('hide'); $('p-done').classList.remove('hide');
+  $('p-summary').textContent = smooth + ' of ' + graded.length +
+    ' came back smoothly. The rest come round again tomorrow.';
+  window.scrollTo(0,0);
+});
+
+$('p-again').onclick = renderPractice;
+
+/* ── class statistics ──────────────────────────────────── */
+function renderStats(){
+  const all = subs();
+  $('st-n').textContent = all.length;
+  ['st-kw-box','st-rec-box','st-topic-box'].forEach(id => $(id).classList.toggle('hide', all.length < 2));
+  if (all.length < 2){
+    $('st-head').textContent = 'Not enough data yet.';
+    $('st-sub').textContent = 'Mark a few answers and the pattern appears here.';
+    $('st-rec').textContent = '—'; $('st-top').textContent = '—';
+    return;
+  }
+
+  // Recovery, counted in marking points regained — not in answers.
+  // A pupil who regains one point of three has not "recovered"; the proportion says so.
+  let missedPts = 0, fixedPts = 0;
+  all.forEach(s => { missedPts += (s.missed1||[]).length; fixedPts += (s.gained||[]).length; });
+  const rate = missedPts ? Math.round(100 * fixedPts / missedPts) : 0;
+  $('st-rec').textContent = missedPts ? rate + '%' : '—';
+
+  // marking points missed, with recovery
+  const kw = {};
+  all.forEach(s => (s.missed1||[]).forEach(p => {
+    kw[p] = kw[p] || { n:0, fixed:0 };
+    kw[p].n++;
+    if ((s.gained||[]).includes(p)) kw[p].fixed++;
+  }));
+  const top = Object.entries(kw).sort((a,b)=>b[1].n-a[1].n).slice(0,6);
+  const max = top.length ? top[0][1].n : 1;
+  $('st-kw').innerHTML = top.map(([p,v]) =>
+    '<div class="item"><div style="display:flex;gap:12px;align-items:baseline">' +
+    '<div style="flex:1;font-family:var(--round);font-weight:700;font-size:16px">' + p + '</div>' +
+    '<div class="muted" style="font-size:14px">' + v.n + '×</div></div>' +
+    '<div class="bar"><i style="width:' + Math.round(100*v.n/max) + '%"></i></div></div>').join('');
+
+  // the recovery split — the useful one
+  $('st-recov').innerHTML = top.map(([p,v]) => {
+    const pct = v.n ? Math.round(100*v.fixed/v.n) : 0;
+    const habit = pct >= 50;
+    return '<div class="item' + (habit ? '' : ' flag') + '">' +
+      '<div style="font-family:var(--round);font-weight:700;font-size:16px">' + p + '</div>' +
+      '<div class="bar" style="margin-top:8px"><i class="' + (habit?'ok':'') + '" style="width:' + pct + '%"></i></div>' +
+      '<div class="muted" style="margin-top:7px;font-size:14px">' + v.fixed + ' of ' + v.n +
+      ' fixed second time · ' + (habit ? 'a wording habit — drill it' : 'the belief is wrong — teach it') +
+      '</div></div>';
+  }).join('');
+
+  // topics
+  const tp = {};
+  all.forEach(s => {
+    const k = (s.level + ' ' + s.chapter).trim() || 'Unknown';
+    tp[k] = tp[k] || { n:0, miss:0 };
+    tp[k].n++;
+    tp[k].miss += (s.missed1||[]).length;
+  });
+  const tops = Object.entries(tp).sort((a,b)=>b[1].miss-a[1].miss);
+  $('st-top').textContent = tops.length ? tops[0][0].split(' ').slice(0,2).join(' ') : '—';
+  const tmax = tops.length ? tops[0][1].miss || 1 : 1;
+  $('st-topic').innerHTML = tops.slice(0,6).map(([k,v]) =>
+    '<div class="item"><div style="display:flex;gap:12px;align-items:baseline">' +
+    '<div style="flex:1;font-family:var(--round);font-weight:700;font-size:16px">' + k + '</div>' +
+    '<div class="muted" style="font-size:14px">' + v.n + ' marked</div></div>' +
+    '<div class="bar"><i style="width:' + Math.round(100*v.miss/tmax) + '%"></i></div></div>').join('');
+
+  const worst = top.find(([,v]) => v.n >= 2 && v.fixed / v.n < 0.5);
+  if (worst){
+    $('st-head').textContent = 'One belief needs teaching.';
+    $('st-sub').textContent = '“' + worst[0] + '” was missed ' + worst[1].n + ' times and regained only ' +
+      worst[1].fixed + '. That is a wrong belief, and the ponder cannot reach it.';
+  } else if (rate >= 60){
+    $('st-head').textContent = 'Mostly wording, not understanding.';
+    $('st-sub').textContent = rate + '% of missed marking points came back on the second attempt. The science is there and the phrasing is not.';
+  } else {
+    $('st-head').textContent = 'Not coming back on the second try.';
+    $('st-sub').textContent = 'Only ' + rate + '% of missed marking points were regained. That points at understanding rather than wording — worth teaching, not drilling.';
+  }
+}
 </script>
 </body>
 </html>
