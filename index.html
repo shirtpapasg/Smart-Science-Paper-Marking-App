@@ -75,6 +75,40 @@
   .opt.picked b{color:var(--accent)}
   .opt.right{border-color:#2e8b57;background:#eaf6ee}
   .opt.right b{color:#2e8b57}
+  .lock{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:14px 16px;
+    background:var(--surface);border:1.5px dashed var(--rule);border-radius:14px}
+  .lock .l-ico{flex:none;font-size:18px}
+  .lock .l-txt{flex:1;font-size:15px;line-height:1.5;color:var(--mid)}
+  .pin{display:flex;gap:10px;margin-top:14px}
+  .pin input{flex:1;font-family:var(--round);font-weight:700;font-size:22px;text-align:center;
+    letter-spacing:.3em;padding:14px;border:1.5px solid var(--rule);border-radius:14px;background:#fff}
+  .pin button{flex:none;width:auto;margin:0;padding:14px 20px}
+  .adm{display:inline-flex;gap:7px;align-items:center;font-family:var(--round);font-weight:700;
+    font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);
+    background:var(--accent-bg);padding:5px 11px;border-radius:999px}
+  #music{position:fixed;right:14px;bottom:calc(var(--nav-h, 96px) + 14px);z-index:25;
+    display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  .m-fab{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--ink);background:var(--ink);
+    color:var(--bg);font-size:21px;cursor:pointer;box-shadow:0 4px 16px rgba(26,26,26,.24);
+    display:flex;align-items:center;justify-content:center;margin:0;padding:0;min-height:0;width:54px}
+  .m-fab.playing{background:#fff;color:var(--ink)}
+  .m-fab.playing::after{content:'';position:absolute;width:54px;height:54px;border-radius:50%;
+    border:2px solid var(--accent);animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+  .m-panel{width:min(300px,calc(100vw - 28px));background:#fff;border:1.5px solid var(--rule);
+    border-radius:18px;padding:16px;box-shadow:0 10px 34px rgba(26,26,26,.2);display:none}
+  .m-panel.open{display:block}
+  .m-row{display:flex;gap:10px;align-items:center;padding:11px 12px;margin-top:8px;border-radius:12px;
+    background:var(--surface);cursor:pointer;font-size:15px;transition:background .15s}
+  .m-row:hover{background:var(--accent-bg)}
+  .m-row.on{background:var(--ink);color:var(--bg)}
+  .m-row b{flex:1;font-family:var(--round);font-weight:700}
+  .m-row span{font-size:13px;opacity:.7}
+  .m-svc{display:flex;gap:8px;margin-top:12px}
+  .m-svc a{flex:1;text-align:center;padding:11px 6px;border:1.5px solid var(--rule);border-radius:12px;
+    font-family:var(--round);font-weight:700;font-size:13px;color:var(--ink);text-decoration:none}
+  .m-svc a:hover{background:var(--surface)}
+  @media (prefers-reduced-motion:reduce){.m-fab.playing::after{animation:none}}
   #deflect{margin-top:20px;background:var(--ink);color:var(--bg);padding:18px 20px;border-radius:18px;
     box-shadow:0 6px 22px rgba(26,26,26,.18);display:flex;gap:14px;align-items:flex-start}
   #deflect .d-ico{flex:none;font-size:22px;line-height:1.2}
@@ -279,6 +313,7 @@
       what a full answer needs. From there I can build fresh practice on the same idea.</p>
     <button class="primary" id="qs-add">Add a written question</button>
     <button class="secondary" id="qs-mcq">Add a multiple-choice question</button>
+    <div id="adm-bar"></div>
     <div id="qs-list"></div>
     <div class="hint"><b>?</b><div>Not sure what to add?
       <div class="hint-more">Anything from a worksheet, a past paper or a textbook. The quickest way is to photograph it — I read the printed question straight off the page, and your photo is never saved.</div></div></div>
@@ -458,6 +493,25 @@
   </div>
 </section>
 
+</div>
+
+<div id="music">
+  <div class="m-panel" id="m-panel">
+    <div style="font-family:var(--round);font-weight:700;font-size:16px">Study music</div>
+    <div class="muted" style="margin-top:5px;font-size:14px">Slow, wordless, and quiet enough to think over.</div>
+    <div id="m-list"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)">
+      <div class="muted" style="font-size:13px">Rather use your own?</div>
+      <div class="m-svc">
+        <a href="https://open.spotify.com/search/lofi%20study" target="_blank" rel="noopener">Spotify</a>
+        <a href="https://music.apple.com/us/search?term=lofi%20study" target="_blank" rel="noopener">Apple</a>
+        <a href="https://music.youtube.com/search?q=lofi+study" target="_blank" rel="noopener">YouTube</a>
+      </div>
+      <div class="muted" style="margin-top:10px;font-size:12.5px;line-height:1.5">These open your own
+        app — keep it playing in the background and come back here.</div>
+    </div>
+  </div>
+  <button class="m-fab" id="m-fab" aria-label="Study music" style="position:relative">♪</button>
 </div>
 
 <div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
@@ -900,30 +954,72 @@ function svgFor(d){
     }
   });
 
-  // Labels: anchor the text AWAY from what it points at, so the leader never
-  // crosses the glyphs, and a right-margin label cannot run off the viewBox.
+  // Labels are laid out in TWO passes. The model gives each one a position with no
+  // knowledge of the others, so placed independently they collide — two rod labels
+  // land on the same line, or a label sits on top of the box it names. Pass one works
+  // out every box, pass two pushes them apart and off the shapes.
   const vbW = (parseFloat(String(vb).split(/\s+/)[2]) || 320);
-  (d.labels||[]).forEach(l => {
+  const vbH = (parseFloat(String(vb).split(/\s+/)[3]) || 200);
+  const LH = 13;                                        // 11px type + breathing room
+
+  // Rectangles worth avoiding, so a label never lands on a filled shape.
+  const solids = (d.shapes||[]).filter(sh => sh && sh.type === 'rect' &&
+      [sh.x, sh.y, sh.w, sh.h].every(n => typeof n === 'number'))
+    .map(sh => ({ x1: sh.x, y1: sh.y, x2: sh.x + sh.w, y2: sh.y + sh.h }));
+
+  const boxes = (d.labels||[]).map(l => {
     const txt = String(l.text||'').replace(/[<>&]/g,'');
-    if (!txt) return;
-    const w = txt.length * 5.6;                       // 11px type, ~0.51em advance
+    if (!txt) return null;
+    const w = txt.length * 5.6;                         // 11px type, ~0.51em advance
     const tgt = (l.leaderTo && l.leaderTo.length === 2) ? l.leaderTo : null;
     const leftward = tgt ? tgt[0] < l.x : false;
     let x = l.x;
-    if (leftward) x = Math.min(x, vbW - 2);           // text ends here, spans left
-    else x = Math.max(2, Math.min(x, vbW - w - 2));   // text starts here, spans right
+    if (leftward) x = Math.min(x, vbW - 2);
+    else x = Math.max(2, Math.min(x, vbW - w - 2));
+    return { txt, w, tgt, leftward, x, y: Math.max(LH, Math.min(+l.y || LH, vbH - 3)) };
+  }).filter(Boolean);
+
+  const span = bx => bx.leftward ? { l: bx.x - bx.w, r: bx.x } : { l: bx.x, r: bx.x + bx.w };
+  const hits = (A, B) => { const a1 = span(A), b1 = span(B);
+    return a1.l < b1.r + 3 && b1.l < a1.r + 3 && Math.abs(A.y - B.y) < LH; };
+
+  // Nudge a label off any solid it overlaps, sideways first, then upward.
+  boxes.forEach(bx => {
+    solids.forEach(r => {
+      const sp = span(bx);
+      const onIt = sp.l < r.x2 && r.x1 < sp.r && bx.y > r.y1 - 2 && bx.y - LH < r.y2;
+      if (!onIt) return;
+      if (r.x1 - 4 - bx.w >= 2){ bx.leftward = false; bx.x = Math.max(2, r.x1 - 4 - bx.w); }
+      else if (r.x2 + 4 + bx.w <= vbW - 2){ bx.leftward = false; bx.x = r.x2 + 4; }
+      else bx.y = Math.max(LH, r.y1 - 5);
+    });
+  });
+
+  // Then separate labels from each other, top-down, so none sits on another.
+  boxes.sort((A, B) => A.y - B.y || span(A).l - span(B).l);
+  boxes.forEach((bx, i) => {
+    for (let j = 0; j < i; j++){
+      if (!hits(bx, boxes[j])) continue;
+      const down = boxes[j].y + LH;
+      if (down <= vbH - 3) bx.y = down;
+      else { const up = boxes[j].y - LH; if (up >= LH) bx.y = up; }
+    }
+  });
+
+  boxes.forEach(bx => {
+    const { txt, w, tgt, leftward, x, y } = bx;
     if (tgt){
       // Leave from the text edge NEAREST the target. If the target sits inside the
       // text's own span there is no clean horizontal exit, so drop a vertical leader.
       const tl = leftward ? x - w : x, tr = leftward ? x : x + w;
-      let fx, fy = l.y - 4;
+      let fx, fy = y - 4;
       if (tgt[0] < tl) fx = tl - 4;
       else if (tgt[0] > tr) fx = tr + 4;
-      else { fx = tgt[0]; fy = (tgt[1] > l.y) ? l.y + 3 : l.y - 13; }
+      else { fx = tgt[0]; fy = (tgt[1] > y) ? y + 3 : y - 13; }
       out += '<line x1="'+fx.toFixed(1)+'" y1="'+fy.toFixed(1)+'" x2="'+tgt[0]+'" y2="'+tgt[1]+
              '" stroke="'+mid+'" stroke-width="1"/>';
     }
-    out += '<text x="'+x.toFixed(1)+'" y="'+l.y+'" font-size="11" fill="'+mid+
+    out += '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" font-size="11" fill="'+mid+
            '" font-family="var(--body)"'+(leftward?' text-anchor="end"':'')+'>'+txt+'</text>';
   });
 
@@ -934,6 +1030,167 @@ function svgFor(d){
     String(d.caption||'Diagram').replace(/"/g,'')+'">'+(defs?'<defs>'+defs+'</defs>':'')+out+'</svg>'+
     (d.caption ? '<div class="dgm-cap">'+String(d.caption).replace(/[<>]/g,'')+'</div>' : '')+'</div>';
 }
+
+
+/* ── admin: twins must be released by an adult ──────────── */
+// Students can generate practice but never approve it, so nothing reaches them
+// unchecked. The code is set once on this device and kept only here.
+const ADM = 'sm-adm-v1';
+const isAdmin = () => sessionStorage.getItem('sm-adm-open') === '1';
+const admSet = () => !!localStorage.getItem(ADM);
+
+async function hash(t){
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sm:' + t));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+function renderAdmBar(){
+  const el = $('adm-bar');
+  if (!el) return;
+  if (isAdmin()){
+    el.innerHTML = '<div style="display:flex;gap:12px;align-items:center;margin-top:16px">' +
+      '<span class="adm">✓ Adult mode</span>' +
+      '<button class="ghost" id="adm-out" style="width:auto;margin:0;padding:6px 10px;min-height:0;font-size:14px">Lock again</button></div>';
+    $('adm-out').onclick = () => { sessionStorage.removeItem('sm-adm-open'); renderAdmBar(); renderQs(); };
+    return;
+  }
+  el.innerHTML = '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">' +
+    (admSet() ? 'Enter the adult code to check and release practice questions.'
+              : 'Set an adult code. You will need it to release practice questions for students.') +
+    '</div></div><div class="pin"><input id="adm-pin" type="password" inputmode="numeric" ' +
+    'maxlength="6" placeholder="••••" autocomplete="off"><button class="primary" id="adm-go">' +
+    (admSet() ? 'Unlock' : 'Set code') + '</button></div><div id="adm-msg" class="muted" style="margin-top:9px;font-size:14px"></div>';
+
+  $('adm-go').onclick = async () => {
+    const v = ($('adm-pin').value || '').trim();
+    const msg = $('adm-msg');
+    if (v.length < 4){ msg.textContent = 'Use at least four digits.'; return; }
+    if (!admSet()){
+      localStorage.setItem(ADM, await hash(v));
+      sessionStorage.setItem('sm-adm-open', '1');
+      renderAdmBar(); renderQs();
+    } else if (await hash(v) === localStorage.getItem(ADM)){
+      sessionStorage.setItem('sm-adm-open', '1');
+      renderAdmBar(); renderQs();
+    } else {
+      msg.textContent = 'That is not the code. Try again.';
+      $('adm-pin').value = '';
+    }
+  };
+}
+
+/* ── study music, made in the browser ───────────────────── */
+// Four slow loops. No files to download, nothing to stream, works offline.
+const TUNES = [
+  { name: 'Rain on the window', note: 'soft, wet, very slow',
+    root: 55, bpm: 52, chords: [[0,3,7,10],[0,3,7,10],[-2,3,5,10],[-2,3,5,10]],
+    rain: .30, bell: .10, cut: 620 },
+  { name: 'Late library',       note: 'warm piano, low light',
+    root: 58, bpm: 60, chords: [[0,4,7,11],[-3,2,5,9],[-5,0,4,7],[-1,2,6,9]],
+    rain: .08, bell: .26, cut: 900 },
+  { name: 'Slow tide',          note: 'drifting, no edges',
+    root: 51, bpm: 46, chords: [[0,5,7,12],[0,5,7,12],[-4,3,7,10],[-4,3,7,10]],
+    rain: .18, bell: .06, cut: 520 },
+  { name: 'Morning revision',   note: 'a little brighter',
+    root: 60, bpm: 68, chords: [[0,4,7,9],[-2,3,7,10],[-5,0,4,7],[-7,-2,2,5]],
+    rain: .05, bell: .34, cut: 1200 },
+];
+let ac = null, mNode = null, mTimer = null, mTune = -1;
+const hz = n => 440 * Math.pow(2, (n - 69) / 12);
+
+function mStop(){
+  clearInterval(mTimer); mTimer = null;
+  if (mNode){ try { mNode.gain.linearRampToValueAtTime(0, ac.currentTime + 1.2); } catch(e){}
+    const g = mNode; setTimeout(() => { try { g.disconnect(); } catch(e){} }, 1500); mNode = null; }
+  mTune = -1;
+  $('m-fab').classList.remove('playing');
+  renderTunes();
+}
+
+function mPlay(i){
+  const t = TUNES[i];
+  if (!t) return;
+  if (mTune === i){ mStop(); return; }
+  if (mNode) mStop();
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+  mTune = i;
+
+  const bus = ac.createGain(); bus.gain.value = 0;
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = t.cut; lp.Q.value = .4;
+  const verb = ac.createConvolver();
+  const len = ac.sampleRate * 2.4, ib = ac.createBuffer(2, len, ac.sampleRate);
+  for (let c = 0; c < 2; c++){ const d = ib.getChannelData(c);
+    for (let j = 0; j < len; j++) d[j] = (Math.random()*2-1) * Math.pow(1 - j/len, 2.6) * .5; }
+  verb.buffer = ib;
+  const wet = ac.createGain(); wet.gain.value = .34;
+  bus.connect(lp); lp.connect(ac.destination); lp.connect(verb); verb.connect(wet); wet.connect(ac.destination);
+  bus.gain.linearRampToValueAtTime(.22, ac.currentTime + 2.5);
+  mNode = bus;
+
+  if (t.rain > .02){
+    const nb = ac.createBuffer(1, ac.sampleRate * 3, ac.sampleRate), nd = nb.getChannelData(0);
+    let last = 0;
+    for (let j = 0; j < nd.length; j++){ const w = Math.random()*2-1; last = (last + .02*w) / 1.02; nd[j] = last * 3.2; }
+    const src = ac.createBufferSource(); src.buffer = nb; src.loop = true;
+    const ng = ac.createGain(); ng.gain.value = t.rain * .5;
+    const nf = ac.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1400; nf.Q.value = .6;
+    src.connect(nf); nf.connect(ng); ng.connect(bus); src.start();
+  }
+
+  const beat = 60 / t.bpm, bar = beat * 4;
+  let step = 0;
+
+  const voice = (midi, when, dur, level, kind) => {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = kind === 'bell' ? 'triangle' : 'sine';
+    o.frequency.value = hz(midi);
+    const det = ac.createOscillator(), dg = ac.createGain();
+    det.type = 'sine'; det.frequency.value = hz(midi) * 1.005; dg.gain.value = level * .45;
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(level, when + (kind === 'bell' ? .02 : dur * .35));
+    g.gain.exponentialRampToValueAtTime(.0008, when + dur);
+    o.connect(g); det.connect(dg); dg.connect(g); g.connect(bus);
+    o.start(when); det.start(when); o.stop(when + dur + .1); det.stop(when + dur + .1);
+  };
+
+  const tick = () => {
+    if (mTune !== i) return;
+    const now = ac.currentTime + .05;
+    const ch = t.chords[step % t.chords.length];
+    ch.forEach((iv, k) => voice(t.root + iv, now + k * .06, bar * 1.4, .085, 'pad'));
+    voice(t.root - 12 + ch[0], now, bar * 1.1, .10, 'pad');
+    if (Math.random() < t.bell){
+      const pick = ch[1 + Math.floor(Math.random() * (ch.length - 1))];
+      voice(t.root + 12 + pick, now + beat * (1 + Math.floor(Math.random() * 3)), 2.2, .045, 'bell');
+    }
+    step++;
+  };
+  tick();
+  mTimer = setInterval(tick, bar * 1000);
+
+  $('m-fab').classList.add('playing');
+  renderTunes();
+}
+
+function renderTunes(){
+  const el = $('m-list');
+  if (!el) return;
+  el.innerHTML = TUNES.map((t, i) =>
+    '<div class="m-row' + (mTune === i ? ' on' : '') + '" data-t="' + i + '">' +
+    '<b>' + t.name + '</b><span>' + (mTune === i ? 'playing' : t.note) + '</span></div>').join('');
+  el.querySelectorAll('[data-t]').forEach(r => r.onclick = () => mPlay(+r.dataset.t));
+}
+
+$('m-fab').onclick = () => {
+  const pan = $('m-panel');
+  pan.classList.toggle('open');
+  if (pan.classList.contains('open')) renderTunes();
+};
+document.addEventListener('click', e => {
+  if (!e.target.closest('#music')) $('m-panel').classList.remove('open');
+});
+renderTunes();
 
 /* ── question folders ─────────────────────────────────── */
 const SRC='sm-src-v1', TWN='sm-twin-v1';
@@ -950,6 +1207,7 @@ document.querySelectorAll('#v-qs .chip').forEach(c => c.onclick = () => {
 
 function renderQs(){
   qsShow('home');
+  renderAdmBar();
   const src = load(SRC), twins = load(TWN);
   const rows = folder === 'source' ? src : twins;
   const h = $('qs-h'), sub = $('qs-sub'), add = $('qs-add');
@@ -974,7 +1232,12 @@ function renderQs(){
       svgFor(r.scheme ? r.scheme.diagram : r.diagram) +
       (folder === 'source'
         ? '<button class="secondary" data-make="' + r.id + '" style="min-height:48px;font-size:15px">Make practice from this</button>'
-        : (!r.approved ? '<button class="primary" data-appr="' + r.id + '" style="min-height:48px;font-size:15px">Ready to use</button>' : '')) +
+        : (!r.approved
+            ? (isAdmin()
+                ? '<button class="primary" data-appr="' + r.id + '" style="min-height:48px;font-size:15px">Approve for students</button>'
+                : '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">Waiting to be checked. ' +
+                  'Only an adult with the code can release this one.</div></div>')
+            : '')) +
       '</div>';
   }).join('');
   $('qs-list').querySelectorAll('[data-make]').forEach(b => b.onclick = () => makeTwin(b.dataset.make));
