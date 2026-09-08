@@ -92,6 +92,54 @@
   .opt.picked b{color:var(--accent)}
   .opt.right{border-color:#2e8b57;background:#eaf6ee}
   .opt.right b{color:#2e8b57}
+  /* Coach marks: a dark scrim with a hole cut over the real element, so the
+     tour points at the app itself rather than describing it. */
+  #coach{position:fixed;inset:0;z-index:58;display:none}
+  #coach.on{display:block}
+  #c-scrim{position:absolute;inset:0;background:rgba(20,19,18,.72);
+    transition:clip-path .42s cubic-bezier(.2,.9,.25,1)}
+  #c-ring{position:absolute;border:3px solid var(--accent);border-radius:16px;pointer-events:none;
+    box-shadow:0 0 0 4px rgba(255,138,106,.22);transition:all .42s cubic-bezier(.2,.9,.25,1)}
+  #c-card{position:absolute;left:14px;right:14px;background:#fff;color:#1a1a1a;border-radius:18px;
+    padding:18px 20px;box-shadow:0 14px 40px rgba(20,19,18,.34);
+    transition:top .42s cubic-bezier(.2,.9,.25,1);max-width:420px;margin:0 auto}
+  html[data-theme="dark"] #c-card{background:#2a2724;color:#f0ece6}
+  #c-card h3{font-size:19px;line-height:1.25}
+  #c-card p{font-size:15.5px;line-height:1.55;margin-top:9px;opacity:.78}
+  #c-bar{display:flex;gap:10px;align-items:center;margin-top:16px}
+  #c-bar .c-n{font-family:var(--round);font-weight:700;font-size:13px;opacity:.6}
+  #c-bar button{margin:0;width:auto;min-height:0;padding:11px 18px;font-size:15px}
+  #c-bar .c-skip{margin-left:auto;background:transparent;border-color:transparent;opacity:.7;padding:11px 4px}
+
+  /* The help panel, under the theme button. */
+  #h-panel{max-height:calc(100dvh - var(--nav-h, 96px) - 210px);overflow:auto}
+  .h-q{padding:11px 13px;margin-top:8px;border-radius:12px;background:var(--surface);
+    cursor:pointer;font-size:15px;line-height:1.45}
+  .h-q:hover{background:var(--accent-bg)}
+  .h-a{margin-top:12px;padding:14px 16px;border-radius:14px;background:var(--accent-bg);
+    font-size:15.5px;line-height:1.6}
+  #tour{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;
+    flex-direction:column;padding:28px 22px calc(env(safe-area-inset-bottom,0px) + 22px);overflow:auto}
+  #tour.on{display:flex}
+  .t-dots{display:flex;gap:7px;justify-content:center;margin-bottom:26px}
+  .t-dots i{width:8px;height:8px;border-radius:50%;background:var(--rule);transition:all .3s}
+  .t-dots i.on{width:26px;border-radius:5px;
+    background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
+    background-size:200% 100%;animation:rainbow-slide 5s linear infinite}
+  .t-slide{flex:1;display:none;flex-direction:column;justify-content:center;max-width:460px;
+    margin:0 auto;width:100%}
+  .t-slide.on{display:flex;animation:t-in .42s cubic-bezier(.2,.9,.25,1) both}
+  @keyframes t-in{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+  .t-art{font-size:56px;line-height:1;margin-bottom:22px;animation:t-float 3.4s ease-in-out infinite}
+  @keyframes t-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}
+  .t-slide h2{font-size:29px;line-height:1.15}
+  .t-slide p{font-size:17px;line-height:1.6;color:var(--mid);margin-top:14px}
+  .t-foot{max-width:460px;margin:26px auto 0;width:100%}
+  .t-skip{text-align:center;margin-top:14px}
+  .t-skip a{font-size:15px;color:var(--mid);text-decoration:none}
+  @media (prefers-reduced-motion:reduce){
+    .t-slide.on,.t-art,.t-dots i.on{animation:none}
+  }
   .lock{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:14px 16px;
     background:var(--surface);border:1.5px dashed var(--rule);border-radius:14px}
   .lock .l-ico{flex:none;font-size:18px}
@@ -219,6 +267,23 @@
   .hint-more{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);
     font-size:14px;line-height:1.6;color:var(--mid)}
   .hint.open .hint-more{display:block}
+  /* Pip the chinchilla. Frames swap on a timer, so it reads as a little gif
+     without shipping one. */
+  #pip{position:fixed;right:12px;bottom:calc(var(--nav-h, 96px) + 74px);z-index:26;
+    width:82px;height:82px;pointer-events:none;opacity:0;transform:translateY(14px) scale(.86);
+    transition:opacity .4s,transform .5s cubic-bezier(.2,1.3,.3,1)}
+  #pip.on{opacity:1;transform:none;animation:pip-bob 2.8s ease-in-out infinite}
+  #pip img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+    opacity:0;transition:opacity .22s;filter:drop-shadow(0 3px 6px rgba(26,26,26,.22))}
+  #pip img.on{opacity:1}
+  @keyframes pip-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+  #pip-say{position:absolute;right:76px;bottom:16px;width:max-content;max-width:min(56vw,220px);
+    background:#fff;color:#1a1a1a;border-radius:14px 14px 3px 14px;padding:9px 12px;
+    font-size:13.5px;line-height:1.45;box-shadow:0 4px 16px rgba(26,26,26,.2);opacity:0;
+    transition:opacity .3s}
+  html[data-theme="dark"] #pip-say{background:#2a2724;color:#f0ece6}
+  #pip.talk #pip-say{opacity:1}
+  @media (prefers-reduced-motion:reduce){#pip.on{animation:none}}
   #nudge{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h, 96px) + 12px);z-index:30;
     background:var(--ink);color:var(--bg);padding:15px 16px;border-radius:16px;
     box-shadow:0 8px 28px rgba(26,26,26,.28);
@@ -489,7 +554,7 @@
 <!-- ══ CLASS ══ -->
 <section id="v-stats" class="hide">
   <div class="hd"><span class="eyebrow">How it's going</span></div>
-  <div class="card" id="prof-box" style="margin-top:0">
+  <div class="card" id="prof-box" style="margin-top:0;margin-bottom:28px">
     <div style="display:flex;align-items:baseline;gap:10px">
       <span class="eyebrow" style="color:var(--mid)">Your profile</span>
       <span class="muted" id="prof-who" style="margin-left:auto;font-size:13px"></span>
@@ -543,8 +608,79 @@
   <button class="m-fab" id="m-fab" aria-label="Study music" style="position:relative">♪</button>
 </div>
 
+<div id="tour">
+  <div class="t-dots" id="t-dots"></div>
+
+  <div class="t-slide" data-slide="0">
+    <div class="t-art">👋</div>
+    <h2>Hello. I mark Science.</h2>
+    <p>Open-ended questions, the sort that ask you to <em>explain</em>. Write your answer in your own
+      words and I will show you what is already good and what is worth adding.</p>
+  </div>
+
+  <div class="t-slide" data-slide="1">
+    <div class="t-art">✎</div>
+    <h2>Two goes,<br>every time.</h2>
+    <p>The first time, I tell you what is missing — but never the words. You get something to think
+      about, then you write it again. Only then do you see a full answer.</p>
+    <p style="font-size:15px">That second go is where the learning happens, so I will not skip it.</p>
+  </div>
+
+  <div class="t-slide" data-slide="2">
+    <div class="t-art">📷</div>
+    <h2>Photograph<br>any question.</h2>
+    <p>Point your camera at a worksheet or a past paper. I read the printed question straight off the
+      page and work out what a full answer needs. Your photo is never saved.</p>
+  </div>
+
+  <div class="t-slide" data-slide="3">
+    <div class="t-art">◷</div>
+    <h2>Nothing gets<br>forgotten.</h2>
+    <p>Everything you answer goes into your notebook with the date, and your recall practice is built
+      from whatever you found hardest. There is a notes pad and some quiet study music too.</p>
+  </div>
+
+  <div class="t-slide" data-slide="4">
+    <div class="t-art">🙂</div>
+    <h2>Who are you?</h2>
+    <p>Just so your work is yours. You can change this whenever you like.</p>
+    <div class="pin" style="gap:8px;margin-top:20px">
+      <input id="t-name" type="text" placeholder="Your full name"
+        style="letter-spacing:0;font-size:17px;text-align:left" autocomplete="off">
+    </div>
+    <div class="pin" style="gap:8px">
+      <input id="t-nick" type="text" placeholder="Nickname" maxlength="18"
+        style="letter-spacing:0;font-size:17px;text-align:left" autocomplete="off">
+    </div>
+    <div class="pin" style="gap:8px">
+      <input id="t-school" type="text" placeholder="School" maxlength="40"
+        style="letter-spacing:0;font-size:17px;text-align:left" autocomplete="off">
+    </div>
+    <div class="muted" id="t-msg" style="margin-top:10px;font-size:14px"></div>
+  </div>
+
+  <div class="t-foot">
+    <button class="primary" id="t-next">Next</button>
+    <div class="t-skip"><a href="#" id="t-skip">Skip the tour</a></div>
+  </div>
+</div>
+
 <input type="file" id="pf-file" accept=".science,application/json" style="position:absolute;width:1px;height:1px;opacity:0">
 <div id="tools">
+  <div class="m-panel" id="h-panel">
+    <div style="font-family:var(--round);font-weight:700;font-size:16px">How does this work?</div>
+    <div class="muted" style="margin-top:5px;font-size:14px">Ask me anything about the app.</div>
+    <div id="h-list"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
+      <textarea id="h-ask" style="min-height:74px;font-size:15px"
+        placeholder="Or type your own question…"></textarea>
+      <button class="primary" id="h-go" style="min-height:48px;font-size:15px">Ask</button>
+    </div>
+    <div id="h-out"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
+      <button class="secondary" id="h-tour" style="min-height:48px;font-size:15px">Walk me around the app</button>
+    </div>
+  </div>
   <div class="m-panel" id="n-panel" style="overflow:auto">
     <div style="display:flex;align-items:baseline;gap:10px">
       <div style="font-family:var(--round);font-weight:700;font-size:16px">My notes</div>
@@ -560,6 +696,29 @@
   </div>
   <button class="m-fab" id="n-fab" aria-label="My notes">✎</button>
   <button class="m-fab" id="t-fab" aria-label="Light or dark">◐</button>
+  <button class="m-fab" id="h-fab" aria-label="Help">?</button>
+</div>
+
+<div id="coach">
+  <div id="c-scrim"></div>
+  <div id="c-ring"></div>
+  <div id="c-card">
+    <h3 id="c-title"></h3>
+    <p id="c-text"></p>
+    <div id="c-bar">
+      <span class="c-n" id="c-num"></span>
+      <button class="primary" id="c-next">Next</button>
+      <button class="secondary c-skip" id="c-skip">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="pip" aria-hidden="true">
+  <img src="chin-sit.png" alt="" class="on">
+  <img src="chin-happy.png" alt="">
+  <img src="chin-stand.png" alt="">
+  <img src="chin-cheer.png" alt="">
+  <div id="pip-say"></div>
 </div>
 
 <div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
@@ -710,6 +869,7 @@ document.querySelectorAll('.nav button').forEach(b => b.onclick = () => {
   ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
   curView = v; armIdle();
+  $('pip').classList.add('on');
   if (v === 'qs') renderQs();
   if (v === 'mist') renderMistakes();
   if (v === 'prac') renderPractice();
@@ -903,7 +1063,7 @@ function renderDone(r2, first, peeked, a2){
   const missed1 = (first?.keywords||[]).filter(k=>!k.hit).map(k=>(k.phrase||'').toLowerCase());
   const gained = (r2.keywords||[]).filter(k=>k.hit && missed1.includes((k.phrase||'').toLowerCase())).map(k=>k.phrase);
   $('gained-box').classList.toggle('hide', !gained.length);
-  if (gained.length) listRows($('gained'), gained, false);
+  if (gained.length){ listRows($('gained'), gained, false); PIP.cheer(); }
   $('model').textContent = r2.modelAnswer || '';
   if (r2.misconception){
     $('mc-box').classList.remove('hide');
@@ -941,6 +1101,55 @@ $('restart').onclick = () => {
 
 
 
+
+/* ── Pip the chinchilla ─────────────────────────────────── */
+// Four still frames, swapped on a timer so it animates like a gif. Pip appears
+// with the helper, says something about wherever you are, then hides again.
+const PIP = {
+  frames: null, i: 0, timer: null, hideT: null,
+  lines: {
+    qs:    ['Photograph a question — I love that bit.', 'Add one and I will work out the answer.', 'Your papers, your questions.'],
+    mark:  ['Have a go. Wrong is useful.', 'Two tries, always.', 'Write it how you would on paper.'],
+    mist:  ['Everything you did is in here.', 'Nothing gets forgotten.'],
+    prac:  ['Say it out loud first. It sticks better.', 'Three quick ones?'],
+    stats: ['Look at recovery — that is the clever number.', 'Save your profile so it travels with you.'],
+  },
+  boot(){
+    this.frames = [...document.querySelectorAll('#pip img')];
+    this.timer = setInterval(() => this.step(), 5000);
+  },
+  step(){
+    if (!this.frames || !this.frames.length) return;
+    this.frames[this.i].classList.remove('on');
+    this.i = (this.i + 1) % this.frames.length;
+    this.frames[this.i].classList.add('on');
+  },
+  pop(view, msg){
+    const el = $('pip');
+    if (!el) return;
+    const set = this.lines[view] || this.lines.mark;
+    $('pip-say').textContent = msg || set[Math.floor(Math.random() * set.length)];
+    el.classList.add('on', 'talk');
+    this.step();
+    clearTimeout(this.hideT);
+    this.hideT = setTimeout(() => el.classList.remove('talk'), 6000);
+  },
+  cheer(){
+    const el = $('pip');
+    if (!el) return;
+    // Land on the cheering frame for a moment when something goes right.
+    this.frames.forEach(f => f.classList.remove('on'));
+    this.i = this.frames.length - 1;
+    this.frames[this.i].classList.add('on');
+    $('pip-say').textContent = 'Nice one!';
+    el.classList.add('on', 'talk');
+    clearTimeout(this.hideT);
+    this.hideT = setTimeout(() => el.classList.remove('talk'), 4000);
+  },
+  hide(){ const el = $('pip'); if (el) el.classList.remove('talk'); },
+};
+PIP.boot();
+
 /* ── the helper: a nudge after 7 quiet seconds ──────────── */
 const NUDGES = {
   mark:  ['Not sure where to start?', 'Pick any question above, then write what you think in your own words. Getting it wrong is genuinely useful here — that is how we work out what to practise.'],
@@ -976,6 +1185,7 @@ function armIdle(){
     n.querySelector('.n-txt').innerHTML = '<b>' + msg[0] + '</b>' + msg[1];
     n.classList.add('up');
     nudgeShown[curView] = true;
+    PIP.pop(curView);
     setTimeout(hideNudge, 14000);   // never leaves it stuck on screen
   }, 7000);
 }
@@ -1208,60 +1418,104 @@ $('n-copy').onclick = async e => { e.preventDefault();
   try { await navigator.clipboard.writeText($('n-text').value); $('n-saved').textContent = 'copied'; }
   catch(err){ $('n-saved').textContent = 'could not copy'; } };
 document.addEventListener('click', e => {
-  if (!e.target.closest('#tools')) $('n-panel').classList.remove('open');
+  if (!e.target.closest('#tools')){
+    $('n-panel').classList.remove('open');
+    $('h-panel').classList.remove('open');
+  }
 });
 
 /* ── profile: everything you have done, in one portable file ──
    There is no server, so a profile IS a file. Save it, keep it somewhere safe,
    and load it on any other device to carry your work across. */
 const WHO = 'sm-who-v1';
-const keys = () => [KEY, PKEY, SRC, TWN, NOTES, ADM, THEME, WHO];
+const keys = () => [KEY, PKEY, SRC, TWN, NOTES, ADM, THEME, WHO, SEEN];
 
 const who = () => DB.get(WHO, null);
 
 function renderProfile(){
   const el = $('prof-body'), w = who();
   if (!el) return;
-  $('prof-who').textContent = w ? (w.name + ' · ' + w.klass) : 'not set up';
+  $('prof-who').textContent = w
+    ? [(w.nick || w.name), w.school].filter(Boolean).join(' · ')
+    : 'not set up';
   const counts = subs().length + ' answered · ' + load(SRC).length + ' of my questions · ' +
                  load(TWN).length + ' practice';
 
   if (!w){
     el.innerHTML = '<div class="muted" style="margin-top:10px;font-size:14px">Put your name and class in, ' +
       'and I can save everything you have done into one file you can open on any device.</div>' +
-      '<div class="pin" style="gap:8px"><input id="pf-name" type="text" placeholder="Your name" ' +
-      'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off">' +
-      '<input id="pf-class" type="text" placeholder="Class" maxlength="12" ' +
-      'style="letter-spacing:0;font-size:16px;text-align:left;flex:0 0 92px" autocomplete="off"></div>' +
+      '<div class="pin" style="gap:8px"><input id="pf-name" type="text" placeholder="Your full name" ' +
+      'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
+      '<div class="pin" style="gap:8px"><input id="pf-nick" type="text" placeholder="Nickname" maxlength="18" ' +
+      'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
+      '<div class="pin" style="gap:8px"><input id="pf-school" type="text" placeholder="School" maxlength="40" ' +
+      'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
       '<button class="primary" id="pf-set">Set up my profile</button>' +
       '<button class="secondary" id="pf-load">Load a saved profile</button>';
     $('pf-set').onclick = () => {
-      const n = ($('pf-name').value||'').trim(), k = ($('pf-class').value||'').trim();
-      if (!n || !k) return;
-      DB.set(WHO, { name: n, klass: k, since: Date.now() });
+      const n = ($('pf-name').value||'').trim();
+      const nick = ($('pf-nick').value||'').trim();
+      const sch = ($('pf-school').value||'').trim();
+      if (!n) return;
+      DB.set(WHO, { name: n, nick: nick || n.split(/\s+/)[0], school: sch || '', since: Date.now() });
       renderProfile();
     };
   } else {
     el.innerHTML = '<div class="muted" style="margin-top:10px;font-size:14px">' + counts + '</div>' +
       '<button class="primary" id="pf-save">Save my profile to a file</button>' +
       '<button class="secondary" id="pf-load">Load a saved profile</button>' +
+      '<div class="m-svc" style="margin-top:10px">' +
+        '<a href="#" id="pf-edit">Change my details</a>' +
+        '<a href="#" id="pf-tour">Walk me around again</a></div>' +
       '<div class="muted" style="margin-top:12px;font-size:13px;line-height:1.5">Saving gives you a file ' +
       'named after you and today\'s date. Keep it somewhere safe — opening it on another device brings ' +
       'everything with you.</div>';
     $('pf-save').onclick = saveProfile;
+    $('pf-edit').onclick = e => { e.preventDefault(); editProfile(); };
+    $('pf-tour').onclick = e => { e.preventDefault(); cStart(); };
   }
   $('pf-load').onclick = () => $('pf-file').click();
 }
 
+// Changing who you are keeps the work — it is the same device, same notebook.
+// Loading a different profile file is what replaces everything.
+function editProfile(){
+  const w = who() || {};
+  const el = $('prof-body');
+  el.innerHTML = '<div class="muted" style="margin-top:10px;font-size:14px">Your work stays exactly ' +
+    'as it is — this only changes the name on it.</div>' +
+    '<div class="pin" style="gap:8px"><input id="pf-name" type="text" value="' +
+    String(w.name||'').replace(/"/g,'&quot;') + '" placeholder="Your full name" ' +
+    'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
+    '<div class="pin" style="gap:8px"><input id="pf-nick" type="text" value="' +
+    String(w.nick||'').replace(/"/g,'&quot;') + '" placeholder="Nickname" maxlength="18" ' +
+    'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
+    '<div class="pin" style="gap:8px"><input id="pf-school" type="text" value="' +
+    String(w.school||'').replace(/"/g,'&quot;') + '" placeholder="School" maxlength="40" ' +
+    'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
+    '<button class="primary" id="pf-ok">Save</button>' +
+    '<button class="secondary" id="pf-cancel">Cancel</button>';
+  $('pf-ok').onclick = () => {
+    const n = ($('pf-name').value||'').trim();
+    const nick = ($('pf-nick').value||'').trim();
+    const sch = ($('pf-school').value||'').trim();
+    if (!n) return;
+    DB.set(WHO, { ...w, name: n, nick: nick || n.split(/\s+/)[0], school: sch || '' });
+    renderProfile();
+  };
+  $('pf-cancel').onclick = renderProfile;
+}
+
 function saveProfile(){
-  const w = who() || { name: 'Student', klass: 'Class' };
+  const w = who() || { name: 'Student', nick: 'Student', school: '' };
   const data = { app: 'smart-science-marking', v: 1, saved: new Date().toISOString(), who: w, store: {} };
   keys().forEach(k => { const v = DB.raw(k); if (v !== null) data.store[k] = v; });
 
   const d = new Date();
   const stamp = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   const safe = t => String(t).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const name = safe(w.name) + '_' + safe(w.klass) + '_' + stamp + '.science';
+  const name = [safe(w.name), safe(w.school || w.nick || 'profile'), stamp]
+    .filter(Boolean).join('_') + '.science';
 
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
   const a = document.createElement('a');
@@ -1276,7 +1530,7 @@ async function loadProfile(file){
     const d = JSON.parse(await file.text());
     if (d.app !== 'smart-science-marking' || !d.store) throw new Error('not a profile file');
     const w = d.who || {};
-    if (!confirm('Load ' + (w.name || 'this profile') + (w.klass ? ' (' + w.klass + ')' : '') +
+    if (!confirm('Load ' + (w.nick || w.name || 'this profile') + (w.school ? ' (' + w.school + ')' : '') +
         '?\n\nThis replaces everything currently on this device.')) return;
     await DB.wipe(keys());
     Object.entries(d.store).forEach(([k, v]) => DB.setRaw(k, v));
@@ -1286,6 +1540,177 @@ async function loadProfile(file){
     alert('That file would not open. Pick the .science file you saved from this app.');
   }
 }
+
+
+
+/* ── the walk-around: coach marks on the real interface ─── */
+// Each stop names a real element, switches to the tab it lives on, cuts a hole
+// in the scrim over it and puts a card where it does not cover it.
+const STOPS = [
+  { sel: '.nav button[data-v="qs"]', tab: 'qs', title: 'Start here',
+    text: 'Everything begins with a question. Add one from a paper, or photograph it — I work out what a full answer needs.' },
+  { sel: '#qs-add', tab: 'qs', title: 'Two kinds of question',
+    text: 'A written one, where you explain in sentences. Or multiple choice, where the option you pick tells me what you were thinking.' },
+  { sel: '.nav button[data-v="mark"]', tab: 'mark', title: 'Then answer it',
+    text: 'You get two goes at every question. The first time I say what is missing — but never the words. That is the whole point.' },
+  { sel: '#q', tab: 'mark', title: 'Your questions come first',
+    text: 'Anything you have added sits at the top of this list, then the practice you have approved, then hundreds I already know.' },
+  { sel: '.nav button[data-v="mist"]', tab: 'mist', title: 'Nothing is forgotten',
+    text: 'Every answer lands here with the date and stays. Something you found hard in March is still here before the exam.' },
+  { sel: '.nav button[data-v="prac"]', tab: 'prac', title: 'Quick rounds',
+    text: 'Three questions, built from whatever you found hardest. Say each answer out loud before you type it.' },
+  { sel: '.nav button[data-v="stats"]', tab: 'stats', title: 'How it is going',
+    text: 'The number worth watching is recovery — how often a missed point comes back on your second go. High means wording. Low means the idea needs another look.' },
+  { sel: '#prof-box', tab: 'stats', title: 'Your work is yours',
+    text: 'Save your profile to a file and open it on any other device. Everything comes with you — answers, notes, practice.' },
+  { sel: '#m-fab', tab: null, title: 'Something to work to',
+    text: 'Four slow instrumental loops, made right here in the app. Or open your own music app from the same panel.' },
+  { sel: '#n-fab', tab: null, title: 'A pad for anything',
+    text: 'Jot down whatever you want to remember. It saves as you type and waits for you.' },
+  { sel: '#h-fab', tab: null, title: 'Stuck on the app itself?',
+    text: 'Tap this any time and ask. It answers questions about how the app works — not Science ones, those belong in Answer.' },
+];
+let cStep = 0;
+
+function goTab(v){
+  const b = document.querySelector('.nav button[data-v="' + v + '"]');
+  if (b) b.click();
+}
+
+function cShow(){
+  const st = STOPS[cStep];
+  if (!st) return cEnd();
+  if (st.tab) goTab(st.tab);
+
+  requestAnimationFrame(() => setTimeout(() => {
+    const el = document.querySelector(st.sel);
+    const pad = 8;
+    const r = el ? el.getBoundingClientRect()
+                 : { top: innerHeight/2 - 40, left: innerWidth/2 - 80, width: 160, height: 80, bottom: innerHeight/2 + 40 };
+
+    const x1 = Math.max(0, r.left - pad), y1 = Math.max(0, r.top - pad);
+    const x2 = Math.min(innerWidth, r.right + pad), y2 = Math.min(innerHeight, r.bottom + pad);
+    $('c-scrim').style.clipPath =
+      'polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, ' +
+      x1+'px '+y1+'px, '+x1+'px '+y2+'px, '+x2+'px '+y2+'px, '+x2+'px '+y1+'px, '+x1+'px '+y1+'px)';
+
+    Object.assign($('c-ring').style,
+      { top: y1+'px', left: x1+'px', width: (x2-x1)+'px', height: (y2-y1)+'px' });
+
+    $('c-title').textContent = st.title;
+    $('c-text').textContent = st.text;
+    $('c-num').textContent = (cStep + 1) + ' of ' + STOPS.length;
+    $('c-next').textContent = cStep === STOPS.length - 1 ? 'Finish' : 'Next';
+
+    // Put the card in whichever half has more room, so it never covers the target.
+    const card = $('c-card');
+    const below = innerHeight - y2, above = y1;
+    card.style.top = (below > above ? Math.min(y2 + 16, innerHeight - card.offsetHeight - 16)
+                                    : Math.max(16, y1 - card.offsetHeight - 16)) + 'px';
+  }, st.tab ? 90 : 0));
+}
+
+function cStart(){
+  $('m-panel').classList.remove('open');
+  $('n-panel').classList.remove('open');
+  $('h-panel').classList.remove('open');
+  cStep = 0;
+  $('coach').classList.add('on');
+  cShow();
+}
+
+function cEnd(){
+  $('coach').classList.remove('on');
+  $('c-scrim').style.clipPath = '';
+}
+
+$('c-next').onclick = () => { cStep++; cStep < STOPS.length ? cShow() : cEnd(); };
+$('c-skip').onclick = cEnd;
+addEventListener('resize', () => { if ($('coach').classList.contains('on')) cShow(); });
+
+/* ── help: ask about the app ────────────────────────────── */
+const HELP_QS = [
+  'Why will you not just tell me the answer?',
+  'How do I photograph a question?',
+  'What does recovery mean?',
+  'How do I use this on another device?',
+  'What is parent/guardian mode?',
+  'Where did my practice questions go?',
+];
+
+function renderHelp(){
+  $('h-list').innerHTML = HELP_QS.map((q, i) =>
+    '<div class="h-q" data-hq="' + i + '">' + q + '</div>').join('');
+  $('h-list').querySelectorAll('[data-hq]').forEach(el =>
+    el.onclick = () => askHelp(HELP_QS[+el.dataset.hq]));
+}
+
+async function askHelp(q){
+  $('h-out').innerHTML = '<div class="busy"><i></i>Thinking…</div>';
+  try {
+    const d = await callApi('/api/help', { question: q });
+    $('h-out').innerHTML = '<div class="h-a">' +
+      String(d.answer || '').replace(/[<>]/g, '') +
+      (d.tab ? '<div style="margin-top:10px"><a href="#" data-jump="' + d.tab +
+        '" style="font-family:var(--round);font-weight:700">Take me there</a></div>' : '') +
+      '</div>';
+    const j = $('h-out').querySelector('[data-jump]');
+    if (j) j.onclick = e => { e.preventDefault(); goTab(j.dataset.jump); $('h-panel').classList.remove('open'); };
+  } catch(e){
+    $('h-out').innerHTML = '<div class="h-a">' + e.message + '</div>';
+  }
+}
+
+$('h-fab').onclick = e => {
+  e.stopPropagation();
+  const pan = $('h-panel');
+  pan.classList.toggle('open');
+  $('n-panel').classList.remove('open');
+  if (pan.classList.contains('open')) renderHelp();
+};
+$('h-go').onclick = () => {
+  const q = ($('h-ask').value||'').trim();
+  if (q) askHelp(q);
+};
+$('h-tour').onclick = () => { $('h-panel').classList.remove('open'); cStart(); };
+
+/* ── first run: a short tour, then who you are ──────────── */
+const SEEN = 'sm-seen-v1';
+const SLIDES = 5, LAST = SLIDES - 1;
+let tStep = 0;
+
+function tRender(){
+  document.querySelectorAll('.t-slide').forEach(el =>
+    el.classList.toggle('on', +el.dataset.slide === tStep));
+  $('t-dots').innerHTML = Array.from({length: SLIDES},
+    (_, i) => '<i class="' + (i === tStep ? 'on' : '') + '"></i>').join('');
+  $('t-next').textContent = tStep === LAST ? "Let's start" : 'Next';
+  $('t-skip').parentElement.style.display = tStep === LAST ? 'none' : '';
+  if (tStep === LAST) setTimeout(() => $('t-name').focus(), 420);
+}
+
+function tourOpen(){ tStep = 0; $('tour').classList.add('on'); tRender(); }
+
+function tourClose(){
+  $('tour').classList.remove('on');
+  DB.setRaw(SEEN, '1');
+  renderQs();
+}
+
+$('t-next').onclick = () => {
+  if (tStep < LAST){ tStep++; tRender(); return; }
+  const n = ($('t-name').value||'').trim();
+  const nick = ($('t-nick').value||'').trim();
+  const sch = ($('t-school').value||'').trim();
+  if (!n){ $('t-msg').textContent = 'Pop your name in and we are away.'; $('t-name').focus(); return; }
+  DB.set(WHO, { name: n, nick: nick || n.split(/\s+/)[0], school: sch || '', since: Date.now() });
+  tourClose();
+  setTimeout(cStart, 400);
+};
+
+$('t-skip').onclick = e => { e.preventDefault(); tourClose(); };
+
+if (!DB.raw(SEEN)) tourOpen();
 
 /* ── admin: twins must be released by an adult ──────────── */
 // Students can generate practice but never approve it, so nothing reaches them
@@ -1304,14 +1729,14 @@ function renderAdmBar(){
   if (!el) return;
   if (isAdmin()){
     el.innerHTML = '<div style="display:flex;gap:12px;align-items:center;margin-top:16px">' +
-      '<span class="adm">✓ Adult mode</span>' +
+      '<span class="adm">✓ Parent/guardian mode</span>' +
       '<button class="ghost" id="adm-out" style="width:auto;margin:0;padding:6px 10px;min-height:0;font-size:14px">Lock again</button></div>';
     $('adm-out').onclick = () => { DB.setFlag('sm-adm-open', false); renderAdmBar(); renderQs(); };
     return;
   }
   el.innerHTML = '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">' +
-    (admSet() ? 'Enter the adult code to check and release practice questions.'
-              : 'Set an adult code. You will need it to release practice questions for students.') +
+    (admSet() ? 'Enter the parent/guardian code to check and release practice questions.'
+              : 'Set a parent/guardian code. You will need it to release practice questions for students.') +
     '</div></div><div class="pin"><input id="adm-pin" type="password" inputmode="numeric" ' +
     'maxlength="6" placeholder="••••" autocomplete="off"><button class="primary" id="adm-go">' +
     (admSet() ? 'Unlock' : 'Set code') + '</button></div><div id="adm-msg" class="muted" style="margin-top:9px;font-size:14px"></div>';
@@ -1493,7 +1918,7 @@ function renderQs(){
             ? (isAdmin()
                 ? '<button class="primary" data-appr="' + r.id + '" style="min-height:48px;font-size:15px">Approve for students</button>'
                 : '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">Waiting to be checked. ' +
-                  'Only an adult with the code can release this one.</div></div>')
+                  'Only a parent or guardian with the code can release this one.</div></div>')
             : '')) +
       '</div>';
   }).join('');
