@@ -13,6 +13,23 @@
     --round:'Comic Neue','Comic Sans MS',ui-rounded,system-ui,sans-serif;
     --body:'Nunito',ui-rounded,system-ui,sans-serif;
   }
+  html[data-theme="dark"]{
+    --ink:#f0ece6; --bg:#141312; --surface:#211f1d; --rule:#3a3632;
+    --mid:#a39c93; --accent:#ff8a6a; --accent-bg:#2e211d;
+  }
+  html[data-theme="dark"] textarea,html[data-theme="dark"] select,
+  html[data-theme="dark"] .item,html[data-theme="dark"] .stat,
+  html[data-theme="dark"] .chip,html[data-theme="dark"] .opt,
+  html[data-theme="dark"] .dgm,html[data-theme="dark"] .m-panel,
+  html[data-theme="dark"] .pin input,html[data-theme="dark"] .secondary{
+    background:var(--surface);color:var(--ink)}
+  html[data-theme="dark"] .dark{background:#2a2724}
+  html[data-theme="dark"] .nav{background:rgba(20,19,18,.96)}
+  html[data-theme="dark"] .m-fab{background:var(--ink);color:var(--bg)}
+  html[data-theme="dark"] .m-fab.playing{background:var(--surface);color:var(--ink)}
+  html[data-theme="dark"] .dgm svg{filter:invert(.92) hue-rotate(180deg)}
+  html[data-theme="dark"] .shot img{opacity:.88}
+  html{transition:background .25s}
   *{box-sizing:border-box}
   @keyframes rbSlide{to{background-position:200% 0}}
   @keyframes rbGlow{0%,100%{opacity:.85}50%{opacity:1}}
@@ -86,6 +103,11 @@
   .adm{display:inline-flex;gap:7px;align-items:center;font-family:var(--round);font-weight:700;
     font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);
     background:var(--accent-bg);padding:5px 11px;border-radius:999px}
+  #tools{position:fixed;left:14px;bottom:calc(var(--nav-h, 96px) + 14px);z-index:25;
+    display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+  #tools .m-fab{width:46px;height:46px;font-size:18px}
+  #n-panel{max-height:calc(100dvh - var(--nav-h, 96px) - 160px)}
+  #m-panel{max-height:calc(100dvh - var(--nav-h, 96px) - 110px);overflow:auto}
   #music{position:fixed;right:14px;bottom:calc(var(--nav-h, 96px) + 14px);z-index:25;
     display:flex;flex-direction:column;align-items:flex-end;gap:10px}
   .m-fab{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--ink);background:var(--ink);
@@ -467,6 +489,13 @@
 <!-- ══ CLASS ══ -->
 <section id="v-stats" class="hide">
   <div class="hd"><span class="eyebrow">How it's going</span></div>
+  <div class="card" id="prof-box" style="margin-top:0">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <span class="eyebrow" style="color:var(--mid)">Your profile</span>
+      <span class="muted" id="prof-who" style="margin-left:auto;font-size:13px"></span>
+    </div>
+    <div id="prof-body"></div>
+  </div>
   <h1 id="st-head">Nothing to show<br>just yet.</h1>
   <p class="muted" id="st-sub">Answer a few questions and I will start showing you which ideas are solid
     and which ones are worth another look.</p>
@@ -514,6 +543,25 @@
   <button class="m-fab" id="m-fab" aria-label="Study music" style="position:relative">♪</button>
 </div>
 
+<input type="file" id="pf-file" accept=".science,application/json" style="position:absolute;width:1px;height:1px;opacity:0">
+<div id="tools">
+  <div class="m-panel" id="n-panel" style="overflow:auto">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <div style="font-family:var(--round);font-weight:700;font-size:16px">My notes</div>
+      <span class="muted" id="n-saved" style="margin-left:auto;font-size:13px"></span>
+    </div>
+    <div class="muted" style="margin-top:5px;font-size:14px">Anything you want to remember. Saved as you type.</div>
+    <textarea id="n-text" style="min-height:200px;margin-top:12px;font-size:16px"
+      placeholder="Heat always moves from hotter to colder…"></textarea>
+    <div class="m-svc" style="margin-top:10px">
+      <a href="#" id="n-clear">Clear</a>
+      <a href="#" id="n-copy">Copy</a>
+    </div>
+  </div>
+  <button class="m-fab" id="n-fab" aria-label="My notes">✎</button>
+  <button class="m-fab" id="t-fab" aria-label="Light or dark">◐</button>
+</div>
+
 <div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
 
 <nav class="nav">
@@ -534,8 +582,103 @@ const RUDE = /\b(f+u+c+k+\w*|sh[i1!]+t+\w*|b[i1!]tch\w*|c+u+n+t+\w*|a+s+s+h+o+l+
 const censor = t => String(t||'').replace(RUDE, m => m[0] + '—'.repeat(Math.max(1, m.length - 1)));
 const isRude = t => RUDE.test(String(t||''));
 
-const load = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch(e){ return []; } };
-const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+/* ════════════════════════════════════════════════════════════════════════════
+   STORAGE ADAPTER — the one place that knows where data lives.
+
+   Every read and write in this app goes through DB. Nothing else touches
+   localStorage. To move to Supabase later, implement the four methods marked
+   BACKEND below and set DB.backend = 'supabase'. No other line changes.
+
+   Reads are synchronous, from an in-memory mirror hydrated once at boot.
+   Writes are optimistic: local first so the interface never waits, then handed
+   to DB.push() to persist. That is what lets an async backend slot in without
+   turning every call site into an await.
+
+   Suggested Supabase shape — one row per key per profile:
+
+     create table store (
+       profile_id uuid  references profiles(id) on delete cascade,
+       key        text  not null,
+       value      jsonb not null,
+       updated_at timestamptz default now(),
+       primary key (profile_id, key)
+     );
+     alter table store enable row level security;
+     create policy own_rows on store
+       for all using (profile_id = auth.uid());
+
+   Then: boot() selects all rows for the signed-in profile into the mirror,
+   push() upserts one row, del() deletes one, wipe() deletes all for the profile.
+   ════════════════════════════════════════════════════════════════════════════ */
+const DB = {
+  backend: 'local',        // 'local' | 'supabase'
+  mirror: {},              // key → raw string, the synchronous source of reads
+  dirty: new Set(),        // keys written but not yet confirmed by the backend
+  onSync: null,            // hook for a "saving…" indicator later
+
+  // ── BACKEND 1 of 4: fill the mirror before the first read. ──
+  // Local storage is synchronous, so this runs inline. A network backend cannot,
+  // so it hydrates in bootAsync() and calls the redraw hook when it lands.
+  boot(){
+    if (this.backend !== 'local') return;
+    for (let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (k && k.startsWith('sm-')) this.mirror[k] = localStorage.getItem(k);
+    }
+  },
+
+  async bootAsync(){
+    if (this.backend === 'local') return;
+    // supabase: const { data } = await sb.from('store').select('key,value');
+    //           data.forEach(r => this.mirror[r.key] = JSON.stringify(r.value));
+    //           if (this.onReady) this.onReady();
+  },
+
+  onReady: null,           // called once a network backend has hydrated
+
+  // ── BACKEND 2 of 4: persist one key. Failure must not lose the local write. ──
+  async push(k, raw){
+    if (this.backend === 'local'){ localStorage.setItem(k, raw); this.dirty.delete(k); return; }
+    // supabase: await sb.from('store').upsert({ profile_id, key: k, value: JSON.parse(raw) });
+    //           this.dirty.delete(k);
+  },
+
+  // ── BACKEND 3 of 4: remove one key. ──
+  async del(k){
+    delete this.mirror[k];
+    if (this.backend === 'local'){ localStorage.removeItem(k); return; }
+    // supabase: await sb.from('store').delete().eq('key', k);
+  },
+
+  // ── BACKEND 4 of 4: replace everything, used when loading a profile file. ──
+  async wipe(ks){ for (const k of ks) await this.del(k); },
+
+  raw(k){ return this.mirror[k] ?? null; },
+
+  setRaw(k, raw){
+    this.mirror[k] = raw;
+    this.dirty.add(k);
+    if (this.onSync) this.onSync(this.dirty.size);
+    this.push(k, raw).catch(() => {});   // local write already stands
+  },
+
+  get(k, fallback){
+    const raw = this.raw(k);
+    if (raw === null) return fallback;
+    try { return JSON.parse(raw); } catch(e){ return fallback; }
+  },
+
+  set(k, v){ this.setRaw(k, JSON.stringify(v)); },
+
+  // Session-scoped, never persisted — adult mode must not survive a reload.
+  flag(k){ return sessionStorage.getItem(k) === '1'; },
+  setFlag(k, on){ on ? sessionStorage.setItem(k, '1') : sessionStorage.removeItem(k); },
+};
+DB.boot();
+DB.bootAsync().catch(() => {});
+
+const load = (k) => { const v = DB.get(k, []); return Array.isArray(v) ? v : []; };
+const save = (k, v) => DB.set(k, v);
 const subs = () => load(KEY);
 
 /* ── navigation ────────────────────────────────────────── */
@@ -1032,12 +1175,124 @@ function svgFor(d){
 }
 
 
+
+/* ── light or dark ──────────────────────────────────────── */
+const THEME = 'sm-theme-v1';
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  DB.setRaw(THEME, t);
+  const b = $('t-fab'); if (b) b.textContent = t === 'dark' ? '☀' : '◐';
+}
+applyTheme(DB.raw(THEME) ||
+  (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$('t-fab').onclick = () =>
+  applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+
+/* ── notes ──────────────────────────────────────────────── */
+const NOTES = 'sm-notes-v1';
+let nT = null;
+$('n-text').value = DB.raw(NOTES) || '';
+$('n-text').oninput = () => {
+  clearTimeout(nT);
+  $('n-saved').textContent = '';
+  nT = setTimeout(() => {
+    DB.setRaw(NOTES, $('n-text').value);
+    $('n-saved').textContent = 'saved';
+    setTimeout(() => { if ($('n-saved')) $('n-saved').textContent = ''; }, 1600);
+  }, 500);
+};
+$('n-fab').onclick = e => { e.stopPropagation(); $('n-panel').classList.toggle('open'); };
+$('n-clear').onclick = e => { e.preventDefault();
+  if (confirm('Clear all your notes?')){ $('n-text').value = ''; DB.setRaw(NOTES, ''); } };
+$('n-copy').onclick = async e => { e.preventDefault();
+  try { await navigator.clipboard.writeText($('n-text').value); $('n-saved').textContent = 'copied'; }
+  catch(err){ $('n-saved').textContent = 'could not copy'; } };
+document.addEventListener('click', e => {
+  if (!e.target.closest('#tools')) $('n-panel').classList.remove('open');
+});
+
+/* ── profile: everything you have done, in one portable file ──
+   There is no server, so a profile IS a file. Save it, keep it somewhere safe,
+   and load it on any other device to carry your work across. */
+const WHO = 'sm-who-v1';
+const keys = () => [KEY, PKEY, SRC, TWN, NOTES, ADM, THEME, WHO];
+
+const who = () => DB.get(WHO, null);
+
+function renderProfile(){
+  const el = $('prof-body'), w = who();
+  if (!el) return;
+  $('prof-who').textContent = w ? (w.name + ' · ' + w.klass) : 'not set up';
+  const counts = subs().length + ' answered · ' + load(SRC).length + ' of my questions · ' +
+                 load(TWN).length + ' practice';
+
+  if (!w){
+    el.innerHTML = '<div class="muted" style="margin-top:10px;font-size:14px">Put your name and class in, ' +
+      'and I can save everything you have done into one file you can open on any device.</div>' +
+      '<div class="pin" style="gap:8px"><input id="pf-name" type="text" placeholder="Your name" ' +
+      'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off">' +
+      '<input id="pf-class" type="text" placeholder="Class" maxlength="12" ' +
+      'style="letter-spacing:0;font-size:16px;text-align:left;flex:0 0 92px" autocomplete="off"></div>' +
+      '<button class="primary" id="pf-set">Set up my profile</button>' +
+      '<button class="secondary" id="pf-load">Load a saved profile</button>';
+    $('pf-set').onclick = () => {
+      const n = ($('pf-name').value||'').trim(), k = ($('pf-class').value||'').trim();
+      if (!n || !k) return;
+      DB.set(WHO, { name: n, klass: k, since: Date.now() });
+      renderProfile();
+    };
+  } else {
+    el.innerHTML = '<div class="muted" style="margin-top:10px;font-size:14px">' + counts + '</div>' +
+      '<button class="primary" id="pf-save">Save my profile to a file</button>' +
+      '<button class="secondary" id="pf-load">Load a saved profile</button>' +
+      '<div class="muted" style="margin-top:12px;font-size:13px;line-height:1.5">Saving gives you a file ' +
+      'named after you and today\'s date. Keep it somewhere safe — opening it on another device brings ' +
+      'everything with you.</div>';
+    $('pf-save').onclick = saveProfile;
+  }
+  $('pf-load').onclick = () => $('pf-file').click();
+}
+
+function saveProfile(){
+  const w = who() || { name: 'Student', klass: 'Class' };
+  const data = { app: 'smart-science-marking', v: 1, saved: new Date().toISOString(), who: w, store: {} };
+  keys().forEach(k => { const v = DB.raw(k); if (v !== null) data.store[k] = v; });
+
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  const safe = t => String(t).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const name = safe(w.name) + '_' + safe(w.klass) + '_' + stamp + '.science';
+
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  $('prof-who').textContent = 'saved as ' + name;
+}
+
+async function loadProfile(file){
+  if (!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    if (d.app !== 'smart-science-marking' || !d.store) throw new Error('not a profile file');
+    const w = d.who || {};
+    if (!confirm('Load ' + (w.name || 'this profile') + (w.klass ? ' (' + w.klass + ')' : '') +
+        '?\n\nThis replaces everything currently on this device.')) return;
+    await DB.wipe(keys());
+    Object.entries(d.store).forEach(([k, v]) => DB.setRaw(k, v));
+    DB.setFlag('sm-adm-open', false);
+    location.reload();
+  } catch(e){
+    alert('That file would not open. Pick the .science file you saved from this app.');
+  }
+}
+
 /* ── admin: twins must be released by an adult ──────────── */
 // Students can generate practice but never approve it, so nothing reaches them
 // unchecked. The code is set once on this device and kept only here.
 const ADM = 'sm-adm-v1';
-const isAdmin = () => sessionStorage.getItem('sm-adm-open') === '1';
-const admSet = () => !!localStorage.getItem(ADM);
+const isAdmin = () => DB.flag('sm-adm-open');
+const admSet = () => !!DB.raw(ADM);
 
 async function hash(t){
   const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sm:' + t));
@@ -1051,7 +1306,7 @@ function renderAdmBar(){
     el.innerHTML = '<div style="display:flex;gap:12px;align-items:center;margin-top:16px">' +
       '<span class="adm">✓ Adult mode</span>' +
       '<button class="ghost" id="adm-out" style="width:auto;margin:0;padding:6px 10px;min-height:0;font-size:14px">Lock again</button></div>';
-    $('adm-out').onclick = () => { sessionStorage.removeItem('sm-adm-open'); renderAdmBar(); renderQs(); };
+    $('adm-out').onclick = () => { DB.setFlag('sm-adm-open', false); renderAdmBar(); renderQs(); };
     return;
   }
   el.innerHTML = '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">' +
@@ -1066,11 +1321,11 @@ function renderAdmBar(){
     const msg = $('adm-msg');
     if (v.length < 4){ msg.textContent = 'Use at least four digits.'; return; }
     if (!admSet()){
-      localStorage.setItem(ADM, await hash(v));
-      sessionStorage.setItem('sm-adm-open', '1');
+      DB.setRaw(ADM, await hash(v));
+      DB.setFlag('sm-adm-open', true);
       renderAdmBar(); renderQs();
-    } else if (await hash(v) === localStorage.getItem(ADM)){
-      sessionStorage.setItem('sm-adm-open', '1');
+    } else if (await hash(v) === DB.raw(ADM)){
+      DB.setFlag('sm-adm-open', true);
       renderAdmBar(); renderQs();
     } else {
       msg.textContent = 'That is not the code. Try again.';
@@ -1181,6 +1436,8 @@ function renderTunes(){
     '<b>' + t.name + '</b><span>' + (mTune === i ? 'playing' : t.note) + '</span></div>').join('');
   el.querySelectorAll('[data-t]').forEach(r => r.onclick = () => mPlay(+r.dataset.t));
 }
+
+$('pf-file').onchange = e => loadProfile(e.target.files[0]);
 
 $('m-fab').onclick = () => {
   const pan = $('m-panel');
@@ -1563,6 +1820,7 @@ $('p-again').onclick = renderPractice;
 
 /* ── class statistics ──────────────────────────────────── */
 function renderStats(){
+  renderProfile();
   const all = subs();
   $('st-n').textContent = all.length;
   ['st-kw-box','st-rec-box','st-topic-box'].forEach(id => $(id).classList.toggle('hide', all.length < 2));
