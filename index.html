@@ -14,78 +14,187 @@
     --body:'Nunito',ui-rounded,system-ui,sans-serif;
   }
   *{box-sizing:border-box}
+  @keyframes rbSlide{to{background-position:200% 0}}
+  @keyframes rbGlow{0%,100%{opacity:.85}50%{opacity:1}}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .rb{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
+    background-size:200% 100%;animation:rbSlide 6s linear infinite,rbGlow 3s ease-in-out infinite}
+  section{animation:rise .28s ease-out both}
+  @media (prefers-reduced-motion:reduce){.rb,section{animation:none!important}}
+  @keyframes rainbow-slide{from{background-position:0% 50%}to{background-position:400% 50%}}
+  @media (prefers-reduced-motion:reduce){
+    .nav button.on,.chip.on,.steps i.on,.hd::after{animation:none;background-position:20% 50%}
+  }
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
   .wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
   h1{font-family:var(--round);font-weight:700;font-size:26px;line-height:1.2;margin:0}
   h2{font-family:var(--round);font-weight:700;font-size:22px;line-height:1.25;margin:0}
   .eyebrow{font-family:var(--round);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
-  .hd{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--rule);padding-bottom:12px;margin-bottom:24px}
+  .hd{display:flex;align-items:baseline;gap:12px;border-bottom:1.5px solid var(--rule);padding-bottom:12px;margin-bottom:24px}
   .muted{color:var(--mid);font-size:15px}
   label{display:block;font-family:var(--round);font-weight:700;font-size:17px;margin-bottom:10px}
-  textarea,select{width:100%;font-family:var(--body);font-size:18px;line-height:1.65;padding:14px;
-    background:#fff;color:var(--ink);border:2px solid var(--rule);border-radius:0}
+  textarea,select{width:100%;font-family:var(--body);font-size:18px;line-height:1.65;padding:14px 16px;
+    background:#fff;color:var(--ink);border:1.5px solid var(--rule);border-radius:10px;
+    transition:border-color .16s, box-shadow .16s}
   textarea{min-height:150px;font-family:var(--round);font-weight:700}
-  textarea:focus,select:focus{outline:none;border-color:var(--ink)}
+  textarea:focus,select:focus{outline:none;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(179,64,43,.10)}
   button{font-family:var(--round);font-weight:700;font-size:18px;padding:16px 20px;min-height:60px;
-    width:100%;text-align:left;border:2px solid var(--ink);border-radius:0;cursor:pointer;margin-top:12px}
-  .primary{background:var(--ink);color:var(--bg)}
-  .secondary{background:transparent;color:var(--ink)}
+    width:100%;text-align:left;border:1.5px solid var(--ink);border-radius:12px;cursor:pointer;
+    margin-top:12px;transition:transform .12s, box-shadow .16s, background .16s}
+  button:active{transform:translateY(1px)}
+  .primary{background:var(--ink);color:var(--bg);box-shadow:0 3px 14px rgba(26,26,26,.16)}
+  .primary:hover{box-shadow:0 5px 20px rgba(26,26,26,.22)}
+  .secondary{background:#fff;color:var(--ink)}
+  .secondary:hover{background:var(--surface)}
   .ghost{background:transparent;color:var(--accent);border-color:transparent;min-height:48px;font-size:16px;padding-left:0}
   button:disabled{opacity:.5;cursor:default}
-  .card{border-left:4px solid var(--ink);background:var(--surface);padding:14px 18px;margin-top:20px}
+  .card{border-left:4px solid var(--ink);background:var(--surface);padding:15px 18px;margin-top:20px;
+    border-radius:0 12px 12px 0}
   .card.flag{border-left-color:var(--accent);background:var(--accent-bg)}
-  .dark{background:var(--ink);color:var(--bg);padding:18px;margin-top:20px}
+  .dark{background:var(--ink);color:var(--bg);padding:18px 20px;margin-top:20px;border-radius:14px;
+    box-shadow:0 6px 22px rgba(26,26,26,.18)}
   .dark .eyebrow{color:#e8a08e}
   .row{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--rule)}
-  .tick{width:14px;height:14px;flex:none;margin-top:6px;background:var(--ink)}
+  .tick{width:14px;height:14px;flex:none;margin-top:6px;background:var(--ink);border-radius:50%}
   .tick.open{background:transparent;border:2px solid var(--accent)}
   .steps{display:flex;gap:6px;margin-left:auto}
-  .steps i{width:28px;height:6px;background:var(--rule);display:block}
-  .steps i.on{background:var(--ink)}
+  .steps i{width:28px;height:7px;background:var(--rule);display:block;border-radius:4px;transition:background .3s}
+  .steps i.on{background-image:linear-gradient(90deg,#ff9800,#ffd600,#4caf50);background-size:200% 100%;
+    animation:rbSlide 4s linear infinite}
   .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
   .hide{display:none}
-  .err{border-left:4px solid var(--accent);background:var(--accent-bg);padding:14px 18px;margin-top:20px}
+  .err{border-left:4px solid var(--accent);background:var(--accent-bg);padding:14px 18px;margin-top:20px;
+    border-radius:0 12px 12px 0}
+  h1+.muted,h2+.muted{margin-top:10px}
+  .card+button,.dark+button{margin-top:20px}
+  button+.muted{margin-top:16px}
+  select{-webkit-appearance:none;appearance:none;
+    background-image:linear-gradient(45deg,transparent 49%,var(--mid) 50%),linear-gradient(-45deg,transparent 49%,var(--mid) 50%);
+    background-size:7px 7px;background-position:right 20px center,right 13px center;
+    background-repeat:no-repeat;padding-right:44px}
+  optgroup{font-family:var(--round);font-weight:700;color:var(--mid)}
+  textarea{resize:vertical}
+  .item button{margin-top:14px}
+  .stat b{font-variant-numeric:tabular-nums}
+  h1{text-wrap:pretty}h2{text-wrap:pretty}
+  .hd{position:relative}
+  .hd::after{content:'';position:absolute;left:0;bottom:-2px;width:64px;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,#ff4455,#ffaa33,#ffdd33,#33cc77,#33ddff,#4488ff,#aa55ff,#ff44aa,#ff4455);
+    background-size:400% 100%;animation:rainbow-slide 4.5s linear infinite}
+  .steps i{border-radius:3px}
+  .steps i.on{background:linear-gradient(90deg,#ff4455,#ffaa33,#ffdd33,#33cc77,#33ddff,#4488ff,#aa55ff,#ff44aa,#ff4455);
+    background-size:400% 100%;animation:rainbow-slide 4.5s linear infinite}
+  @media (max-width:360px){ .nav button{font-size:11px} .stat div{padding:12px 8px} .stat b{font-size:22px} }
 
-  .nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:2px solid var(--ink);
-    display:flex;z-index:20}
-  .nav button{flex:1;margin:0;min-height:64px;border:none;background:transparent;color:var(--mid);
-    font-size:14px;text-align:center;padding:8px 4px}
-  .nav button.on{color:var(--ink);background:var(--surface)}
-  .nav b{display:block;font-size:19px;line-height:1.1}
-  .wrap{padding-bottom:96px}
-  .stat{display:flex;border-top:2px solid var(--rule);border-bottom:2px solid var(--rule);margin-top:20px}
-  .stat div{flex:1;padding:14px 12px;border-left:1px solid var(--rule)}
+  .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(250,249,247,.94);
+    backdrop-filter:blur(10px);border-top:1.5px solid var(--rule);display:flex;gap:4px;
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:20;
+    box-shadow:0 -3px 18px rgba(26,26,26,.06)}
+  .nav button{flex:1;margin:0;min-height:56px;border:none;background:transparent;color:var(--mid);
+    font-size:12px;text-align:center;padding:7px 2px;line-height:1.2;letter-spacing:-.01em;
+    border-radius:11px;transition:background .16s,color .16s}
+  .nav b{font-size:17px}
+  .nav button.on{color:#1a1020;font-weight:800;border-radius:11px;
+    background:linear-gradient(90deg,#ff4455,#ffaa33,#ffdd33,#33cc77,#33ddff,#4488ff,#aa55ff,#ff44aa,#ff4455);
+    background-size:400% 100%;animation:rainbow-slide 4.5s linear infinite;
+    box-shadow:0 0 0 1px rgba(255,255,255,.3), 0 2px 14px rgba(120,140,255,.32)}
+  .nav b{display:block;line-height:1.15;margin-bottom:2px}
+  .wrap{padding-bottom:calc(var(--nav-h, 96px) + 28px)}
+  .stat{display:flex;margin-top:20px;border:1.5px solid var(--rule);border-radius:12px;overflow:hidden;background:#fff}
+  .stat div{flex:1;padding:15px 12px;border-left:1px solid var(--rule)}
   .stat div:first-child{border-left:none}
   .stat b{display:block;font-family:var(--round);font-weight:700;font-size:26px;line-height:1}
   .stat span{font-size:13px;color:var(--mid);text-transform:uppercase;letter-spacing:.04em}
-  .bar{height:9px;background:var(--rule);margin-top:7px}
-  .bar i{display:block;height:9px;background:var(--accent)}
-  .bar i.ok{background:var(--ink)}
-  .item{padding:14px 0;border-top:1px solid var(--rule)}
-  .item.flag{border-left:4px solid var(--accent);padding-left:14px}
+  .bar{height:9px;background:var(--rule);margin-top:7px;border-radius:5px;overflow:hidden}
+  .bar i{display:block;height:9px;background:var(--accent);border-radius:5px}
+  .bar i.ok{background:linear-gradient(90deg,#33cc77,#33ddff,#33cc77);background-size:400% 100%;
+    animation:rainbow-slide 5s linear infinite}
+  .item{padding:16px 18px;margin-top:12px;background:#fff;border:1.5px solid var(--rule);
+    border-radius:14px;box-shadow:0 2px 8px rgba(26,26,26,.04);transition:box-shadow .18s,transform .12s}
+  .item:hover{box-shadow:0 5px 18px rgba(26,26,26,.09);transform:translateY(-1px)}
+  .item.flag{border-left:4px solid var(--accent);background:var(--accent-bg);border-radius:4px 14px 14px 4px}
   .day{font-family:var(--round);font-weight:700;font-size:14px;color:var(--mid);
     text-transform:uppercase;letter-spacing:.05em;margin-top:26px}
   .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-  .chip{border:2px solid var(--rule);padding:8px 14px;font-size:15px;cursor:pointer;font-family:var(--round);font-weight:700}
-  .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .hd+.chips{margin-top:0}
+  .chips+h1,.chips+h2{margin-top:4px}
+  .chip{border:1.5px solid var(--rule);padding:9px 16px;font-size:15px;cursor:pointer;
+    font-family:var(--round);font-weight:700;border-radius:999px;background:#fff;transition:all .16s}
+  .chip:hover{border-color:var(--mid)}
+  .chip.on{color:#1a1020;font-weight:800;border-color:transparent;
+    background:linear-gradient(90deg,#ff4455,#ffaa33,#ffdd33,#33cc77,#33ddff,#4488ff,#aa55ff,#ff44aa,#ff4455);
+    background-size:400% 100%;animation:rainbow-slide 4.5s linear infinite;
+    box-shadow:0 2px 12px rgba(120,140,255,.28)}
   .empty{padding:32px 0;color:var(--mid);font-size:16px;line-height:1.6}
+  .cam{display:flex;gap:10px;margin-top:16px}
+  .cam label{flex:1;margin:0;font-family:var(--round);font-weight:700;font-size:16px;
+    padding:16px 14px;min-height:60px;border:2px solid var(--ink);background:transparent;
+    color:var(--ink);text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px}
+  .cam label:first-child{background:var(--ink);color:var(--bg)}
+  .cam input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .shot{margin-top:16px;border:2px solid var(--rule);padding:12px;background:#fff}
+  .shot img{width:100%;height:auto;display:block}
+  .busy{display:flex;gap:10px;align-items:center;margin-top:16px;font-size:15px;color:var(--mid)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .busy i{width:16px;height:16px;flex:none;border:2px solid var(--rule);
+    border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+  @media (prefers-reduced-motion:reduce){.busy i{animation:none}}
+
+  .hint{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;
+    background:var(--surface);border-left:4px solid var(--accent);cursor:pointer}
+  .hint b{font-family:var(--round);font-weight:700;color:var(--accent);flex:none}
+  .hint div{flex:1;font-size:15px;line-height:1.5}
+  .hint-more{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);
+    font-size:14px;line-height:1.6;color:var(--mid)}
+  .hint.open .hint-more{display:block}
+  #nudge{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h, 96px) + 12px);z-index:30;
+    background:var(--ink);color:var(--bg);padding:15px 16px;border-radius:16px;
+    box-shadow:0 8px 28px rgba(26,26,26,.28);
+    display:flex;gap:12px;align-items:flex-start;
+    /* Hidden by default: pushed fully clear of the viewport AND inert, so it can
+       never sit invisibly over the nav and swallow taps. */
+    transform:translateY(calc(100% + var(--nav-h, 96px) + 24px));
+    opacity:0;pointer-events:none;visibility:hidden;
+    transition:transform .45s cubic-bezier(.2,.9,.25,1),opacity .3s,visibility .45s}
+  #nudge.up{transform:translateY(0);opacity:1;pointer-events:auto;visibility:visible}
+  #nudge .n-txt{flex:1;font-size:15px;line-height:1.5}
+  #nudge .n-txt b{display:block;font-family:var(--round);font-weight:700;margin-bottom:3px}
+  #nudge .n-x{flex:none;font-size:22px;line-height:1;opacity:.75;cursor:pointer;
+    width:44px;height:44px;margin:-8px -8px -8px 0;display:flex;align-items:center;
+    justify-content:center;border-radius:50%;transition:opacity .15s,background .15s}
+  #nudge .n-x:hover{opacity:1;background:rgba(255,255,255,.14)}
+  @keyframes wig{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+  #nudge .n-ico{flex:none;font-size:19px;animation:wig 1.6s ease-in-out infinite}
+  @media (prefers-reduced-motion:reduce){#nudge{transition:none}#nudge .n-ico{animation:none}}
+
+  .dgm{margin-top:16px;border:1.5px solid var(--rule);background:#fff;padding:14px;border-radius:12px;
+    box-shadow:0 2px 10px rgba(26,26,26,.05)}
+  .dgm svg{width:100%;height:auto;display:block}
+  .dgm-cap{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);
+    font-size:13px;color:var(--mid);line-height:1.5}
 </style>
 </head><body>
 <div class="wrap">
 
 <!-- ══ MARK ══ -->
-<section id="v-mark">
-  <div class="hd"><span class="eyebrow">Mark an answer</span>
+<section id="v-mark" class="hide">
+  <div class="hd"><span class="eyebrow">Have a go</span>
     <span class="steps"><i id="s1" class="on"></i><i id="s2"></i><i id="s3"></i></span></div>
 
   <div id="stage-ask">
-    <h1>Answer the question.</h1>
-    <p class="muted">Write it the way you would on paper.</p>
-    <div style="margin-top:24px"><label for="q">Which question?</label><select id="q"></select></div>
+    <h1>Let's have a go.</h1>
+    <p class="muted">Pick a question and write your answer just as you would on paper. I will show you what is already good and what is worth adding.</p>
+    <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-err"></div></div>
+    <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
       <textarea id="a1" placeholder="Type your answer here…"></textarea></div>
-    <button class="primary" id="go1">I'm done</button>
+    <div class="hint"><b>?</b><div>Unsure how much to write? Tap here.
+      <div class="hint-more">Write full sentences and explain <em>why</em>, not just what. If the question says
+      “explain”, it usually wants two or three linked steps — something happens, which causes something,
+      which gives the result. Do not worry about spelling; it never costs you a mark.</div></div></div>
+    <button class="primary" id="go1">Check my answer</button>
   </div>
 
   <div id="stage-fb" class="hide">
@@ -94,82 +203,94 @@
     <div class="card"><span class="eyebrow" style="color:var(--mid)">What you wrote</span>
       <div id="yours" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
     <div id="hits-box" class="hide" style="margin-top:24px">
-      <span class="eyebrow" style="color:var(--mid)">Already there — keep this</span><div id="hits"></div></div>
+      <span class="eyebrow" style="color:var(--mid)">Nicely done — keep all of this</span><div id="hits"></div></div>
     <div id="gaps-box" class="hide" style="margin-top:24px">
-      <span class="eyebrow">Not finished yet</span><div id="gaps"></div></div>
-    <div class="dark" id="ponder-box"><span class="eyebrow">A question to ponder</span>
+      <span class="eyebrow">Worth adding</span><div id="gaps"></div></div>
+    <div class="dark" id="ponder-box"><span class="eyebrow">Something to think about</span>
       <div id="ponder" style="margin-top:8px;font-size:18px"></div></div>
-    <button class="primary" id="go2">Try again</button>
+    <button class="primary" id="go2">I'll try again</button>
     <button class="ghost" id="peek">Show me the answer instead</button>
   </div>
 
   <div id="stage-2nd" class="hide">
-    <h2>Now write it again.</h2>
+<h2>Give it another go.</h2>
     <div class="card"><span class="eyebrow" style="color:var(--mid)">First attempt</span>
       <div id="first-again" style="margin-top:8px"></div></div>
     <div class="dark"><span class="eyebrow">Keep this in mind</span>
       <div id="ponder2" style="margin-top:8px;font-size:18px"></div></div>
-    <div style="margin-top:24px"><label for="a2">Second attempt</label>
+    <div style="margin-top:24px"><label for="a2">Your answer, all of it this time</label>
       <textarea id="a2" placeholder="Write the whole answer again…"></textarea></div>
-    <button class="primary" id="go3">Submit</button>
+    <div class="hint"><b>?</b><div>Why write the whole thing again?
+      <div class="hint-more">Because the joining-up is the part that earns marks, and you only practise
+      that by writing the answer end to end. Patching in the missing bit skips the very thing being tested.</div></div></div>
+    <button class="primary" id="go3">That's my answer</button>
   </div>
 
   <div id="stage-done" class="hide">
     <span class="eyebrow" id="verdict2"></span>
     <h2 id="headline2" style="margin-top:8px"></h2>
     <div id="gained-box" class="hide" style="margin-top:20px">
-      <span class="eyebrow" style="color:var(--mid)">You found this second time</span><div id="gained"></div></div>
-    <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Model answer</span>
+      <span class="eyebrow" style="color:var(--mid)">You worked this out yourself</span><div id="gained"></div></div>
+    <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
       <div id="model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div>
       <div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:15px">
-        This is our model answer, not the official one. Your school teacher may want it worded
-        differently — always check with them if yours looks different.</div></div>
-    <div id="mc-box" class="hide card flag"><span class="eyebrow">A common mix-up</span>
+        This is how I would write it — your school teacher may word it differently, so do check with
+        them if yours looks different. Both can be right.</div></div>
+    <div id="mc-box" class="hide card flag"><span class="eyebrow">Lots of people mix this up</span>
       <div id="mc-belief" style="margin-top:8px"></div>
       <div id="mc-fix" class="muted" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)"></div></div>
     <div style="margin-top:24px;border-top:2px solid var(--rule);padding-top:16px">
-      <button class="ghost" id="showmarks">Show marks and notes · tutor</button>
+      <button class="ghost" id="showmarks">Show the marks</button>
       <div id="marks-panel" class="hide">
-        <div style="font-family:var(--round);font-weight:700;font-size:28px" id="marks"></div>
+        <div style="font-family:var(--round);font-weight:700;font-size:32px;line-height:1;font-variant-numeric:tabular-nums" id="marks"></div>
         <div class="muted" id="tutornote" style="margin-top:12px"></div>
         <div class="muted" id="early" style="margin-top:10px"></div></div></div>
-    <button class="secondary" id="restart">Mark another answer</button>
+    <button class="secondary" id="restart">Answer another question</button>
   </div>
   <div id="err" class="err hide"></div>
 </section>
 
 <!-- ══ QUESTIONS ══ -->
-<section id="v-qs" class="hide">
-  <div class="hd"><span class="eyebrow">Question bank</span></div>
+<section id="v-qs">
+  <div class="hd"><span class="eyebrow">Your questions</span></div>
+  <div class="chips" style="margin-top:0;margin-bottom:20px">
+    <span class="chip on" data-folder="source">From my papers</span>
+    <span class="chip" data-folder="twin">Practice I made</span>
+  </div>
 
   <div id="qs-home">
-    <h1>Your questions.</h1>
-    <p class="muted">Add any question and the app writes its mark scheme. Source questions stay
-      private. Extra practice is what a pupil is allowed to see.</p>
-    <div class="chips">
-      <span class="chip on" data-folder="source">Source · private</span>
-      <span class="chip" data-folder="twin">Extra practice</span>
-    </div>
-    <div id="qs-note" class="card" style="margin-top:20px"></div>
-    <div id="qs-list"></div>
+    <h1 id="qs-h">Add your own<br>questions.</h1>
+    <p class="muted" id="qs-sub">Type in any question from a paper and I will work out what it is testing and
+      what a full answer needs. From there I can build fresh practice on the same idea.</p>
     <button class="primary" id="qs-add">Add a question</button>
+    <div id="qs-list"></div>
+    <div class="hint"><b>?</b><div>Not sure what to add?
+      <div class="hint-more">Anything from a worksheet, a past paper or a textbook. The quickest way is to photograph it — I read the printed question straight off the page, and your photo is never saved.</div></div></div>
   </div>
 
   <div id="qs-new" class="hide">
-    <h2>Add a question.</h2>
-    <p class="muted">Type it or paste it exactly as the paper says. The app writes the mark scheme;
-      you check it before anything is marked against it.</p>
+    <h2>What's the question?</h2>
+    <p class="muted">Photograph it, or type it in. I will work out what a full answer needs, and you get
+      to look it over before we use it.</p>
+    <div class="cam">
+      <label for="cam-shot">📷 Take a photo
+        <input type="file" id="cam-shot" accept="image/*" capture="environment"></label>
+      <label for="cam-file">Choose a file
+        <input type="file" id="cam-file" accept="image/*,.heic,.heif"></label>
+    </div>
+    <div id="cam-out"></div>
     <div style="margin-top:24px"><label for="nq">The question</label>
       <textarea id="nq" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
-    <button class="primary" id="nq-go">Write the mark scheme</button>
+    <button class="primary" id="nq-go">Work out the answer</button>
     <button class="ghost" id="nq-cancel">Cancel</button>
     <div id="nq-err" class="err hide"></div>
   </div>
 
   <div id="qs-review" class="hide">
-    <span class="eyebrow">Check this before you use it</span>
+    <span class="eyebrow">Here's what I worked out</span>
     <h2 id="rv-q" style="margin-top:10px"></h2>
     <div id="rv-flag" class="card flag hide"></div>
+    <div id="rv-dgm"></div>
     <div class="stat">
       <div><b id="rv-level">—</b><span>Level</span></div>
       <div><b id="rv-type">—</b><span>Type</span></div>
@@ -179,22 +300,27 @@
       <div id="rv-concept" style="margin-top:8px;font-size:17px;line-height:1.55"></div></div>
     <div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What this question supplies</span>
       <div id="rv-evidence" style="margin-top:8px"></div>
-      <div class="muted" style="margin-top:10px;font-size:14px">A pupil must use these, not repeat them.</div></div>
-    <div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Marking points</span>
+      <div class="muted" style="margin-top:10px;font-size:14px">A good answer uses these details, rather than just repeating them back.</div></div>
+    <div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What earns the marks</span>
       <div id="rv-points"></div></div>
-    <div id="rv-dna-box" style="margin-top:24px"><span class="eyebrow">Do not accept</span>
+    <div id="rv-accept-box" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Also accept</span>
+      <div id="rv-accept"></div>
+      <div class="muted" style="margin-top:10px;font-size:14px">Different wording that still earns the mark.</div></div>
+    <div id="rv-dna-box" style="margin-top:24px"><span class="eyebrow">Close, but no mark</span>
       <div id="rv-dna"></div>
-      <div class="muted" style="margin-top:10px;font-size:14px">Right words, wrong concept. These score zero.</div></div>
-    <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Model answer</span>
+      <div class="muted" style="margin-top:10px;font-size:14px">These sound right and use the right words, but the science underneath is wrong.</div></div>
+    <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
       <div id="rv-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
-    <button class="primary" id="rv-save">Looks right · save to Source</button>
-    <button class="secondary" id="rv-retry">Write it again</button>
-    <button class="ghost" id="rv-cancel">Throw it away</button>
+    <button class="primary" id="rv-save">That looks right · save it</button>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="secondary" id="rv-retry" style="margin:0;text-align:center">Have another go</button>
+      <button class="ghost" id="rv-cancel" style="margin:0;text-align:center;border:2px solid var(--rule)">Discard</button>
+    </div>
   </div>
 
   <div id="qs-twin" class="hide">
-    <span class="eyebrow">Extra practice · needs your approval</span>
-    <h2 id="tw-head" style="margin-top:10px">Making a new question…</h2>
+    <span class="eyebrow">Fresh practice · have a look</span>
+    <h2 id="tw-head" style="margin-top:10px">Writing something new…</h2>
     <div id="tw-body"></div>
     <div id="tw-err" class="err hide"></div>
     <button class="ghost" id="tw-back">Back</button>
@@ -203,75 +329,81 @@
 
 <!-- ══ MISTAKES ══ -->
 <section id="v-mist" class="hide">
-  <div class="hd"><span class="eyebrow">Mistake book</span></div>
-  <h1>Everything you got wrong.</h1>
-  <p class="muted">Kept as text, never deleted. A mistake from March is still here in September.</p>
+  <div class="hd"><span class="eyebrow">Your notebook</span></div>
+  <div class="chips" style="margin-top:0;margin-bottom:20px">
+    <span class="chip on" data-f="all">All</span>
+    <span class="chip" data-f="twice">Still tricky</span>
+    <span class="chip" data-f="recent">Last 30 days</span>
+  </div>
+  <h1>Everything you've<br>worked on.</h1>
+  <p class="muted">Nothing here ever disappears. Something you found hard in March is still here in
+    September — which is exactly what makes it useful before an exam.</p>
   <div class="stat">
     <div><b id="m-total">0</b><span>Entries</span></div>
-    <div><b id="m-twice">0</b><span>Wrong twice</span></div>
+    <div><b id="m-twice">0</b><span>Still tricky</span></div>
     <div><b id="m-secure">0</b><span>Fully fixed</span></div>
-  </div>
-  <div class="chips">
-    <span class="chip on" data-f="all">All</span>
-    <span class="chip" data-f="twice">Wrong twice</span>
-    <span class="chip" data-f="recent">Last 30 days</span>
   </div>
   <div id="m-list"></div>
 </section>
 
 <!-- ══ PRACTICE ══ -->
 <section id="v-prac" class="hide">
-  <div class="hd"><span class="eyebrow">Practice</span></div>
+  <div class="hd"><span class="eyebrow">Quick practice</span></div>
   <div id="p-idle">
-    <h1>Practise what you missed.</h1>
-    <p class="muted">Built from your own mistake book. Say the answer from memory, then check.</p>
+    <h1>Let me help you<br>remember.</h1>
+    <p class="muted">Three questions, chosen from the ones you have found hardest. Say each answer out
+      loud before you type it — saying it is what makes it stay.</p>
     <div id="p-weak" style="margin-top:24px"></div>
-    <button class="primary" id="p-start">Start recall practice</button>
-    <div id="p-none" class="empty hide">Mark a few answers first — practice is built from what you actually got wrong.</div>
+    <button class="primary" id="p-start">Start a round</button>
+    <div id="p-none" class="empty hide">Answer a few questions first — recall is built from what you actually got wrong.</div>
   </div>
   <div id="p-run" class="hide">
     <div class="steps" style="margin-left:0;margin-bottom:20px"><i id="ps1"></i><i id="ps2"></i><i id="ps3"></i></div>
     <span class="eyebrow" style="color:var(--mid)" id="p-topic"></span>
     <h2 id="p-q" style="margin-top:10px"></h2>
-    <div style="margin-top:24px"><label>Say it out loud, then type it</label>
+    <div style="margin-top:24px"><label>Say it out loud, then type it here</label>
       <textarea id="p-a" placeholder="From memory…"></textarea></div>
-    <button class="primary" id="p-check">Check my recall</button>
+    <button class="primary" id="p-check">Show me how I did</button>
     <div id="p-reveal" class="hide">
-      <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">Model answer</span>
+      <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
         <div id="p-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
-      <p class="muted" style="margin-top:20px">How did that feel?</p>
-      <button class="primary" data-g="smooth">Smooth</button>
-      <button class="secondary" data-g="hesitant">Hesitant</button>
-      <button class="secondary" data-g="blank">Blank</button>
+      <p class="muted" style="margin-top:20px">Honestly — how did that feel?</p>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button class="primary" data-g="smooth" style="margin:0;text-align:center;padding:16px 8px">Smooth</button>
+        <button class="secondary" data-g="hesitant" style="margin:0;text-align:center;padding:16px 8px">Hesitant</button>
+        <button class="secondary" data-g="blank" style="margin:0;text-align:center;padding:16px 8px">Blank</button>
+      </div>
     </div>
   </div>
   <div id="p-done" class="hide">
-    <h1>Done for today.</h1>
+    <h1>Nice work.</h1>
     <p class="muted" id="p-summary"></p>
-    <button class="secondary" id="p-again">Back</button>
+    <button class="secondary" id="p-again">Back to practice</button>
   </div>
 </section>
 
 <!-- ══ CLASS ══ -->
 <section id="v-stats" class="hide">
-  <div class="hd"><span class="eyebrow">Where marks are lost</span></div>
-  <h1 id="st-head">Not enough data yet.</h1>
-  <p class="muted" id="st-sub">Mark a few answers and the pattern appears here.</p>
+  <div class="hd"><span class="eyebrow">How it's going</span></div>
+  <h1 id="st-head">Nothing to show<br>just yet.</h1>
+  <p class="muted" id="st-sub">Answer a few questions and I will start showing you which ideas are solid
+    and which ones are worth another look.</p>
   <div class="stat">
-    <div><b id="st-n">0</b><span>Marked</span></div>
+    <div><b id="st-n">0</b><span>Answered</span></div>
     <div><b id="st-rec">—</b><span>Recovery</span></div>
-    <div><b id="st-top">—</b><span>Weakest topic</span></div>
+    <div><b id="st-top">—</b><span>Needs work</span></div>
   </div>
   <div id="st-kw-box" class="hide" style="margin-top:28px">
-    <span class="eyebrow" style="color:var(--mid)">Marking points most often missed</span>
+    <span class="eyebrow" style="color:var(--mid)">Ideas that slip most often</span>
     <div id="st-kw"></div>
   </div>
   <div id="st-rec-box" class="hide" style="margin-top:28px">
-    <span class="eyebrow" style="color:var(--mid)">Missed, and whether it got fixed</span>
+    <span class="eyebrow" style="color:var(--mid)">Did it come back second time?</span>
     <div id="st-recov"></div>
-    <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">How to read this</span>
-      <div class="muted" style="margin-top:8px">Fixed on the second try means the knowledge was there — a wording
-      habit, and recall practice fixes it. Not fixed means the belief is wrong, and that needs teaching.</div></div>
+    <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">What this tells you</span>
+      <div class="muted" style="margin-top:8px">When something comes back on the second try, you already knew it —
+      it just needs saying more often, so a quick practice round sorts it. When it does not come back,
+      the idea itself needs another look.</div></div>
   </div>
   <div id="st-topic-box" class="hide" style="margin-top:28px">
     <span class="eyebrow" style="color:var(--mid)">By topic</span>
@@ -281,12 +413,14 @@
 
 </div>
 
+<div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
+
 <nav class="nav">
-  <button class="on" data-v="mark"><b>✎</b>Mark</button>
-  <button data-v="qs"><b>▤</b>Questions</button>
+  <button class="on" data-v="qs"><b>▤</b>Questions</button>
+  <button data-v="mark"><b>✎</b>Answer</button>
   <button data-v="mist"><b>◷</b>Mistakes</button>
-  <button data-v="prac"><b>↻</b>Practice</button>
-  <button data-v="stats"><b>◈</b>Class</button>
+  <button data-v="prac"><b>↻</b>Recall</button>
+  <button data-v="stats"><b>◈</b>Progress</button>
 </nav>
 <script>
 const $ = id => document.getElementById(id);
@@ -298,11 +432,28 @@ const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const subs = () => load(KEY);
 
 /* ── navigation ────────────────────────────────────────── */
+function showMarkDiagram(){
+  let sel = null;
+  try { sel = selected(); } catch(e){}
+  const d = (sel && sel.scheme) ? sel.scheme.diagram : null;
+  const el = $('mk-dgm'); if (el) el.innerHTML = svgFor(d);
+}
+
+// The nav's height varies with safe-area inset, so measure it rather than guess.
+function syncNavHeight(){
+  const n = document.querySelector('.nav');
+  if (n) document.documentElement.style.setProperty('--nav-h', n.offsetHeight + 'px');
+}
+syncNavHeight();
+addEventListener('resize', syncNavHeight);
+addEventListener('orientationchange', () => setTimeout(syncNavHeight, 250));
+
 document.querySelectorAll('.nav button').forEach(b => b.onclick = () => {
   const v = b.dataset.v;
   document.querySelectorAll('.nav button').forEach(x => x.classList.toggle('on', x === b));
-  ['mark','qs','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
+  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
+  curView = v; armIdle();
   if (v === 'qs') renderQs();
   if (v === 'mist') renderMistakes();
   if (v === 'prac') renderPractice();
@@ -362,11 +513,18 @@ function fillQuestionPicker(){
     (r.scheme.q.length > 60 ? r.scheme.q.slice(0,60)+'…' : r.scheme.q) + '</option>').join('');
   const prac = load(TWN).filter(t => t.approved).map(r => '<option value="twin:'+r.id+'">' +
     (r.stem.length > 60 ? r.stem.slice(0,60)+'…' : r.stem) + '</option>').join('');
+  const prev = $('q').value;
   $('q').innerHTML =
     (mine ? '<optgroup label="My source questions">' + mine + '</optgroup>' : '') +
     (prac ? '<optgroup label="Extra practice">' + prac + '</optgroup>' : '') +
     '<optgroup label="Answer guide · 247">' + QS.map(opt).join('') + '</optgroup>';
+  if (prev) $('q').value = prev;
+  showMarkDiagram();
 }
+$('q').addEventListener('change', showMarkDiagram);
+if ($('cam-shot')) $('cam-shot').onchange = e => handlePhoto(e.target.files[0]);
+if ($('cam-file')) $('cam-file').onchange = e => handlePhoto(e.target.files[0]);
+armIdle();
 
 function selected(){
   const v = $('q').value || '';
@@ -378,15 +536,29 @@ function selected(){
 }
 
 (async () => {
+  // The prewritten list is a bonus, not a dependency. Whatever happens to the
+  // fetch, the folders and the picker must still render — a pupil's own saved
+  // questions live on the device and do not need the server at all.
+  let failed = false;
   try {
     const res = await fetch('/api/questions');
     const text = await res.text();
-    if (!text || /<!DOCTYPE|<html/i.test(text)) throw new Error('not deployed');
+    if (!res.ok || !text || /<!DOCTYPE|<html/i.test(text)) throw new Error('not deployed');
     QS = (JSON.parse(text).questions) || [];
-    fillQuestionPicker();
   } catch(e){
-    fillQuestionPicker();
-    fail('The question list did not load. This page only works on your Vercel URL — the api folder needs to be uploaded to GitHub.');
+    QS = [];
+    failed = true;
+  }
+
+  try { fillQuestionPicker(); } catch(e){}
+  try { renderQs(); } catch(e){}
+
+  if (failed && $('q-err')) {
+    $('q-err').innerHTML = '<div class="card flag" style="margin-top:12px">' +
+      '<span class="eyebrow">The ready-made list did not load</span>' +
+      '<div style="margin-top:8px">I could not reach the question list just now. You can still add ' +
+      'your own questions below, and anything you have saved is still here. If this keeps happening, ' +
+      'the app needs to be opened from its web address rather than a file.</div></div>';
   }
 })();
 
@@ -452,7 +624,7 @@ function renderDone(r2, first, peeked, a2){
   } else $('mc-box').classList.add('hide');
   $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
   $('tutornote').textContent = r2.tutorNote || '';
-  $('early').textContent = r2.answerRequestedEarly ? 'Note: the answer was requested before a second attempt.' : '';
+  $('early').textContent = r2.answerRequestedEarly ? 'The answer was opened before a second attempt.' : '';
 
   // ── save to the mistake book ──
   const qm = (selected() || {}).meta || {};
@@ -479,6 +651,199 @@ $('restart').onclick = () => {
   clearFail(); show('ask');
 };
 
+
+
+/* ── the helper: a nudge after 7 quiet seconds ──────────── */
+const NUDGES = {
+  mark:  ['Not sure where to start?', 'Pick any question above, then write what you think in your own words. Getting it wrong is genuinely useful here — that is how we work out what to practise.'],
+  qs:    ['Want to add your own question?', 'Tap Add a question and type one straight off a paper. I will work out what it is testing and what a full answer needs.'],
+  mist:  ['This fills up as you go.', 'Every question you answer lands here with the date. It is the best place to start a revision session.'],
+  prac:  ['Ready for a quick round?', 'Three questions, straight from what you have found tricky. Say each answer out loud first — that is what makes it stick.'],
+  stats: ['Nothing to show yet?', 'Answer a few questions and this page starts showing which ideas are solid and which ones need another look.'],
+};
+var idleT = null, nudgeShown = {}, curView = 'qs';   // Questions is the landing view
+
+function hideNudge(){ const n = $('nudge'); if (n) n.classList.remove('up'); }
+
+// Delegated, so it survives whatever else is on the page. Tapping the cross,
+// or anywhere on the strip, dismisses it for this view. Escape works too.
+document.addEventListener('click', e => {
+  const n = $('nudge');
+  if (!n || !n.classList.contains('up')) return;
+  if (!n.contains(e.target)) return;
+  hideNudge();
+  nudgeShown[curView] = true;
+}, true);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ hideNudge(); nudgeShown[curView] = true; }
+});
+
+function armIdle(){
+  clearTimeout(idleT);
+  hideNudge();
+  idleT = setTimeout(() => {
+    if (nudgeShown[curView]) return;
+    const msg = NUDGES[curView]; if (!msg) return;
+    const n = $('nudge');
+    n.querySelector('.n-txt').innerHTML = '<b>' + msg[0] + '</b>' + msg[1];
+    n.classList.add('up');
+    nudgeShown[curView] = true;
+    setTimeout(hideNudge, 14000);   // never leaves it stuck on screen
+  }, 7000);
+}
+
+['pointerdown','keydown','input','change','scroll'].forEach(ev =>
+  document.addEventListener(ev, armIdle, { passive: true }));
+
+/* ── "unsure?" panels open on tap ──────────────────────── */
+document.addEventListener('click', e => {
+  const h = e.target.closest('.hint');
+  if (h) h.classList.toggle('open');
+});
+
+
+/* ── photographing a question ──────────────────────────── */
+// The photo reads the PRINTED question only. It is converted in the browser,
+// sent once, and never stored anywhere.
+const MAX_DIM = 1600;
+
+async function toJpeg(file){
+  const bmp = await decode(file);
+  const scale = Math.min(1, MAX_DIM / Math.max(bmp.width, bmp.height));
+  const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d').drawImage(bmp, 0, 0, w, h);
+  return c.toDataURL('image/jpeg', 0.85).split(',')[1];
+}
+
+async function decode(file){
+  // Safari decodes HEIC natively; everything else needs converting first.
+  try { return await bitmap(file); }
+  catch(e){
+    if (!/hei[cf]/i.test(file.type + ' ' + file.name)) throw e;
+    const mod = await import('https://cdn.jsdelivr.net/npm/heic-to@1.1.14/dist/heic-to.mjs');
+    const jpg = await mod.heicTo({ blob: file, type: 'image/jpeg', quality: .9 });
+    return await bitmap(jpg);
+  }
+}
+
+function bitmap(blob){
+  return new Promise((ok, no) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); ok(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); no(new Error('could not decode')); };
+    img.src = url;
+  });
+}
+
+async function handlePhoto(file){
+  if (!file) return;
+  const box = $('cam-out');
+  $('nq-err').classList.add('hide');
+  box.innerHTML = '<div class="busy"><i></i>Reading the question off your photo…</div>';
+  try {
+    const b64 = await toJpeg(file);
+    box.innerHTML = '<div class="shot"><img src="data:image/jpeg;base64,' + b64 + '" alt="The page you photographed"></div>' +
+                    '<div class="busy"><i></i>Reading the question…</div>';
+    const d = await callApi('/api/read', { imageBase64: b64, mediaType: 'image/jpeg' });
+    if (d.problem || !d.question){
+      box.innerHTML = '<div class="card flag"><span class="eyebrow">I could not read that</span>' +
+        '<div style="margin-top:8px">' + (d.problem || 'The text was not clear enough.') +
+        ' Try again with more light, and get the whole question inside the frame.</div></div>';
+      return;
+    }
+    $('nq').value = d.question + (d.diagramNote ? '\n\n[Picture: ' + d.diagramNote + ']' : '');
+    box.innerHTML = '<div class="card"><span class="eyebrow" style="color:var(--mid)">Is this right?</span>' +
+      '<div class="muted" style="margin-top:8px">I have put what I read into the box below. Have a quick look and fix anything I got wrong — I only read the printed question, never handwriting.' +
+      (d.moreOnPage ? ' There was more than one question on that page, so I took the clearest one.' : '') +
+      '</div></div>';
+    $('nq').focus();
+  } catch(e){
+    box.innerHTML = '';
+    $('nq-err').textContent = /decode/.test(e.message)
+      ? 'That image would not open. A JPG or PNG always works; on an iPhone you can also set Camera to Most Compatible.'
+      : e.message;
+    $('nq-err').classList.remove('hide');
+  }
+}
+
+/* ── diagrams: the model sends shapes, we draw them ────── */
+function svgFor(d){
+  if (!d || !Array.isArray(d.shapes) || !d.shapes.length) return '';
+  const vb = d.viewBox || '0 0 320 200';
+  const ink = 'var(--ink)', mid = 'var(--mid)';
+  const fillOf = f => f === 'dark' ? 'var(--rule)' : f === 'light' ? 'var(--surface)' : 'none';
+  let out = '', defs = '';
+  let usedArrow = false, usedHatch = false;
+
+  d.shapes.forEach(s => {
+    const dash = s.dashed ? ' stroke-dasharray="6 4"' : '';
+    switch (s.type) {
+      case 'rect':
+        out += '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" fill="'+fillOf(s.fill)+
+               '" stroke="'+ink+'" stroke-width="2"'+dash+'/>'; break;
+      case 'circle':
+        out += '<circle cx="'+s.cx+'" cy="'+s.cy+'" r="'+s.r+'" fill="'+fillOf(s.fill)+
+               '" stroke="'+ink+'" stroke-width="2"'+dash+'/>'; break;
+      case 'line':
+        if (s.arrow) usedArrow = true;
+        out += '<line x1="'+s.x1+'" y1="'+s.y1+'" x2="'+s.x2+'" y2="'+s.y2+'" stroke="'+ink+
+               '" stroke-width="2"'+dash+(s.arrow?' marker-end="url(#ar)"':'')+'/>'; break;
+      case 'arc': {
+        const mx = (s.x1+s.x2)/2, my = (s.y1+s.y2)/2, b = s.bulge || 20;
+        out += '<path d="M'+s.x1+' '+s.y1+' Q'+(mx+b)+' '+my+' '+s.x2+' '+s.y2+
+               '" fill="none" stroke="'+ink+'" stroke-width="2"'+dash+'/>'; break; }
+      case 'water': {
+        const y = s.y, w = s.w, x = s.x, step = w/4;
+        let p = 'M'+x+' '+y;
+        for (let i=0;i<4;i++){ p += ' q'+(step/4)+' -5 '+(step/2)+' 0 q'+(step/4)+' 5 '+(step/2)+' 0'; }
+        out += '<path d="'+p+'" fill="none" stroke="'+ink+'" stroke-width="2"/>' +
+               '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+(s.h||20)+'" fill="var(--surface)" opacity=".7"/>';
+        break; }
+      case 'hatch':
+        usedHatch = true;
+        out += '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+
+               '" fill="url(#ht)" stroke="'+ink+'" stroke-width="2"/>'; break;
+    }
+  });
+
+  // Labels: anchor the text AWAY from what it points at, so the leader never
+  // crosses the glyphs, and a right-margin label cannot run off the viewBox.
+  const vbW = (parseFloat(String(vb).split(/\s+/)[2]) || 320);
+  (d.labels||[]).forEach(l => {
+    const txt = String(l.text||'').replace(/[<>&]/g,'');
+    if (!txt) return;
+    const w = txt.length * 5.6;                       // 11px type, ~0.51em advance
+    const tgt = (l.leaderTo && l.leaderTo.length === 2) ? l.leaderTo : null;
+    const leftward = tgt ? tgt[0] < l.x : false;
+    let x = l.x;
+    if (leftward) x = Math.min(x, vbW - 2);           // text ends here, spans left
+    else x = Math.max(2, Math.min(x, vbW - w - 2));   // text starts here, spans right
+    if (tgt){
+      // Leave from the text edge NEAREST the target. If the target sits inside the
+      // text's own span there is no clean horizontal exit, so drop a vertical leader.
+      const tl = leftward ? x - w : x, tr = leftward ? x : x + w;
+      let fx, fy = l.y - 4;
+      if (tgt[0] < tl) fx = tl - 4;
+      else if (tgt[0] > tr) fx = tr + 4;
+      else { fx = tgt[0]; fy = (tgt[1] > l.y) ? l.y + 3 : l.y - 13; }
+      out += '<line x1="'+fx.toFixed(1)+'" y1="'+fy.toFixed(1)+'" x2="'+tgt[0]+'" y2="'+tgt[1]+
+             '" stroke="'+mid+'" stroke-width="1"/>';
+    }
+    out += '<text x="'+x.toFixed(1)+'" y="'+l.y+'" font-size="11" fill="'+mid+
+           '" font-family="var(--body)"'+(leftward?' text-anchor="end"':'')+'>'+txt+'</text>';
+  });
+
+  if (usedArrow) defs += '<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="'+ink+'"/></marker>';
+  if (usedHatch) defs += '<pattern id="ht" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="'+mid+'" stroke-width="2"/></pattern>';
+
+  return '<div class="dgm"><svg viewBox="'+vb+'" role="img" aria-label="'+
+    String(d.caption||'Diagram').replace(/"/g,'')+'">'+(defs?'<defs>'+defs+'</defs>':'')+out+'</svg>'+
+    (d.caption ? '<div class="dgm-cap">'+String(d.caption).replace(/[<>]/g,'')+'</div>' : '')+'</div>';
+}
+
 /* ── question folders ─────────────────────────────────── */
 const SRC='sm-src-v1', TWN='sm-twin-v1';
 let folder='source', derived=null, twinSourceId=null;
@@ -495,27 +860,29 @@ function renderQs(){
   qsShow('home');
   const src = load(SRC), twins = load(TWN);
   const rows = folder === 'source' ? src : twins;
-  $('qs-note').innerHTML = folder === 'source'
-    ? '<span class="eyebrow" style="color:var(--mid)">Source questions</span><div class="muted" style="margin-top:8px">' +
-      'Questions from real papers. Kept for marking and for making practice. <strong>Never shown to a pupil.</strong></div>'
-    : '<span class="eyebrow" style="color:var(--mid)">Extra practice</span><div class="muted" style="margin-top:8px">' +
-      'New questions on the same concepts, in different situations. The only questions a pupil may be given.</div>';
+  const h = $('qs-h'), sub = $('qs-sub'), add = $('qs-add');
+  if (h) h.innerHTML = folder === 'source' ? 'Add your own<br>questions.' : 'Practice I<br>made for you.';
+  if (sub) sub.textContent = folder === 'source'
+    ? 'Type in any question from a paper and I will work out what it is testing and what a full answer needs. These stay yours — I only use them to build fresh practice.'
+    : 'Fresh questions on the same ideas, in new situations. Approve one and it joins the list you can answer.';
+  if (add) add.classList.toggle('hide', folder !== 'source');
   if (!rows.length){
     $('qs-list').innerHTML = '<div class="empty">' + (folder === 'source'
-      ? 'Nothing here yet. Add a question and the app writes its mark scheme.'
-      : 'Nothing here yet. Open a source question and make practice from it.') + '</div>';
+      ? 'Nothing here yet. Add a question from a paper and I will work out what a full answer needs.'
+      : 'Nothing here yet. Open one of your own questions and I will build fresh practice from it.') + '</div>';
     return;
   }
   $('qs-list').innerHTML = rows.map(r => {
     const q = r.scheme ? r.scheme.q : r.stem;
     const meta = (r.scheme ? (r.scheme.level + ' · ' + r.scheme.topic) : (r.level + ' · ' + r.topic));
     return '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + q + '</div>' +
-      '<div class="muted" style="margin-top:6px;font-size:14px">' + meta +
+      '<div class="muted" style="margin-top:6px;font-size:14px">' + meta + ' · ' + typeLabel(r.scheme ? r.scheme.questionType : r.questionType) +
       (folder === 'source' ? ' · ' + ((r.scheme.markingPoints||[]).length) + ' marking points' : '') +
-      (folder === 'twin' && !r.approved ? ' · <span style="color:var(--accent)">waiting for you</span>' : '') + '</div>' +
+      (folder === 'twin' && !r.approved ? ' · <span style="color:var(--accent)">have a look</span>' : '') + '</div>' +
+      svgFor(r.scheme ? r.scheme.diagram : r.diagram) +
       (folder === 'source'
-        ? '<button class="secondary" data-make="' + r.id + '" style="min-height:48px;font-size:15px">Make extra practice from this</button>'
-        : (!r.approved ? '<button class="primary" data-appr="' + r.id + '" style="min-height:48px;font-size:15px">Approve for pupils</button>' : '')) +
+        ? '<button class="secondary" data-make="' + r.id + '" style="min-height:48px;font-size:15px">Make practice from this</button>'
+        : (!r.approved ? '<button class="primary" data-appr="' + r.id + '" style="min-height:48px;font-size:15px">Ready to use</button>' : '')) +
       '</div>';
   }).join('');
   $('qs-list').querySelectorAll('[data-make]').forEach(b => b.onclick = () => makeTwin(b.dataset.make));
@@ -543,27 +910,41 @@ async function deriveScheme(text){
   } catch(e){
     $('nq-err').textContent = e.message; $('nq-err').classList.remove('hide'); qsShow('new');
   }
-  $('nq-go').disabled = false; $('nq-go').textContent = 'Write the mark scheme';
+  $('nq-go').disabled = false; $('nq-go').textContent = 'Work out the answer';
 }
+
+const TYPE_LABEL = {
+  explain:'Explain', describe:'Describe', compare:'Compare', infer:'Infer', predict:'Predict',
+  apply:'Suggest a method', fairtest:'Fair test', define:'Definition', value:'Value or order',
+};
+const typeLabel = t => TYPE_LABEL[String(t||'').toLowerCase()]
+  || (t ? String(t).charAt(0).toUpperCase() + String(t).slice(1) : '—');
 
 function showReview(d){
   $('rv-q').textContent = d.q || '';
   $('rv-level').textContent = d.level || '—';
-  $('rv-type').textContent = d.questionType || '—';
+  $('rv-type').textContent = typeLabel(d.questionType);
   $('rv-marks').textContent = d.marks || '—';
+  $('rv-dgm').innerHTML = svgFor(d.diagram);
   $('rv-concept').textContent = d.concept || '';
   $('rv-evidence').innerHTML = (d.evidence||[]).map(e =>
     '<div class="row"><span class="tick"></span><div style="flex:1">' + e + '</div></div>').join('') || '<div class="muted">None listed.</div>';
-  $('rv-points').innerHTML = (d.markingPoints||[]).map(m =>
-    '<div class="row"><div style="flex:1">' + m.point + '</div>' +
-    '<div style="font-family:var(--round);font-weight:700">' + m.marks + '</div></div>').join('');
+  $('rv-points').innerHTML = (d.markingPoints||[]).map((m,i) =>
+    '<div class="row"><div style="flex:none;width:20px;font-family:var(--round);font-weight:700;color:var(--mid);' +
+    'font-variant-numeric:tabular-nums">' + (i+1) + '</div>' +
+    '<div style="flex:1">' + m.point + '</div>' +
+    '<div style="flex:none;font-family:var(--round);font-weight:700;font-variant-numeric:tabular-nums">' +
+    m.marks + '</div></div>').join('');
+  $('rv-accept').innerHTML = (d.alsoAccept||[]).filter(Boolean).map(x =>
+    '<div class="row"><span class="tick"></span><div style="flex:1">' + x + '</div></div>').join('')
+    || '<div class="muted">Nothing beyond the marking points above.</div>';
   $('rv-dna').innerHTML = (d.doNotAccept||[]).filter(Boolean).map(x =>
     '<div class="row"><span class="tick open"></span><div style="flex:1">' + x + '</div></div>').join('') || '<div class="muted">None listed.</div>';
   $('rv-model').textContent = d.modelAnswer || '';
   const f = $('rv-flag');
   if (d.outOfSyllabus){
     f.classList.remove('hide');
-    f.innerHTML = '<span class="eyebrow">Outside the syllabus</span><div style="margin-top:8px">' + d.outOfSyllabus + '</div>';
+    f.innerHTML = '<span class="eyebrow">Worth knowing</span><div style="margin-top:8px">' + d.outOfSyllabus + '</div>';
   } else f.classList.add('hide');
   qsShow('review'); window.scrollTo(0,0);
 }
@@ -585,35 +966,42 @@ async function makeTwin(id){
   const used = load(TWN).map(t => t.object).filter(Boolean);
   try {
     const d = await callApi('/api/twin', { scheme: row.scheme, avoid: used, count: 2 });
-    const kept = [];
+    const kept = [], why = [];
     (d.twins||[]).forEach(t => {
-      if (t.gate && (t.gate.reusedSourceWording || !t.gate.ceclComplete)) return;
+      const g = t.gate || {};
+      if (g.reusedSourceWording) { why.push('reused the phrase “' + (g.copiedPhrase || '') + '”'); return; }
+      if (!g.ceclComplete) { why.push('the answer was missing a part'); return; }
       kept.push(t);
     });
     const rejected = (d.twins||[]).length - kept.length;
     $('tw-head').textContent = kept.length + ' new question' + (kept.length===1?'':'s') + ' to check.';
     if (!kept.length){
-      $('tw-body').innerHTML = '<div class="empty">Both attempts failed the checks — they reused the source wording or left out part of the answer. Try again.</div>';
+      $('tw-head').textContent = 'Nothing passed the checks.';
+      $('tw-body').innerHTML = '<div class="empty">' +
+        (why.length ? why.map(w => '· ' + w).join('<br>') : 'No questions came back.') +
+        '</div><button class="primary" id="tw-retry" style="text-align:left">Try again</button>';
+      $('tw-retry').onclick = () => makeTwin(id);
       return;
     }
     const all = load(TWN);
     kept.forEach(t => all.unshift({ id:'t'+Date.now()+Math.random().toString(36).slice(2,6), ts:Date.now(),
-      stem:t.stem, object:t.object, level:t.level, topic:t.topic, questionType:t.questionType,
+      stem:t.stem, object:t.object, level:t.level, topic:t.topic, questionType:t.questionType, diagram:t.diagram,
       approved:false, sourceId:id,
       scheme:{ q:t.stem, level:t.level, topic:t.topic, questionType:t.questionType, marks:t.marks,
-        concept:t.concept, markingPoints:t.markingPoints, modelAnswer:t.modelAnswer } }));
+        concept:t.concept, markingPoints:t.markingPoints, modelAnswer:t.modelAnswer, diagram:t.diagram } }));
     save(TWN, all.slice(0,200));
     $('tw-body').innerHTML = kept.map(t =>
       '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.45">' + t.stem + '</div>' +
       '<div class="muted" style="margin-top:8px;font-size:14px">' + (t.object||'') + ' · ' + (t.marks||'') + ' marks</div>' +
+      svgFor(t.diagram) +
       '<div style="margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">' +
         ['choice','evidence','concept','link'].map((k,i) =>
           '<div style="display:flex;gap:12px;margin-top:8px"><div style="font-family:var(--round);font-weight:700;width:18px">' +
           'CECL'[i] + '</div><div style="flex:1;font-size:15px;line-height:1.5">' + ((t.cecl||{})[k]||'') + '</div></div>').join('') +
       '</div></div>').join('') +
       (rejected ? '<div class="muted" style="margin-top:16px;font-size:14px">' + rejected +
-        ' rejected before reaching you — reused wording or an incomplete answer.</div>' : '') +
-      '<div class="muted" style="margin-top:16px;font-size:14px">They are saved but not approved. Approve them in the Extra practice folder.</div>';
+        ' rejected before reaching you — ' + why.join('; ') + '.</div>' : '') +
+      '<div class="muted" style="margin-top:16px;font-size:14px">Saved under “Practice I made”. Mark them ready when you are happy with them.</div>';
   } catch(e){
     $('tw-err').textContent = e.message; $('tw-err').classList.remove('hide');
     $('tw-body').innerHTML = '';
@@ -702,7 +1090,7 @@ function showRecall(){
 }
 
 $('p-check').onclick = () => {
-  $('p-model').textContent = queue[qIdx].model || '(no model answer stored for this one)';
+  $('p-model').textContent = queue[qIdx].model || 'I do not have a full answer saved for this one yet.';
   $('p-reveal').classList.remove('hide');
   $('p-check').classList.add('hide');
 };
@@ -716,7 +1104,7 @@ document.querySelectorAll('#p-reveal button').forEach(b => b.onclick = () => {
   const smooth = graded.filter(g=>g.grade==='smooth').length;
   $('p-run').classList.add('hide'); $('p-done').classList.remove('hide');
   $('p-summary').textContent = smooth + ' of ' + graded.length +
-    ' came back smoothly. The rest come round again tomorrow.';
+    ' came back smoothly. I will bring the others round again tomorrow.';
   window.scrollTo(0,0);
 });
 
