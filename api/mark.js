@@ -43,7 +43,9 @@ export default async function handler(req, res) {
       delete parsed.misconceptionId;
     }
 
-    if (attempt >= 2 || revealAnswer) {
+    // A deflected input is a plea, an off-topic message or rude words — never an
+    // attempt. It must not unlock the answer, whatever the attempt number says.
+    if ((attempt >= 2 || revealAnswer) && !parsed.deflect) {
       parsed.modelAnswer = modelAnswer;
       parsed.markingPoints = points;
       parsed.answerRequestedEarly = revealAnswer && attempt < 2;

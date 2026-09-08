@@ -65,6 +65,20 @@
   .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
   .hide{display:none}
+  .opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-top:12px;
+    padding:16px 18px;background:#fff;border:1.5px solid var(--rule);border-radius:14px;
+    font-family:var(--body);font-weight:400;font-size:17px;line-height:1.45;min-height:auto;
+    box-shadow:0 2px 8px rgba(26,26,26,.04);cursor:pointer;transition:all .16s}
+  .opt:hover{border-color:var(--mid);box-shadow:0 5px 18px rgba(26,26,26,.09)}
+  .opt b{flex:none;font-family:var(--round);font-weight:700;color:var(--mid);width:18px}
+  .opt.picked{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.picked b{color:var(--accent)}
+  .opt.right{border-color:#2e8b57;background:#eaf6ee}
+  .opt.right b{color:#2e8b57}
+  #deflect{margin-top:20px;background:var(--ink);color:var(--bg);padding:18px 20px;border-radius:18px;
+    box-shadow:0 6px 22px rgba(26,26,26,.18);display:flex;gap:14px;align-items:flex-start}
+  #deflect .d-ico{flex:none;font-size:22px;line-height:1.2}
+  #deflect .d-txt{flex:1;font-size:16px;line-height:1.55}
   .err{border-left:4px solid var(--accent);background:var(--accent-bg);padding:14px 18px;margin-top:20px;
     border-radius:0 12px 12px 0}
   h1+.muted,h2+.muted{margin-top:10px}
@@ -209,7 +223,7 @@
     <div class="dark" id="ponder-box"><span class="eyebrow">Something to think about</span>
       <div id="ponder" style="margin-top:8px;font-size:18px"></div></div>
     <button class="primary" id="go2">I'll try again</button>
-    <button class="ghost" id="peek">Show me the answer instead</button>
+    <button class="ghost" id="peek">I'm stuck — give me a nudge</button>
   </div>
 
   <div id="stage-2nd" class="hide">
@@ -247,6 +261,7 @@
         <div class="muted" id="early" style="margin-top:10px"></div></div></div>
     <button class="secondary" id="restart">Answer another question</button>
   </div>
+  <div id="deflect" class="hide"><span class="d-ico">✦</span><div class="d-txt"></div></div>
   <div id="err" class="err hide"></div>
 </section>
 
@@ -262,7 +277,8 @@
     <h1 id="qs-h">Add your own<br>questions.</h1>
     <p class="muted" id="qs-sub">Type in any question from a paper and I will work out what it is testing and
       what a full answer needs. From there I can build fresh practice on the same idea.</p>
-    <button class="primary" id="qs-add">Add a question</button>
+    <button class="primary" id="qs-add">Add a written question</button>
+    <button class="secondary" id="qs-mcq">Add a multiple-choice question</button>
     <div id="qs-list"></div>
     <div class="hint"><b>?</b><div>Not sure what to add?
       <div class="hint-more">Anything from a worksheet, a past paper or a textbook. The quickest way is to photograph it — I read the printed question straight off the page, and your photo is never saved.</div></div></div>
@@ -316,6 +332,37 @@
       <button class="secondary" id="rv-retry" style="margin:0;text-align:center">Have another go</button>
       <button class="ghost" id="rv-cancel" style="margin:0;text-align:center;border:2px solid var(--rule)">Discard</button>
     </div>
+  </div>
+
+  <div id="qs-mcqrun" class="hide">
+    <div style="display:flex;align-items:baseline;gap:12px">
+      <span class="eyebrow" id="mq-meta">Multiple choice</span>
+      <span class="muted" style="margin-left:auto;font-size:14px" id="mq-step">Pick one</span>
+    </div>
+    <h2 id="mq-q" style="margin-top:12px"></h2>
+    <div id="mq-dgm"></div>
+    <div id="mq-opts"></div>
+
+    <div id="mq-fb" class="hide">
+      <div class="card" id="mq-says-box"><span class="eyebrow" style="color:var(--mid)">What your choice tells me</span>
+        <div id="mq-says" style="margin-top:8px"></div></div>
+      <div class="dark"><span class="eyebrow">A question to ponder</span>
+        <div id="mq-ponder" style="margin-top:8px;font-size:16px;line-height:1.55"></div></div>
+      <div style="margin-top:20px"><label for="mq-why">Why did you choose that?</label>
+        <textarea id="mq-why" style="min-height:110px" placeholder="Write what you were thinking…"></textarea></div>
+      <button class="primary" id="mq-submit">Submit my reason</button>
+      <p class="muted" style="margin-top:14px">Picking again from four options is a guess. Writing your
+        reason is the real second try — and it is the part I can actually help with.</p>
+    </div>
+
+    <div id="mq-done" class="hide">
+      <span class="eyebrow" id="mq-verdict"></span>
+      <h2 id="mq-head" style="margin-top:10px"></h2>
+      <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">Why that one is right</span>
+        <div id="mq-why-right" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:17px"></div></div>
+      <button class="secondary" id="mq-next">Back to my questions</button>
+    </div>
+    <div id="mq-err" class="err hide"></div>
   </div>
 
   <div id="qs-twin" class="hide">
@@ -427,6 +474,12 @@ const $ = id => document.getElementById(id);
 const KEY = 'sm-subs-v1', PKEY = 'sm-recall-v1';
 let QS = [], r1 = null, a1txt = '', filter = 'all';
 
+// Crude words are blanked on the device, so they never reach the server or the
+// mistake book. The pupil still gets a light reply and another go.
+const RUDE = /\b(f+u+c+k+\w*|sh[i1!]+t+\w*|b[i1!]tch\w*|c+u+n+t+\w*|a+s+s+h+o+l+e+\w*|d[i1!]ck+head\w*|bastard\w*|w+a+n+k+\w*|bloody hell|damn it|stupid (app|thing))\b/gi;
+const censor = t => String(t||'').replace(RUDE, m => m[0] + '—'.repeat(Math.max(1, m.length - 1)));
+const isRude = t => RUDE.test(String(t||''));
+
 const load = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch(e){ return []; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const subs = () => load(KEY);
@@ -461,6 +514,14 @@ document.querySelectorAll('.nav button').forEach(b => b.onclick = () => {
 });
 
 /* ── marking flow ──────────────────────────────────────── */
+function showDeflect(msg){
+  const d = $('deflect');
+  if (!d) return;
+  d.querySelector('.d-txt').textContent = msg;
+  d.classList.remove('hide');
+}
+function hideDeflect(){ const d = $('deflect'); if (d) d.classList.add('hide'); }
+
 function show(name){
   ['ask','fb','2nd','done'].forEach(n => $('stage-'+n).classList.toggle('hide', n !== name));
   const step = {ask:1, fb:2, '2nd':2, done:3}[name];
@@ -564,13 +625,21 @@ function selected(){
 
 $('go1').onclick = async () => {
   clearFail();
-  a1txt = $('a1').value.trim();
-  if (!a1txt) return fail('Write an answer first.');
+  hideDeflect();
+  a1txt = censor($('a1').value.trim());
+  if (!a1txt) return fail('Write something first — even one line is a start.');
+  if (isRude($('a1').value)) $('a1').value = a1txt;
   $('go1').disabled = true; $('go1').textContent = 'Checking…';
   try {
     const sel = selected();
     if (!sel) return fail('Pick a question first.');
     r1 = await post({ ...sel, meta:undefined, answer:a1txt, attempt:1 });
+    if (r1 && r1.deflect){
+      showDeflect(r1.deflect);
+      $('go1').disabled = false; $('go1').textContent = "I'm done";
+      r1 = null;
+      return;
+    }
     $('verdict').textContent = r1.verdict || 'Checked';
     $('headline').textContent = r1.headline || '';
     $('yours').textContent = a1txt;
@@ -593,18 +662,34 @@ $('go2').onclick = () => {
   show('2nd');
 };
 
-$('peek').onclick = async () => {
+$('peek').onclick = () => {
   clearFail();
-  try { const sel = selected(); renderDone(await post({ ...sel, meta:undefined, answer:a1txt, attempt:1, revealAnswer:true }), r1, true); }
-  catch(e){ fail(e.message); }
+  const nudges = [
+    'A nudge I can do. The answer I cannot — I have taken a solemn vow of silence on those. Read the question once more and tell me the one thing that changes.',
+    'Nudge incoming, answer withheld. What are the two things in this question being compared, and which one ends up different?',
+    'I am contractually unable to hand over answers, sorry. But have a look at the ponder above and write even half a sentence — half a sentence is plenty to work with.',
+  ];
+  showDeflect(nudges[Math.floor(Math.random() * nudges.length)]);
 };
 
 $('go3').onclick = async () => {
   clearFail();
-  const a2 = $('a2').value.trim();
+  hideDeflect();
+  const a2 = censor($('a2').value.trim());
   if (!a2) return fail('Write your second attempt first.');
+  if (isRude($('a2').value)) $('a2').value = a2;
   $('go3').disabled = true; $('go3').textContent = 'Checking…';
-  try { const sel = selected(); renderDone(await post({ ...sel, meta:undefined, answer:a2, attempt:2, firstAnswer:a1txt }), r1, false, a2); }
+  try {
+    const sel = selected();
+    const r2 = await post({ ...sel, meta:undefined, answer:a2, attempt:2, firstAnswer:a1txt });
+    if (r2 && r2.deflect){
+      // Not an attempt, so nothing is revealed and nothing is saved.
+      showDeflect(r2.deflect);
+      $('go3').disabled = false; $('go3').textContent = 'Submit';
+      return;
+    }
+    renderDone(r2, r1, false, a2);
+  }
   catch(e){ fail(e.message); }
   $('go3').disabled = false; $('go3').textContent = 'Submit';
 };
@@ -848,8 +933,9 @@ function svgFor(d){
 const SRC='sm-src-v1', TWN='sm-twin-v1';
 let folder='source', derived=null, twinSourceId=null;
 
-const qsShow = n => ['home','new','review','twin'].forEach(x =>
+const qsShow = n => ['home','new','review','twin','mcqrun'].forEach(x =>
   $('qs-'+x).classList.toggle('hide', x !== n));
+let newFormat = 'written', mcqItem = null, mcqPick = null;
 
 document.querySelectorAll('#v-qs .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-qs .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -893,7 +979,10 @@ function renderQs(){
   });
 }
 
-$('qs-add').onclick = () => { $('nq').value=''; $('nq-err').classList.add('hide'); qsShow('new'); };
+$('qs-add').onclick = () => { newFormat = 'written'; $('nq').value=''; $('nq-err').classList.add('hide');
+  if ($('nq-go')) $('nq-go').textContent = 'Work out the mark scheme'; qsShow('new'); };
+$('qs-mcq').onclick = () => { newFormat = 'mcq'; $('nq').value=''; $('nq-err').classList.add('hide');
+  if ($('nq-go')) $('nq-go').textContent = 'Write the four options'; qsShow('new'); };
 $('nq-cancel').onclick = renderQs;
 $('rv-cancel').onclick = renderQs;
 $('tw-back').onclick = renderQs;
@@ -905,8 +994,9 @@ async function deriveScheme(text){
   if (!text) { $('nq-err').textContent = 'Type the question first.'; $('nq-err').classList.remove('hide'); return; }
   $('nq-go').disabled = true; $('nq-go').textContent = 'Writing the scheme…';
   try {
-    derived = await callApi('/api/derive', { questionText: text });
-    showReview(derived);
+    derived = await callApi('/api/derive', { questionText: text, format: newFormat });
+    if (newFormat === 'mcq'){ startMcq(derived); }
+    else showReview(derived);
   } catch(e){
     $('nq-err').textContent = e.message; $('nq-err').classList.remove('hide'); qsShow('new');
   }
@@ -1008,6 +1098,98 @@ async function makeTwin(id){
   }
 }
 
+/* ── multiple choice ────────────────────────────────────── */
+function startMcq(item){
+  mcqItem = item; mcqPick = null;
+  $('mq-meta').textContent = (item.level || '') + ' · ' + (item.topic || 'Multiple choice');
+  $('mq-step').textContent = 'Pick one';
+  $('mq-q').textContent = item.q || '';
+  $('mq-dgm').innerHTML = svgFor(item.diagram);
+  $('mq-fb').classList.add('hide'); $('mq-done').classList.add('hide');
+  $('mq-err').classList.add('hide');
+  renderMcqOpts(false);
+  qsShow('mcqrun'); window.scrollTo(0,0);
+}
+
+function renderMcqOpts(reveal){
+  const el = $('mq-opts');
+  el.innerHTML = (mcqItem.options||[]).map(o => {
+    const picked = mcqPick && mcqPick.n === o.n;
+    const cls = 'opt' + (reveal && o.correct ? ' right' : picked ? ' picked' : '');
+    return '<button class="'+cls+'" data-n="'+o.n+'"'+(reveal?' disabled':'')+'>' +
+      '<b>'+o.n+'</b><span>'+o.text+'</span></button>';
+  }).join('');
+  if (!reveal) el.querySelectorAll('[data-n]').forEach(b => b.onclick = () => pickMcq(+b.dataset.n));
+}
+
+function pickMcq(n){
+  const o = (mcqItem.options||[]).find(x => x.n === n);
+  if (!o) return;
+  mcqPick = o;
+  renderMcqOpts(false);
+  if (o.correct){
+    // Right first time still needs the reasoning — the tap alone proves little.
+    $('mq-says').textContent = 'That is the one. Now tell me why, so I know it was not a lucky guess.';
+    $('mq-ponder').textContent = mcqItem.options.find(x => x.ponder) ?
+      'What would have to change in the question for a different option to be right?' :
+      'What made you rule the other three out?';
+  } else {
+    $('mq-says').textContent = o.says || 'Not that one — but your choice tells me something useful.';
+    $('mq-ponder').textContent = o.ponder || 'Think of a time you have seen this happen. What did you notice?';
+  }
+  $('mq-step').textContent = 'Now explain it';
+  $('mq-fb').classList.remove('hide');
+  $('mq-why').value = '';
+  $('mq-fb').scrollIntoView ? null : null;
+}
+
+$('mq-submit').onclick = async () => {
+  $('mq-err').classList.add('hide');
+  const why = censor($('mq-why').value.trim());
+  if (!why) { $('mq-err').textContent = 'Write your reason first — even one line.'; $('mq-err').classList.remove('hide'); return; }
+  if (isRude($('mq-why').value)) $('mq-why').value = why;
+
+  $('mq-submit').disabled = true; $('mq-submit').textContent = 'Reading…';
+  try {
+    const scheme = {
+      q: mcqItem.q + ' (chose option ' + mcqPick.n + ': ' + mcqPick.text + ')',
+      level: mcqItem.level, topic: mcqItem.topic, questionType: 'explain', marks: 1,
+      concept: mcqItem.concept || '',
+      markingPoints: [{ point: 'Explains the choice using the right idea', marks: 1 }],
+      modelAnswer: mcqItem.whyCorrect || '',
+    };
+    const r = await post({ scheme, answer: why, attempt: 2, firstAnswer: 'chose option ' + mcqPick.n });
+    if (r && r.deflect){
+      $('mq-err').textContent = r.deflect; $('mq-err').classList.remove('hide');
+    } else {
+      $('mq-verdict').textContent = mcqPick.correct ? 'Right, and you know why' : (r.verdict || 'Now you know');
+      $('mq-head').textContent = r.headline || (mcqPick.correct ? 'Well reasoned.' : 'That is the useful part.');
+      $('mq-why-right').textContent = mcqItem.whyCorrect || '';
+      renderMcqOpts(true);
+      $('mq-fb').classList.add('hide'); $('mq-done').classList.remove('hide');
+      $('mq-step').textContent = 'Done';
+
+      const all = subs();
+      all.unshift({ ts: Date.now(), qi: 'mcq', level: mcqItem.level || '', chapter: mcqItem.topic || '',
+        q: mcqItem.q, a1: 'chose option ' + mcqPick.n + ': ' + mcqPick.text, a2: why, peeked: false,
+        marks1: mcqPick.correct ? 1 : 0, marks2: r.marks ?? null, maxMarks: 1,
+        missed1: mcqPick.correct ? [] : ['picked the wrong option'],
+        missed2: (r.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase),
+        gained: mcqPick.correct ? [] : ((r.marks ?? 0) > 0 ? ['picked the wrong option'] : []),
+        recovered: !mcqPick.correct && (r.marks ?? 0) > 0,
+        modelAnswer: mcqItem.whyCorrect || '',
+        mix: r.misconception ? r.misconception.belief : (mcqPick.correct ? null : mcqPick.says || null),
+      });
+      save(KEY, all.slice(0, 400));
+    }
+  } catch(e){
+    $('mq-err').textContent = e.message; $('mq-err').classList.remove('hide');
+  }
+  $('mq-submit').disabled = false; $('mq-submit').textContent = 'Submit my reason';
+};
+
+$('mq-next').onclick = () => { mcqItem = null; mcqPick = null; renderQs(); };
+
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-mist .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -1028,7 +1210,7 @@ function renderMistakes(){
   const el = $('m-list');
   if (!rows.length){
     el.innerHTML = '<div class="empty">' + (all.length ? 'Nothing here with that filter.'
-      : 'Nothing yet. Mark an answer and it appears here, dated.') + '</div>';
+      : 'Nothing yet. Answer a question and it appears here, dated.') + '</div>';
     return;
   }
   let out = '', lastDay = '';
@@ -1117,7 +1299,7 @@ function renderStats(){
   ['st-kw-box','st-rec-box','st-topic-box'].forEach(id => $(id).classList.toggle('hide', all.length < 2));
   if (all.length < 2){
     $('st-head').textContent = 'Not enough data yet.';
-    $('st-sub').textContent = 'Mark a few answers and the pattern appears here.';
+    $('st-sub').textContent = 'Answer a few questions and the pattern appears here.';
     $('st-rec').textContent = '—'; $('st-top').textContent = '—';
     return;
   }

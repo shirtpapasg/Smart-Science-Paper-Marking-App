@@ -14,6 +14,7 @@ export default async function handler(req, res) {
     const out = [];
     for (let i = 0; i < Math.min(count, 3); i++) {
       const t = await callModel(TWIN_SYSTEM, buildTwinUser(scheme, exclusions, used), 1400);
+      // Gate: reject anything that reuses the source wording or an excluded term.
       // Concept vocabulary is SUPPOSED to be shared — a twin tests the same idea.
       // Only a copied phrase counts as reuse, so compare 4-word runs, not single words.
       const norm = x => String(x || '').toLowerCase().replace(/[^a-z ]+/g, ' ').replace(/\s+/g, ' ').trim();
