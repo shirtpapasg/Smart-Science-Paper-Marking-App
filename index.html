@@ -200,7 +200,7 @@
   <div id="stage-ask">
     <h1>Let's have a go.</h1>
     <p class="muted">Pick a question and write your answer just as you would on paper. I will show you what is already good and what is worth adding.</p>
-    <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-err"></div></div>
+    <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-tag" class="muted" style="margin-top:9px;font-size:14px"></div><div id="q-err"></div></div>
     <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
       <textarea id="a1" placeholder="Type your answer here…"></textarea></div>
@@ -488,6 +488,12 @@ const subs = () => load(KEY);
 function showMarkDiagram(){
   let sel = null;
   try { sel = selected(); } catch(e){}
+  const tag = $('q-tag');
+  if (tag){
+    const m = (sel && sel.meta) || {};
+    const bits = [m.level, m.topic || m.chapter].filter(Boolean);
+    tag.textContent = bits.length ? bits.join(' · ') : '';
+  }
   const d = (sel && sel.scheme) ? sel.scheme.diagram : null;
   const el = $('mk-dgm'); if (el) el.innerHTML = svgFor(d);
 }
@@ -568,12 +574,12 @@ function listRows(el, items, open){
 }
 
 function fillQuestionPicker(){
-  const opt = q => '<option value="bank:'+q.i+'">' + q.level + ' ' + q.chapter + ' · ' +
-    (q.q.length > 60 ? q.q.slice(0,60)+'…' : q.q) + '</option>';
+  const cut = (t, n) => { t = String(t||''); return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t; };
+  const opt = q => '<option value="bank:'+q.i+'">' + cut(q.q, 96) + '</option>';
   const mine = load(SRC).map(r => '<option value="src:'+r.id+'">' +
-    (r.scheme.q.length > 60 ? r.scheme.q.slice(0,60)+'…' : r.scheme.q) + '</option>').join('');
+    cut(r.scheme.q, 96) + '</option>').join('');
   const prac = load(TWN).filter(t => t.approved).map(r => '<option value="twin:'+r.id+'">' +
-    (r.stem.length > 60 ? r.stem.slice(0,60)+'…' : r.stem) + '</option>').join('');
+    cut(r.stem, 96) + '</option>').join('');
   const prev = $('q').value;
   $('q').innerHTML =
     (mine ? '<optgroup label="My source questions">' + mine + '</optgroup>' : '') +
