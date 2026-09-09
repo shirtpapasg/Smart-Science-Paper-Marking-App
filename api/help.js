@@ -1,4 +1,4 @@
-import { callModel } from './_shared.js';
+import { callModel, guard } from './_shared.js';
 
 // Answers questions about how the app works. Deliberately narrow: it knows the
 // features and nothing else, so it cannot be turned into a general chatbot or
@@ -37,7 +37,7 @@ THE ANSWER IS NEVER GIVEN ON REQUEST — asking for it gets a friendly refusal.
 `;
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (!guard(req, res)) return;
   const { question } = req.body || {};
   if (!String(question || '').trim()) return res.status(400).json({ error: 'No question supplied' });
 

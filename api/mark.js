@@ -1,7 +1,7 @@
 import { RECITATION } from '../science-kb.js';
 import { MISCONCEPTIONS } from '../misconceptions.js';
 import { SYSTEM, buildUser, buildUserFromScheme } from '../marking-prompt.js';
-import { callModel } from './_shared.js';
+import { callModel, guard } from './_shared.js';
 
 function flat() {
   const out = [];
@@ -12,7 +12,7 @@ function flat() {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (!guard(req, res)) return;
 
   const { questionIndex, scheme, answer, attempt = 1, firstAnswer = '', revealAnswer = false } = req.body || {};
   if (!String(answer || '').trim()) return res.status(400).json({ error: 'No answer supplied' });

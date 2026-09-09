@@ -1,9 +1,9 @@
-import { callModel } from './_shared.js';
+import { callModel, guard } from './_shared.js';
 
 // Reads the PRINTED question off a photograph. Never handwriting.
 // The image is passed straight through and never written to storage.
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (!guard(req, res)) return;
   const { imageBase64, mediaType = 'image/jpeg' } = req.body || {};
   if (!imageBase64) return res.status(400).json({ error: 'No image supplied' });
 

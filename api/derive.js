@@ -1,10 +1,10 @@
 import { DERIVE_SYSTEM, buildDeriveUser, MCQ_SYSTEM, buildMcqUser } from '../marking-prompt.js';
-import { syllabusContext, callModel } from './_shared.js';
+import { syllabusContext, callModel, guard } from './_shared.js';
 
 // Writes a mark scheme for a question the answer guide has never seen.
 // This is the step that lets the app mark ANY question, not just the 247.
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (!guard(req, res)) return;
   const { questionText, format } = req.body || {};
   if (!String(questionText || '').trim()) return res.status(400).json({ error: 'No question supplied' });
 

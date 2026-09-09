@@ -1,10 +1,10 @@
 import { TWIN_SYSTEM, buildTwinUser } from '../marking-prompt.js';
-import { syllabusContext, callModel } from './_shared.js';
+import { syllabusContext, callModel, guard } from './_shared.js';
 
 // Generates extra practice from an approved scheme. Same concept, new situation,
 // no wording from the source. The tutor still approves every one.
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (!guard(req, res)) return;
   const { scheme, avoid = [], count = 1 } = req.body || {};
   if (!scheme || !scheme.concept) return res.status(400).json({ error: 'No scheme supplied' });
 

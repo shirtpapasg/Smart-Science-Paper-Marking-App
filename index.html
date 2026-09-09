@@ -324,7 +324,7 @@
     <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-tag" class="muted" style="margin-top:9px;font-size:14px"></div><div id="q-err"></div></div>
     <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
-      <textarea id="a1" placeholder="Type your answer here…"></textarea></div>
+      <textarea id="a1" maxlength="800" placeholder="Type your answer here…"></textarea></div>
     <div class="hint"><b>?</b><div>Unsure how much to write? Tap here.
       <div class="hint-more">Write full sentences and explain <em>why</em>, not just what. If the question says
       “explain”, it usually wants two or three linked steps — something happens, which causes something,
@@ -354,7 +354,7 @@
     <div class="dark"><span class="eyebrow">Keep this in mind</span>
       <div id="ponder2" style="margin-top:8px;font-size:18px"></div></div>
     <div style="margin-top:24px"><label for="a2">Your answer, all of it this time</label>
-      <textarea id="a2" placeholder="Write the whole answer again…"></textarea></div>
+      <textarea id="a2" maxlength="800" placeholder="Write the whole answer again…"></textarea></div>
     <div class="hint"><b>?</b><div>Why write the whole thing again?
       <div class="hint-more">Because the joining-up is the part that earns marks, and you only practise
       that by writing the answer end to end. Patching in the missing bit skips the very thing being tested.</div></div></div>
@@ -418,7 +418,7 @@
     </div>
     <div id="cam-out"></div>
     <div style="margin-top:24px"><label for="nq">The question</label>
-      <textarea id="nq" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
+      <textarea id="nq" maxlength="1500" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
     <button class="primary" id="nq-go">Work out the answer</button>
     <button class="ghost" id="nq-cancel">Cancel</button>
     <div id="nq-err" class="err hide"></div>
@@ -471,7 +471,7 @@
       <div class="dark"><span class="eyebrow">A question to ponder</span>
         <div id="mq-ponder" style="margin-top:8px;font-size:16px;line-height:1.55"></div></div>
       <div style="margin-top:20px"><label for="mq-why">Why did you choose that?</label>
-        <textarea id="mq-why" style="min-height:110px" placeholder="Write what you were thinking…"></textarea></div>
+        <textarea id="mq-why" maxlength="800" style="min-height:110px" placeholder="Write what you were thinking…"></textarea></div>
       <button class="primary" id="mq-submit">Submit my reason</button>
       <p class="muted" style="margin-top:14px">Picking again from four options is a guess. Writing your
         reason is the real second try — and it is the part I can actually help with.</p>
@@ -531,7 +531,7 @@
     <span class="eyebrow" style="color:var(--mid)" id="p-topic"></span>
     <h2 id="p-q" style="margin-top:10px"></h2>
     <div style="margin-top:24px"><label>Say it out loud, then type it here</label>
-      <textarea id="p-a" placeholder="From memory…"></textarea></div>
+      <textarea id="p-a" maxlength="800" placeholder="From memory…"></textarea></div>
     <button class="primary" id="p-check">Show me how I did</button>
     <div id="p-reveal" class="hide">
       <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
@@ -672,7 +672,7 @@
     <div class="muted" style="margin-top:5px;font-size:14px">Ask me anything about the app.</div>
     <div id="h-list"></div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
-      <textarea id="h-ask" style="min-height:74px;font-size:15px"
+      <textarea id="h-ask" maxlength="200" style="min-height:74px;font-size:15px"
         placeholder="Or type your own question…"></textarea>
       <button class="primary" id="h-go" style="min-height:48px;font-size:15px">Ask</button>
     </div>
@@ -836,8 +836,40 @@ const DB = {
 DB.boot();
 DB.bootAsync().catch(() => {});
 
-const load = (k) => { const v = DB.get(k, []); return Array.isArray(v) ? v : []; };
-const save = (k, v) => DB.set(k, v);
+// Model answers are not kept in readable form. hideJson() and showJson() are a light
+// scramble (XOR against a fixed key, then base64), not encryption: enough to
+// stop a pupil reading answers out of browser storage, nothing more.
+const HIDE_KEY = 'sspma';
+const hideJson = (obj) => {
+  const bytes = unescape(encodeURIComponent(JSON.stringify(obj)));
+  let out = '';
+  for (let i = 0; i < bytes.length; i++)
+    out += String.fromCharCode(bytes.charCodeAt(i) ^ HIDE_KEY.charCodeAt(i % HIDE_KEY.length));
+  return btoa(out);
+};
+const showJson = (str) => {
+  const bytes = atob(str);
+  let out = '';
+  for (let i = 0; i < bytes.length; i++)
+    out += String.fromCharCode(bytes.charCodeAt(i) ^ HIDE_KEY.charCodeAt(i % HIDE_KEY.length));
+  return JSON.parse(decodeURIComponent(escape(out)));
+};
+// Only the scheme field of the question rows is hidden. Rows saved before this
+// change hold the scheme as plain JSON, so reading falls back to that.
+const HIDDEN_KEYS = ['sm-src-v1', 'sm-twin-v1'];
+const hideRow = (r) => (r && r.scheme && typeof r.scheme === 'object') ? { ...r, scheme: hideJson(r.scheme) } : r;
+const showRow = (r) => {
+  if (!r || typeof r.scheme !== 'string') return r;
+  try { return { ...r, scheme: showJson(r.scheme) }; }
+  catch(e){ try { return { ...r, scheme: JSON.parse(r.scheme) }; } catch(e2){ return r; } }
+};
+
+const load = (k) => {
+  const v = DB.get(k, []);
+  const rows = Array.isArray(v) ? v : [];
+  return HIDDEN_KEYS.includes(k) ? rows.map(showRow) : rows;
+};
+const save = (k, v) => DB.set(k, (HIDDEN_KEYS.includes(k) && Array.isArray(v)) ? v.map(hideRow) : v);
 const subs = () => load(KEY);
 
 /* ── navigation ────────────────────────────────────────── */
@@ -895,11 +927,16 @@ const fail = m => { $('err').textContent = m; $('err').classList.remove('hide');
 const clearFail = () => $('err').classList.add('hide');
 
 async function callApi(path, body){
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 55000);
   let res;
   try {
-    res = await fetch(path, { method:'POST',
+    res = await fetch(path, { method:'POST', signal: ctl.signal,
       headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
-  } catch(e){ throw new Error('No connection to the server.'); }
+  } catch(e){
+    if (ctl.signal.aborted) throw new Error('That took too long. Tap to try again.');
+    throw new Error('No connection to the server.');
+  } finally { clearTimeout(timer); }
 
   const text = await res.text();
   if (!text) throw new Error(res.status === 404
