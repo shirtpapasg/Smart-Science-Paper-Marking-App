@@ -169,14 +169,15 @@ export const TWIN_SYSTEM = [
   'Rules that are not negotiable:',
   '- Hold the concept and the number of causal steps exactly. Change the object, the person and the situation.',
   '- Use no wording from the source question. Not one phrase.',
-  '- The everyday object must be something a 9-to-12-year-old in Singapore has actually handled.',
+  '- Where a list of situations is supplied, you MUST pick one from it. Inventing your own is not allowed.',
+  '- Otherwise the everyday object must be something a 9-to-12-year-old in Singapore has actually handled.',
   '- Never introduce a term the syllabus says is not required at that level.',
   '- Write the answer in four parts: Choice, Evidence from the question, Concept, Link.',
   '- The Evidence part must name THIS question\'s own set-up, never the source question\'s.',
   'Reply with JSON only, no prose and no code fences.',
 ].join('\n');
 
-export function buildTwinUser(scheme, exclusions, avoid) {
+export function buildTwinUser(scheme, exclusions, avoid, library) {
   return [
     'SOURCE CONCEPT (hold this): ' + (scheme.concept || ''),
     'LEVEL: ' + (scheme.level || 'P4') + ' · TOPIC: ' + (scheme.topic || ''),
@@ -187,6 +188,14 @@ export function buildTwinUser(scheme, exclusions, avoid) {
     'The source question, for reference only — reuse NONE of its wording or objects:',
     scheme.q || '',
     avoid && avoid.length ? 'ALREADY USED, pick something else: ' + avoid.join(' · ') : '',
+    '',
+    library && library.length
+      ? ['CHOOSE ONE SITUATION FROM THIS LIST. Do not invent your own — the list is',
+         'checked against the syllabus and against what a child of this age has met.',
+         'Use the objects named in the one you pick, and set "object" to its label.',
+         library.map((c, i) => (i + 1) + '. ' + c.object + '  [parts: ' + (c.parts || []).join(', ') + ']').join('\n'),
+        ].join('\n')
+      : 'No approved situations are listed for this concept, so choose an everyday one a 9-to-12-year-old in Singapore has actually handled.',
     '',
     'TERMS THE SYLLABUS SAYS ARE NOT REQUIRED (never use these):',
     exclusions,

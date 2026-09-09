@@ -1,5 +1,6 @@
 import { TWIN_SYSTEM, buildTwinUser } from '../marking-prompt.js';
 import { syllabusContext, callModel, guard } from './_shared.js';
+import { contextsFor } from '../context-library.js';
 
 // Generates extra practice from an approved scheme. Same concept, new situation,
 // no wording from the source. The tutor still approves every one.
@@ -12,8 +13,21 @@ export default async function handler(req, res) {
     const { exclusions } = syllabusContext();
     const used = [...avoid];
     const out = [];
+
+    // Restricting the model to the tutor's own list is what keeps generated
+    // questions inside the syllabus. Situations already used are dropped so a
+    // batch varies.
+    const entry = contextsFor(scheme.concept);
+    const pool = entry
+      ? entry.contexts.filter(c => !used.some(u => String(u).toLowerCase() === c.object.toLowerCase()))
+      : null;
     for (let i = 0; i < Math.min(count, 3); i++) {
-      const t = await callModel(TWIN_SYSTEM, buildTwinUser(scheme, exclusions, used), 1400);
+      const offer = pool && pool.length
+        ? pool.filter(c => !used.some(u => String(u).toLowerCase() === c.object.toLowerCase()))
+        : null;
+      const t = await callModel(TWIN_SYSTEM,
+        buildTwinUser(scheme, exclusions, used, offer && offer.length ? offer : null), 1400);
+      t.fromLibrary = !!(offer && offer.length);
       // Gate: reject anything that reuses the source wording or an excluded term.
       // Concept vocabulary is SUPPOSED to be shared — a twin tests the same idea.
       // Only a copied phrase counts as reuse, so compare 4-word runs, not single words.
@@ -38,6 +52,12 @@ export default async function handler(req, res) {
       t.level = scheme.level;
       t.topic = scheme.topic;
       t.questionType = scheme.questionType;
+      // A situation that is not on the list is a flag, not a failure — it means
+      // this concept has no library entry yet.
+      if (entry && t.object)
+        t.gate.offListSituation = !entry.contexts.some(c =>
+          c.object.toLowerCase().includes(String(t.object).toLowerCase().slice(0, 14)) ||
+          String(t.object).toLowerCase().includes(c.object.toLowerCase().slice(0, 14)));
       out.push(t);
       if (t.object) used.push(t.object);
     }

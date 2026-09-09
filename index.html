@@ -269,21 +269,58 @@
   .hint.open .hint-more{display:block}
   /* Pip the chinchilla. Frames swap on a timer, so it reads as a little gif
      without shipping one. */
-  #pip{position:fixed;right:12px;bottom:calc(var(--nav-h, 96px) + 74px);z-index:26;
-    width:82px;height:82px;pointer-events:none;opacity:0;transform:translateY(14px) scale(.86);
+  #pip{position:fixed;right:12px;bottom:calc(var(--nav-h, 96px) + 12px);z-index:26;
+    width:108px;height:108px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    opacity:0;transform:translateY(14px) scale(.86);
     transition:opacity .4s,transform .5s cubic-bezier(.2,1.3,.3,1)}
   #pip.on{opacity:1;transform:none;animation:pip-bob 2.8s ease-in-out infinite}
+  /* The helper bar shares this corner, so step out of its way while it shows. */
+  #pip.lifted{bottom:calc(var(--nav-h, 96px) + var(--nudge-h, 80px) + 16px)}
+  #pip.lifted #pip-say{bottom:14px}
+  #pip:active{animation:none;transform:scale(.94)}
+  /* A quiet ring so it reads as something you can tap, not just decoration. */
+  #pip::after{content:'';position:absolute;inset:-5px;border-radius:50%;
+    border:2px solid transparent;transition:border-color .3s,transform .3s}
+  #pip.open::after{opacity:1;border-style:solid;border-color:var(--accent);transform:scale(1.04)}
+  /* With no animal chosen, the same slot is a plain button. */
+  #pip.plain{width:54px;height:54px;background:var(--ink);border-radius:50%;
+    box-shadow:0 4px 16px rgba(26,26,26,.24);animation:none}
+  #pip.plain::before{content:'☰';position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;color:var(--bg);font-size:20px}
+  #pip.plain::after{display:none}
   #pip img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
     opacity:0;transition:opacity .22s;filter:drop-shadow(0 3px 6px rgba(26,26,26,.22))}
   #pip img.on{opacity:1}
   @keyframes pip-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
-  #pip-say{position:absolute;right:76px;bottom:16px;width:max-content;max-width:min(56vw,220px);
+  #pip-say{position:absolute;right:100px;bottom:22px;width:max-content;max-width:min(56vw,220px);
     background:#fff;color:#1a1a1a;border-radius:14px 14px 3px 14px;padding:9px 12px;
     font-size:13.5px;line-height:1.45;box-shadow:0 4px 16px rgba(26,26,26,.2);opacity:0;
     transition:opacity .3s}
   html[data-theme="dark"] #pip-say{background:#2a2724;color:#f0ece6}
   #pip.talk #pip-say{opacity:1}
   @media (prefers-reduced-motion:reduce){#pip.on{animation:none}}
+  /* The pet's menu. Everything that used to float in the corners lives here now,
+     so the animal has a job and the screen edges stay clear. */
+  #pip-menu{position:fixed;right:14px;bottom:calc(var(--nav-h, 96px) + 130px);z-index:27;
+    display:flex;flex-direction:column;align-items:flex-end;gap:9px;pointer-events:none}
+  #pip-menu button{width:auto;min-height:0;margin:0;padding:11px 15px;border-radius:999px;
+    font-size:15px;display:flex;align-items:center;gap:9px;white-space:nowrap;
+    background:var(--ink);color:var(--bg);border:1.5px solid var(--ink);
+    box-shadow:0 4px 16px rgba(26,26,26,.24);
+    opacity:0;transform:translateY(12px) scale(.9);transform-origin:100% 50%;
+    transition:opacity .26s,transform .34s cubic-bezier(.2,1.3,.3,1)}
+  #pip-menu button span{font-size:17px;line-height:1}
+  #pip-menu.on{pointer-events:auto}
+  #pip-menu.on button{opacity:1;transform:none}
+  #pip-menu.on button:nth-child(1){transition-delay:.04s}
+  #pip-menu.on button:nth-child(2){transition-delay:.08s}
+  #pip-menu.on button:nth-child(3){transition-delay:.12s}
+  #pip-menu.on button:nth-child(4){transition-delay:.16s}
+  #pip-menu.on button:nth-child(5){transition-delay:.2s}
+  html[data-theme="dark"] #pip-menu button{background:var(--surface);color:var(--ink);border-color:var(--rule)}
+  /* The old corner buttons are gone — the panels they opened stay put. */
+  #tools .m-fab,#music .m-fab{display:none}
+  @media (prefers-reduced-motion:reduce){#pip-menu button{transition:opacity .2s}}
   #nudge{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h, 96px) + 12px);z-index:30;
     background:var(--ink);color:var(--bg);padding:15px 16px;border-radius:16px;
     box-shadow:0 8px 28px rgba(26,26,26,.28);
@@ -320,15 +357,15 @@
 
   <div id="stage-ask">
     <h1>Let's have a go.</h1>
-    <p class="muted">Pick a question and write your answer just as you would on paper. I will show you what is already good and what is worth adding.</p>
+    <p class="muted">Pick a question. Write your answer like you would on paper. I will show you the good bits and what to add.</p>
     <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-tag" class="muted" style="margin-top:9px;font-size:14px"></div><div id="q-err"></div></div>
     <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
       <textarea id="a1" maxlength="800" placeholder="Type your answer here…"></textarea></div>
     <div class="hint"><b>?</b><div>Unsure how much to write? Tap here.
-      <div class="hint-more">Write full sentences and explain <em>why</em>, not just what. If the question says
-      “explain”, it usually wants two or three linked steps — something happens, which causes something,
-      which gives the result. Do not worry about spelling; it never costs you a mark.</div></div></div>
+      <div class="hint-more">Write in full sentences. Say <em>why</em>, not just what.<br><br>
+      If it says “explain”, join your ideas up: this happens → so this happens → so that is the answer.<br><br>
+      Spelling never costs you a mark.</div></div></div>
     <button class="primary" id="go1">Check my answer</button>
   </div>
 
@@ -338,13 +375,13 @@
     <div class="card"><span class="eyebrow" style="color:var(--mid)">What you wrote</span>
       <div id="yours" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
     <div id="hits-box" class="hide" style="margin-top:24px">
-      <span class="eyebrow" style="color:var(--mid)">Nicely done — keep all of this</span><div id="hits"></div></div>
+      <span class="eyebrow" style="color:var(--mid)">Nicely done. Keep all of this</span><div id="hits"></div></div>
     <div id="gaps-box" class="hide" style="margin-top:24px">
       <span class="eyebrow">Worth adding</span><div id="gaps"></div></div>
     <div class="dark" id="ponder-box"><span class="eyebrow">Something to think about</span>
       <div id="ponder" style="margin-top:8px;font-size:18px"></div></div>
     <button class="primary" id="go2">I'll try again</button>
-    <button class="ghost" id="peek">I'm stuck — give me a nudge</button>
+    <button class="ghost" id="peek">I'm stuck. Give me a nudge</button>
   </div>
 
   <div id="stage-2nd" class="hide">
@@ -356,8 +393,8 @@
     <div style="margin-top:24px"><label for="a2">Your answer, all of it this time</label>
       <textarea id="a2" maxlength="800" placeholder="Write the whole answer again…"></textarea></div>
     <div class="hint"><b>?</b><div>Why write the whole thing again?
-      <div class="hint-more">Because the joining-up is the part that earns marks, and you only practise
-      that by writing the answer end to end. Patching in the missing bit skips the very thing being tested.</div></div></div>
+      <div class="hint-more">The marks come from joining your ideas up. You only get better at that by writing the whole thing.<br><br>
+      Adding one word to the end skips the bit you are practising.</div></div></div>
     <button class="primary" id="go3">That's my answer</button>
   </div>
 
@@ -369,8 +406,7 @@
     <div class="card" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
       <div id="model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div>
       <div class="muted" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule);font-size:15px">
-        This is how I would write it — your school teacher may word it differently, so do check with
-        them if yours looks different. Both can be right.</div></div>
+        This is how I would write it. Your teacher might say it differently. That is fine. Ask them if yours looks different.</div></div>
     <div id="mc-box" class="hide card flag"><span class="eyebrow">Lots of people mix this up</span>
       <div id="mc-belief" style="margin-top:8px"></div>
       <div id="mc-fix" class="muted" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)"></div></div>
@@ -390,8 +426,8 @@
 <section id="v-qs">
   <div class="hd"><span class="eyebrow">Your questions</span></div>
   <div class="chips" style="margin-top:0;margin-bottom:20px">
-    <span class="chip on" data-folder="source">From my papers</span>
-    <span class="chip" data-folder="twin">Practice I made</span>
+    <span class="chip on" data-folder="source">My questions</span>
+    <span class="chip" data-folder="twin">AI practice</span>
   </div>
 
   <div id="qs-home">
@@ -403,13 +439,12 @@
     <div id="adm-bar"></div>
     <div id="qs-list"></div>
     <div class="hint"><b>?</b><div>Not sure what to add?
-      <div class="hint-more">Anything from a worksheet, a past paper or a textbook. The quickest way is to photograph it — I read the printed question straight off the page, and your photo is never saved.</div></div></div>
+      <div class="hint-more">Anything from a worksheet, a past paper or a textbook. The quickest way is to take a photo. I read the question off the page. Your photo is never saved.</div></div></div>
   </div>
 
   <div id="qs-new" class="hide">
     <h2>What's the question?</h2>
-    <p class="muted">Photograph it, or type it in. I will work out what a full answer needs, and you get
-      to look it over before we use it.</p>
+    <p class="muted">Take a photo of it, or type it in. I will work out the answer. You check it first.</p>
     <div class="cam">
       <label for="cam-shot">📷 Take a photo
         <input type="file" id="cam-shot" accept="image/*" capture="environment"></label>
@@ -456,6 +491,44 @@
     </div>
   </div>
 
+
+  <!-- Admin only: the scanned page behind each question, and the edit before release. -->
+  <div id="qs-scan" class="hide">
+    <span class="eyebrow">Scanned pages</span>
+    <h2 id="sc-h" style="margin-top:10px">Check what was read.</h2>
+    <p class="muted" id="sc-sub">Every photographed question is kept here with its original page. Read it against the scan, fix anything, then release it as practice.</p>
+    <div id="sc-list"></div>
+    <button class="ghost" id="sc-back" style="margin-top:20px">Back to questions</button>
+  </div>
+
+  <div id="qs-scanone" class="hide">
+    <span class="eyebrow">Original page</span>
+    <h2 id="so-h" style="margin-top:10px">Side by side.</h2>
+    <div class="shot" id="so-shot"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="secondary" id="so-pdf" style="margin:0;text-align:center">Download the PDF</button>
+      <button class="ghost" id="so-del" style="margin:0;text-align:center;border:1.5px solid var(--rule)">Delete the scan</button>
+    </div>
+
+    <div style="margin-top:26px"><label for="so-q">The question, as I read it</label>
+      <textarea id="so-q" style="min-height:120px"></textarea></div>
+
+    <div style="margin-top:22px"><span class="eyebrow" style="color:var(--mid)">Picture for this question</span>
+      <div id="so-dgm"></div>
+      <div class="cam" style="margin-top:12px">
+        <label for="so-crop">✂ Use the scan</label>
+        <label for="so-img">Attach a picture<input type="file" id="so-img" accept="image/*"></label>
+      </div>
+      <input type="file" id="so-crop" class="hide">
+      <div class="muted" style="margin-top:10px;font-size:14px">Use the scan keeps the photographed diagram. Attach a picture replaces it with your own.</div>
+    </div>
+
+    <button class="primary" id="so-save" style="margin-top:24px">Save my edits</button>
+    <button class="secondary" id="so-release">Release as practice</button>
+    <button class="ghost" id="so-back">Back</button>
+    <div id="so-err" class="err hide"></div>
+  </div>
+
   <div id="qs-mcqrun" class="hide">
     <div style="display:flex;align-items:baseline;gap:12px">
       <span class="eyebrow" id="mq-meta">Multiple choice</span>
@@ -474,7 +547,7 @@
         <textarea id="mq-why" maxlength="800" style="min-height:110px" placeholder="Write what you were thinking…"></textarea></div>
       <button class="primary" id="mq-submit">Submit my reason</button>
       <p class="muted" style="margin-top:14px">Picking again from four options is a guess. Writing your
-        reason is the real second try — and it is the part I can actually help with.</p>
+        reason is the real second try. It is also the part I can help with.</p>
     </div>
 
     <div id="mq-done" class="hide">
@@ -506,7 +579,7 @@
   </div>
   <h1>Everything you've<br>worked on.</h1>
   <p class="muted">Nothing here ever disappears. Something you found hard in March is still here in
-    September — which is exactly what makes it useful before an exam.</p>
+    September. That is what makes it useful before an exam.</p>
   <div class="stat">
     <div><b id="m-total">0</b><span>Entries</span></div>
     <div><b id="m-twice">0</b><span>Still tricky</span></div>
@@ -520,11 +593,10 @@
   <div class="hd"><span class="eyebrow">Quick practice</span></div>
   <div id="p-idle">
     <h1>Let me help you<br>remember.</h1>
-    <p class="muted">Three questions, chosen from the ones you have found hardest. Say each answer out
-      loud before you type it — saying it is what makes it stay.</p>
+    <p class="muted">Three questions you found tricky. Say each answer out loud first. Saying it helps you remember it.</p>
     <div id="p-weak" style="margin-top:24px"></div>
     <button class="primary" id="p-start">Start a round</button>
-    <div id="p-none" class="empty hide">Answer a few questions first — recall is built from what you actually got wrong.</div>
+    <div id="p-none" class="empty hide">Answer a few questions first. Recall is built from the ones you got wrong.</div>
   </div>
   <div id="p-run" class="hide">
     <div class="steps" style="margin-left:0;margin-bottom:20px"><i id="ps1"></i><i id="ps2"></i><i id="ps3"></i></div>
@@ -536,7 +608,7 @@
     <div id="p-reveal" class="hide">
       <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
         <div id="p-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
-      <p class="muted" style="margin-top:20px">Honestly — how did that feel?</p>
+      <p class="muted" style="margin-top:20px">Honestly, how did that feel?</p>
       <div style="display:flex;gap:10px;margin-top:12px">
         <button class="primary" data-g="smooth" style="margin:0;text-align:center;padding:16px 8px">Smooth</button>
         <button class="secondary" data-g="hesitant" style="margin:0;text-align:center;padding:16px 8px">Hesitant</button>
@@ -554,6 +626,26 @@
 <!-- ══ CLASS ══ -->
 <section id="v-stats" class="hide">
   <div class="hd"><span class="eyebrow">How it's going</span></div>
+  <div class="card" id="buddy-box" style="margin-top:0;margin-bottom:16px">
+    <span class="eyebrow" style="color:var(--mid)">Your buddy</span>
+    <div class="muted" style="margin-top:8px;font-size:14px">Who pops up to help you along?</div>
+    <div class="chips" id="buddy-pick"></div>
+  </div>
+  <div class="card" id="rep-box" style="margin-top:0;margin-bottom:16px">
+    <span class="eyebrow" style="color:var(--mid)">Report for a grown-up</span>
+    <div class="muted" style="margin-top:8px;font-size:14px">A one-page summary of how it is going. What was answered, what is sticking, and what to work on next.</div>
+    <div id="rep-sum" class="muted" style="margin-top:12px;font-size:14px"></div>
+    <button class="secondary" id="rep-get" style="min-height:48px;font-size:15px">Download the report</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
+      <div class="muted" style="font-size:13.5px">Send it by email instead. Coming soon</div>
+      <div class="pin" style="margin-top:8px">
+        <input id="rep-mail" type="email" placeholder="grown-up@example.com" autocomplete="email"
+          style="letter-spacing:normal;text-align:left;font-size:15px">
+        <button class="secondary" id="rep-send" style="font-size:15px">Send</button>
+      </div>
+      <div id="rep-msg" class="muted" style="margin-top:8px;font-size:13.5px"></div>
+    </div>
+  </div>
   <div class="card" id="prof-box" style="margin-top:0;margin-bottom:28px">
     <div style="display:flex;align-items:baseline;gap:10px">
       <span class="eyebrow" style="color:var(--mid)">Your profile</span>
@@ -577,9 +669,9 @@
     <span class="eyebrow" style="color:var(--mid)">Did it come back second time?</span>
     <div id="st-recov"></div>
     <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">What this tells you</span>
-      <div class="muted" style="margin-top:8px">When something comes back on the second try, you already knew it —
-      it just needs saying more often, so a quick practice round sorts it. When it does not come back,
-      the idea itself needs another look.</div></div>
+      <div class="muted" style="margin-top:8px">If something comes back on your second try, you already knew it.
+      It just needs saying more often. A quick practice round sorts that out.
+      If it does not come back, the idea itself needs another look.</div></div>
   </div>
   <div id="st-topic-box" class="hide" style="margin-top:28px">
     <span class="eyebrow" style="color:var(--mid)">By topic</span>
@@ -592,17 +684,16 @@
 <div id="music">
   <div class="m-panel" id="m-panel">
     <div style="font-family:var(--round);font-weight:700;font-size:16px">Study music</div>
-    <div class="muted" style="margin-top:5px;font-size:14px">Slow, wordless, and quiet enough to think over.</div>
-    <div id="m-list"></div>
+    <div class="muted" style="margin-top:5px;font-size:14px">Slow, no words, quiet enough to think over.</div>
+    <div id="m-tunes"></div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)">
-      <div class="muted" style="font-size:13px">Rather use your own?</div>
+      <div class="muted" style="font-size:13px">Or play your own instead</div>
       <div class="m-svc">
         <a href="https://open.spotify.com/search/lofi%20study" target="_blank" rel="noopener">Spotify</a>
         <a href="https://music.apple.com/us/search?term=lofi%20study" target="_blank" rel="noopener">Apple</a>
         <a href="https://music.youtube.com/search?q=lofi+study" target="_blank" rel="noopener">YouTube</a>
       </div>
-      <div class="muted" style="margin-top:10px;font-size:12.5px;line-height:1.5">These open your own
-        app — keep it playing in the background and come back here.</div>
+      <div class="muted" style="margin-top:10px;font-size:12.5px;line-height:1.5">These open your own app. Keep it playing in the background and come back here.</div>
     </div>
   </div>
   <button class="m-fab" id="m-fab" aria-label="Study music" style="position:relative">♪</button>
@@ -614,30 +705,32 @@
   <div class="t-slide" data-slide="0">
     <div class="t-art">👋</div>
     <h2>Hello. I mark Science.</h2>
-    <p>Open-ended questions, the sort that ask you to <em>explain</em>. Write your answer in your own
-      words and I will show you what is already good and what is worth adding.</p>
+    <p>The kind of questions that ask you to <em>explain</em> something.</p>
+    <p>Write your answer in your own words. I will show you the good bits and what to add.</p>
   </div>
 
   <div class="t-slide" data-slide="1">
     <div class="t-art">✎</div>
     <h2>Two goes,<br>every time.</h2>
-    <p>The first time, I tell you what is missing — but never the words. You get something to think
-      about, then you write it again. Only then do you see a full answer.</p>
-    <p style="font-size:15px">That second go is where the learning happens, so I will not skip it.</p>
+    <p>First go: I tell you what is missing. I never tell you the words.</p>
+    <p>Then you get something to think about, and you write it again.</p>
+    <p>Only after that do you see a full answer. The second go is where you learn, so I never skip it.</p>
   </div>
 
   <div class="t-slide" data-slide="2">
     <div class="t-art">📷</div>
     <h2>Photograph<br>any question.</h2>
-    <p>Point your camera at a worksheet or a past paper. I read the printed question straight off the
-      page and work out what a full answer needs. Your photo is never saved.</p>
+    <p>Point your camera at a worksheet or a past paper.</p>
+    <p>I read the question off the page and work out what a good answer needs.</p>
+    <p>Your photo is never saved.</p>
   </div>
 
   <div class="t-slide" data-slide="3">
     <div class="t-art">◷</div>
     <h2>Nothing gets<br>forgotten.</h2>
-    <p>Everything you answer goes into your notebook with the date, and your recall practice is built
-      from whatever you found hardest. There is a notes pad and some quiet study music too.</p>
+    <p>Everything you answer goes into your notebook with the date.</p>
+    <p>Your practice comes from the ones you found hardest.</p>
+    <p>There is a notes pad and some quiet music too.</p>
   </div>
 
   <div class="t-slide" data-slide="4">
@@ -713,13 +806,15 @@
   </div>
 </div>
 
-<div id="pip" aria-hidden="true">
-  <img src="chin-sit.png" alt="" class="on">
-  <img src="chin-happy.png" alt="">
-  <img src="chin-stand.png" alt="">
-  <img src="chin-cheer.png" alt="">
-  <div id="pip-say"></div>
+<div id="pip-menu">
+  <button id="pm-progress"><span>◈</span>My progress</button>
+  <button id="pm-music"><span>♪</span>Study music</button>
+  <button id="pm-notes"><span>✎</span>My notes</button>
+  <button id="pm-theme"><span>◐</span>Dark mode</button>
+  <button id="pm-help"><span>?</span>Help me</button>
 </div>
+
+<div id="pip" role="button" tabindex="0" aria-label="Your buddy — tap for music, notes, dark mode and help"><div id="pip-say"></div></div>
 
 <div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
 
@@ -728,7 +823,6 @@
   <button data-v="mark"><b>✎</b>Answer</button>
   <button data-v="mist"><b>◷</b>Mistakes</button>
   <button data-v="prac"><b>↻</b>Recall</button>
-  <button data-v="stats"><b>◈</b>Progress</button>
 </nav>
 <script>
 const $ = id => document.getElementById(id);
@@ -882,31 +976,60 @@ function showMarkDiagram(){
     const bits = [m.level, m.topic || m.chapter].filter(Boolean);
     tag.textContent = bits.length ? bits.join(' · ') : '';
   }
-  const d = (sel && sel.scheme) ? sel.scheme.diagram : null;
-  const el = $('mk-dgm'); if (el) el.innerHTML = svgFor(d);
+  const el = $('mk-dgm');
+  if (!el) return;
+  // A picture attached by an adult wins over the one I draw.
+  if (sel && sel.image){
+    el.innerHTML = '<div class="dgm"><img src="' + sel.image +
+      '" alt="Picture for this question" style="width:100%;height:auto;display:block;border-radius:8px"></div>';
+    return;
+  }
+  el.innerHTML = svgFor((sel && sel.scheme) ? sel.scheme.diagram : null);
 }
 
 // The nav's height varies with safe-area inset, so measure it rather than guess.
+// Same pattern as --nav-h: the helper bar wraps to 2-4 lines on a phone, so its
+// height is content-dependent and has to be published, not assumed.
+function syncNudgeHeight(){
+  const n = document.querySelector('#nudge');
+  if (n && n.offsetHeight > 0)
+    document.documentElement.style.setProperty('--nudge-h', n.offsetHeight + 'px');
+}
+
 function syncNavHeight(){
   const n = document.querySelector('.nav');
-  if (n) document.documentElement.style.setProperty('--nav-h', n.offsetHeight + 'px');
+  // Never write 0 — a defined --nav-h kills the calc() fallback for good.
+  if (n && n.offsetHeight > 0)
+    document.documentElement.style.setProperty('--nav-h', n.offsetHeight + 'px');
 }
-syncNavHeight();
+// offsetHeight is 0 until layout runs, and the nav's height depends on the
+// display font's metrics — so measure after a frame and again once fonts load.
+requestAnimationFrame(() => { syncNavHeight(); requestAnimationFrame(syncNavHeight); });
+if (window.ResizeObserver){
+  new ResizeObserver(syncNavHeight).observe(document.querySelector('.nav'));
+  new ResizeObserver(syncNudgeHeight).observe(document.querySelector('#nudge'));
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncNavHeight);
+addEventListener('load', syncNavHeight);
 addEventListener('resize', syncNavHeight);
 addEventListener('orientationchange', () => setTimeout(syncNavHeight, 250));
 
-document.querySelectorAll('.nav button').forEach(b => b.onclick = () => {
-  const v = b.dataset.v;
-  document.querySelectorAll('.nav button').forEach(x => x.classList.toggle('on', x === b));
+// Progress is reached through the pet rather than the nav, so the switch has to
+// work from either place.
+function goView(v){
+  document.querySelectorAll('.nav button').forEach(x =>
+    x.classList.toggle('on', x.dataset.v === v));
   ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
   curView = v; armIdle();
-  $('pip').classList.add('on');
   if (v === 'qs') renderQs();
   if (v === 'mist') renderMistakes();
   if (v === 'prac') renderPractice();
-  if (v === 'stats') renderStats();
-});
+  if (v === 'stats'){ renderStats(); renderBuddyPick(); renderReport(); }
+}
+
+document.querySelectorAll('.nav button').forEach(b =>
+  b.onclick = () => goView(b.dataset.v));
 
 /* ── marking flow ──────────────────────────────────────── */
 function showDeflect(msg){
@@ -985,12 +1108,11 @@ function fillQuestionPicker(){
 $('q').addEventListener('change', showMarkDiagram);
 if ($('cam-shot')) $('cam-shot').onchange = e => handlePhoto(e.target.files[0]);
 if ($('cam-file')) $('cam-file').onchange = e => handlePhoto(e.target.files[0]);
-armIdle();
 
 function selected(){
   const v = $('q').value || '';
-  if (v.startsWith('src:'))  { const r = load(SRC).find(x=>x.id===v.slice(4)); return r ? { scheme:r.scheme, meta:r.scheme } : null; }
-  if (v.startsWith('twin:')) { const r = load(TWN).find(x=>x.id===v.slice(5)); return r ? { scheme:r.scheme, meta:r.scheme } : null; }
+  if (v.startsWith('src:'))  { const r = load(SRC).find(x=>x.id===v.slice(4)); return r ? { scheme:r.scheme, meta:r.scheme, image:r.image||null } : null; }
+  if (v.startsWith('twin:')) { const r = load(TWN).find(x=>x.id===v.slice(5)); return r ? { scheme:r.scheme, meta:r.scheme, image:r.image||null } : null; }
   const i = +v.replace('bank:','');
   const q = QS.find(x=>x.i===i);
   return q ? { questionIndex:i, meta:{ q:q.q, level:q.level, topic:q.chapter } } : null;
@@ -1027,7 +1149,7 @@ $('go1').onclick = async () => {
   clearFail();
   hideDeflect();
   a1txt = censor($('a1').value.trim());
-  if (!a1txt) return fail('Write something first — even one line is a start.');
+  if (!a1txt) return fail('Write something first. Even one line is a start.');
   if (isRude($('a1').value)) $('a1').value = a1txt;
   $('go1').disabled = true; $('go1').textContent = 'Checking…';
   try {
@@ -1139,31 +1261,94 @@ $('restart').onclick = () => {
 
 
 
-/* ── Pip the chinchilla ─────────────────────────────────── */
+/* ── your buddy ─────────────────────────────────────────── */
+// Adding an animal means one entry here plus its four images. Nothing else.
+// frames order: resting · happy · standing · cheering
+const BUDDIES = {
+  chinchilla: { name:'Pip',  label:'🐭 Pip',  frames:['chin-sit.png','chin-happy.png','chin-stand.png','chin-cheer.png'] },
+  lizard:     { name:'Basil', label:'🦎 Basil', frames:['liz-sit.png','liz-happy.png','liz-stand.png','liz-cheer.png'] },
+  cat:        { name:'Momo',  label:'🐱 Momo',  frames:['cat-sit.png','cat-happy.png','cat-stand.png','cat-cheer.png'] },
+  none:       { name:null,   label:'None',    frames:[] },
+};
+const BKEY = 'sm-buddy-v1';
+const buddyId = () => { const v = localStorage.getItem(BKEY); return BUDDIES[v] ? v : 'chinchilla'; };
+
+function renderBuddyPick(){
+  const el = $('buddy-pick'); if (!el) return;
+  const cur = buddyId();
+  el.innerHTML = Object.entries(BUDDIES).map(([id, b]) =>
+    '<span class="chip' + (id === cur ? ' on' : '') + '" data-buddy="' + id + '">' + b.label + '</span>').join('');
+  el.querySelectorAll('[data-buddy]').forEach(c => c.onclick = () => {
+    localStorage.setItem(BKEY, c.dataset.buddy);
+    renderBuddyPick();
+    PIP.mount();
+    if (c.dataset.buddy !== 'none') PIP.pop(curView, 'Hello! I will keep you company.');
+  });
+}
+
+/* ── the buddy itself ───────────────────────────────────── */
 // Four still frames, swapped on a timer so it animates like a gif. Pip appears
 // with the helper, says something about wherever you are, then hides again.
-const PIP = {
+var PIP = {
   frames: null, i: 0, timer: null, hideT: null,
   lines: {
-    qs:    ['Photograph a question — I love that bit.', 'Add one and I will work out the answer.', 'Your papers, your questions.'],
+    qs:    ['Photograph a question. I love that bit.', 'Add one and I will work out the answer.', 'Your papers, your questions.'],
     mark:  ['Have a go. Wrong is useful.', 'Two tries, always.', 'Write it how you would on paper.'],
     mist:  ['Everything you did is in here.', 'Nothing gets forgotten.'],
     prac:  ['Say it out loud first. It sticks better.', 'Three quick ones?'],
-    stats: ['Look at recovery — that is the clever number.', 'Save your profile so it travels with you.'],
+    stats: ['Look at recovery. That is the clever number.', 'Save your profile so it travels with you.'],
   },
   boot(){
-    this.frames = [...document.querySelectorAll('#pip img')];
+    this.mount();
     this.timer = setInterval(() => this.step(), 5000);
+  },
+  mount(id){
+    const el = $('pip'); if (!el) return;
+    const want = BUDDIES[id] ? id : buddyId();
+    if (this.showing === want && this.frames && this.frames.length) return;
+    this.showing = want;
+    el.querySelectorAll('img').forEach(n => n.remove());
+    const b = BUDDIES[want];
+    this.i = 0;
+    el.classList.add('on');
+    if (!b.frames.length){
+      this.frames = [];
+      el.classList.add('plain');
+      el.classList.remove('talk');
+      el.setAttribute('aria-label', 'Tools — music, notes, dark mode and help');
+      return;
+    }
+    el.classList.remove('plain');
+    el.setAttribute('aria-label', b.name + ' — tap for music, notes, dark mode and help');
+    b.frames.forEach((src, n) => {
+      const img = document.createElement('img');
+      img.src = src; img.alt = '';
+      if (n === 0) img.className = 'on';
+      el.insertBefore(img, $('pip-say'));
+    });
+    this.frames = [...el.querySelectorAll('img')];
   },
   step(){
     if (!this.frames || !this.frames.length) return;
+    // Restart the clock, so a pose you chose by tapping does not flip straight away.
+    if (this.timer){ clearInterval(this.timer); this.timer = setInterval(() => this.step(), 5000); }
     this.frames[this.i].classList.remove('on');
     this.i = (this.i + 1) % this.frames.length;
     this.frames[this.i].classList.add('on');
   },
+  // Whoever turns up with the helper is picked at random, so it feels like a
+  // visit rather than a fixture. The chosen buddy returns once it is dismissed.
+  guest(){
+    const ids = Object.keys(BUDDIES).filter(k => BUDDIES[k].frames.length);
+    if (!ids.length) return;
+    const pool = ids.length > 1 ? ids.filter(k => k !== this.showing) : ids;
+    this.mount(pool[Math.floor(Math.random() * pool.length)]);
+  },
   pop(view, msg){
     const el = $('pip');
     if (!el) return;
+    this.guest();
+    if (!this.frames || !this.frames.length) return;
     const set = this.lines[view] || this.lines.mark;
     $('pip-say').textContent = msg || set[Math.floor(Math.random() * set.length)];
     el.classList.add('on', 'talk');
@@ -1173,7 +1358,7 @@ const PIP = {
   },
   cheer(){
     const el = $('pip');
-    if (!el) return;
+    if (!el || !this.frames || !this.frames.length) return;
     // Land on the cheering frame for a moment when something goes right.
     this.frames.forEach(f => f.classList.remove('on'));
     this.i = this.frames.length - 1;
@@ -1183,21 +1368,30 @@ const PIP = {
     clearTimeout(this.hideT);
     this.hideT = setTimeout(() => el.classList.remove('talk'), 4000);
   },
-  hide(){ const el = $('pip'); if (el) el.classList.remove('talk'); },
+  hide(){
+    const el = $('pip');
+    if (el) el.classList.remove('talk');
+    // Back to the buddy you picked.
+    this.mount(buddyId());
+  },
 };
 PIP.boot();
 
 /* ── the helper: a nudge after 7 quiet seconds ──────────── */
 const NUDGES = {
-  mark:  ['Not sure where to start?', 'Pick any question above, then write what you think in your own words. Getting it wrong is genuinely useful here — that is how we work out what to practise.'],
-  qs:    ['Want to add your own question?', 'Tap Add a question and type one straight off a paper. I will work out what it is testing and what a full answer needs.'],
-  mist:  ['This fills up as you go.', 'Every question you answer lands here with the date. It is the best place to start a revision session.'],
-  prac:  ['Ready for a quick round?', 'Three questions, straight from what you have found tricky. Say each answer out loud first — that is what makes it stick.'],
-  stats: ['Nothing to show yet?', 'Answer a few questions and this page starts showing which ideas are solid and which ones need another look.'],
+  mark:  ['Not sure where to start?', 'Pick any question. Write what you think, in your own words. Getting it wrong is useful. It shows us what to practise.'],
+  qs:    ['Want to add your own question?', 'Tap Add a question. Type one from a paper, or take a photo. I will work out what a good answer needs.'],
+  mist:  ['This fills up as you go.', 'Every question you answer lands here with the date. Start your revision from this page.'],
+  prac:  ['Ready for a quick round?', 'Three questions you found tricky. Say each answer out loud first. That is what makes it stick.'],
+  stats: ['Nothing to show yet?', 'Answer a few questions. Then this page shows which ideas are solid and which need another look.'],
 };
 var idleT = null, nudgeShown = {}, curView = 'qs';   // Questions is the landing view
 
-function hideNudge(){ const n = $('nudge'); if (n) n.classList.remove('up'); }
+function hideNudge(){
+  const n = $('nudge'); if (n) n.classList.remove('up', 'with-pet');
+  const pip = $('pip'); if (pip) pip.classList.remove('lifted');
+  if (PIP) PIP.hide();
+}
 
 // Delegated, so it survives whatever else is on the page. Tapping the cross,
 // or anywhere on the strip, dismisses it for this view. Escape works too.
@@ -1220,12 +1414,23 @@ function armIdle(){
     const msg = NUDGES[curView]; if (!msg) return;
     const n = $('nudge');
     n.querySelector('.n-txt').innerHTML = '<b>' + msg[0] + '</b>' + msg[1];
-    n.classList.add('up');
+    n.classList.add('up', 'with-pet');
+    syncNudgeHeight();
+    const pip = $('pip'); if (pip) pip.classList.add('lifted');
     nudgeShown[curView] = true;
     PIP.pop(curView);
     setTimeout(hideNudge, 14000);   // never leaves it stuck on screen
   }, 7000);
 }
+
+document.addEventListener('click', e => {
+  // One × dismisses the helper and the buddy together.
+  if (e.target.closest('#nudge-x')){
+    hideNudge();
+    nudgeShown[curView] = true;
+    e.stopPropagation();
+  }
+});
 
 ['pointerdown','keydown','input','change','scroll'].forEach(ev =>
   document.addEventListener(ev, armIdle, { passive: true }));
@@ -1248,6 +1453,7 @@ async function toJpeg(file){
   const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
+  lastShotW = w; lastShotH = h;
   c.getContext('2d').drawImage(bmp, 0, 0, w, h);
   return c.toDataURL('image/jpeg', 0.85).split(',')[1];
 }
@@ -1273,6 +1479,8 @@ function bitmap(blob){
   });
 }
 
+let pendingScan = null, lastShotW = 0, lastShotH = 0;
+
 async function handlePhoto(file){
   if (!file) return;
   const box = $('cam-out');
@@ -1280,6 +1488,8 @@ async function handlePhoto(file){
   box.innerHTML = '<div class="busy"><i></i>Reading the question off your photo…</div>';
   try {
     const b64 = await toJpeg(file);
+    // Held until the question is saved, then filed as its scan.
+    pendingScan = { jpeg: b64, w: lastShotW, h: lastShotH, ts: Date.now() };
     box.innerHTML = '<div class="shot"><img src="data:image/jpeg;base64,' + b64 + '" alt="The page you photographed"></div>' +
                     '<div class="busy"><i></i>Reading the question…</div>';
     const d = await callApi('/api/read', { imageBase64: b64, mediaType: 'image/jpeg' });
@@ -1291,7 +1501,7 @@ async function handlePhoto(file){
     }
     $('nq').value = d.question + (d.diagramNote ? '\n\n[Picture: ' + d.diagramNote + ']' : '');
     box.innerHTML = '<div class="card"><span class="eyebrow" style="color:var(--mid)">Is this right?</span>' +
-      '<div class="muted" style="margin-top:8px">I have put what I read into the box below. Have a quick look and fix anything I got wrong — I only read the printed question, never handwriting.' +
+      '<div class="muted" style="margin-top:8px">I have put what I read into the box below. Have a quick look and fix anything I got wrong. I only read the printed question, never handwriting.' +
       (d.moreOnPage ? ' There was more than one question on that page, so I took the clearest one.' : '') +
       '</div></div>';
     $('nq').focus();
@@ -1423,12 +1633,54 @@ function svgFor(d){
 
 
 
+/* ── the pet's menu ─────────────────────────────────────── */
+// The four corner buttons became this. Each one still triggers the original
+// handler, so the panels and their logic are untouched.
+function pmOpen(on){
+  const m = $('pip-menu'), pip = $('pip');
+  if (!m) return;
+  m.classList.toggle('on', on);
+  if (pip) pip.classList.toggle('open', on);
+}
+const pmIsOpen = () => $('pip-menu') && $('pip-menu').classList.contains('on');
+
+function pmTap(id){
+  pmOpen(false);
+  const b = $(id);
+  if (b) b.click();
+}
+
+$('pip').addEventListener('click', e => {
+  e.stopPropagation();
+  PIP.step();          // new pose on every tap
+  const opening = !pmIsOpen();
+  pmOpen(opening);
+  if (opening){
+    // Close anything already showing, so only one thing is open at a time.
+    ['m-panel','n-panel','h-panel'].forEach(x => { const n = $(x); if (n) n.classList.remove('open'); });
+    PIP.hide();
+  }
+});
+$('pip').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('pip').click(); }
+});
+
+$('pm-progress').onclick = e => { e.stopPropagation(); pmOpen(false); goView('stats'); };
+$('pm-music').onclick = e => { e.stopPropagation(); pmTap('m-fab'); };
+$('pm-notes').onclick = e => { e.stopPropagation(); pmTap('n-fab'); };
+$('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
+$('pm-help').onclick  = e => { e.stopPropagation(); pmTap('h-fab'); };
+
+document.addEventListener('click', () => { if (pmIsOpen()) pmOpen(false); });
+
 /* ── light or dark ──────────────────────────────────────── */
 const THEME = 'sm-theme-v1';
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme', t);
   DB.setRaw(THEME, t);
   const b = $('t-fab'); if (b) b.textContent = t === 'dark' ? '☀' : '◐';
+  const m = $('pm-theme');
+  if (m) m.innerHTML = t === 'dark' ? '<span>☀</span>Light mode' : '<span>◐</span>Dark mode';
 }
 applyTheme(DB.raw(THEME) ||
   (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -1505,7 +1757,7 @@ function renderProfile(){
         '<a href="#" id="pf-edit">Change my details</a>' +
         '<a href="#" id="pf-tour">Walk me around again</a></div>' +
       '<div class="muted" style="margin-top:12px;font-size:13px;line-height:1.5">Saving gives you a file ' +
-      'named after you and today\'s date. Keep it somewhere safe — opening it on another device brings ' +
+      'named after you and today\'s date. Keep it somewhere safe. Opening it on another device brings ' +
       'everything with you.</div>';
     $('pf-save').onclick = saveProfile;
     $('pf-edit').onclick = e => { e.preventDefault(); editProfile(); };
@@ -1520,7 +1772,7 @@ function editProfile(){
   const w = who() || {};
   const el = $('prof-body');
   el.innerHTML = '<div class="muted" style="margin-top:10px;font-size:14px">Your work stays exactly ' +
-    'as it is — this only changes the name on it.</div>' +
+    'as it is. This only changes the name on it.</div>' +
     '<div class="pin" style="gap:8px"><input id="pf-name" type="text" value="' +
     String(w.name||'').replace(/"/g,'&quot;') + '" placeholder="Your full name" ' +
     'style="letter-spacing:0;font-size:16px;text-align:left" autocomplete="off"></div>' +
@@ -1585,39 +1837,38 @@ async function loadProfile(file){
 // in the scrim over it and puts a card where it does not cover it.
 const STOPS = [
   { sel: '.nav button[data-v="qs"]', tab: 'qs', title: 'Start here',
-    text: 'Everything begins with a question. Add one from a paper, or photograph it — I work out what a full answer needs.' },
+    text: 'Everything begins with a question. Add one from a paper, or take a photo. I work out what a good answer needs.' },
   { sel: '#qs-add', tab: 'qs', title: 'Two kinds of question',
     text: 'A written one, where you explain in sentences. Or multiple choice, where the option you pick tells me what you were thinking.' },
   { sel: '.nav button[data-v="mark"]', tab: 'mark', title: 'Then answer it',
-    text: 'You get two goes at every question. The first time I say what is missing — but never the words. That is the whole point.' },
+    text: 'You get two goes at every question. The first time I say what is missing. I never say the words. That is the whole point.' },
   { sel: '#q', tab: 'mark', title: 'Your questions come first',
     text: 'Anything you have added sits at the top of this list, then the practice you have approved, then hundreds I already know.' },
   { sel: '.nav button[data-v="mist"]', tab: 'mist', title: 'Nothing is forgotten',
     text: 'Every answer lands here with the date and stays. Something you found hard in March is still here before the exam.' },
   { sel: '.nav button[data-v="prac"]', tab: 'prac', title: 'Quick rounds',
     text: 'Three questions, built from whatever you found hardest. Say each answer out loud before you type it.' },
-  { sel: '.nav button[data-v="stats"]', tab: 'stats', title: 'How it is going',
-    text: 'The number worth watching is recovery — how often a missed point comes back on your second go. High means wording. Low means the idea needs another look.' },
+  { sel: '#pm-progress', tab: 'stats', menu: true, title: 'How it is going',
+    text: 'Watch the recovery number. It shows how often you fix something on your second go. High means you just needed better words. Low means the idea needs another look.' },
   { sel: '#prof-box', tab: 'stats', title: 'Your work is yours',
-    text: 'Save your profile to a file and open it on any other device. Everything comes with you — answers, notes, practice.' },
-  { sel: '#m-fab', tab: null, title: 'Something to work to',
-    text: 'Four slow instrumental loops, made right here in the app. Or open your own music app from the same panel.' },
-  { sel: '#n-fab', tab: null, title: 'A pad for anything',
-    text: 'Jot down whatever you want to remember. It saves as you type and waits for you.' },
-  { sel: '#h-fab', tab: null, title: 'Stuck on the app itself?',
-    text: 'Tap this any time and ask. It answers questions about how the app works — not Science ones, those belong in Answer.' },
+    text: 'Save your profile to a file and open it on any other device. Everything comes with you: answers, notes and practice.' },
+  { sel: '#pm-music', tab: null, menu: true, title: 'Something to work to',
+    text: 'Slow instrumental loops, made right here in the app. Or open your own music app from the same panel.' },
+  { sel: '#pip', tab: null, title: 'Your buddy holds the extras',
+    text: 'Tap the animal for your progress, music, notes, dark mode and help. You can swap the animal under My progress.' },
 ];
 let cStep = 0;
 
 function goTab(v){
-  const b = document.querySelector('.nav button[data-v="' + v + '"]');
-  if (b) b.click();
+  goView(v);
 }
 
 function cShow(){
   const st = STOPS[cStep];
   if (!st) return cEnd();
   if (st.tab) goTab(st.tab);
+  // Some stops sit inside the pet's menu, so it has to be showing.
+  pmOpen(!!st.menu);
 
   requestAnimationFrame(() => setTimeout(() => {
     const el = document.querySelector(st.sel);
@@ -1753,7 +2004,9 @@ if (!DB.raw(SEEN)) tourOpen();
 // Students can generate practice but never approve it, so nothing reaches them
 // unchecked. The code is set once on this device and kept only here.
 const ADM = 'sm-adm-v1';
-const isAdmin = () => DB.flag('sm-adm-open');
+// No code set means nothing to unlock — you own this device. A code is something
+// you add on purpose, for when a student is using it.
+const isAdmin = () => !DB.raw(ADM) || DB.flag('sm-adm-open');
 const admSet = () => !!DB.raw(ADM);
 
 async function hash(t){
@@ -1764,26 +2017,63 @@ async function hash(t){
 function renderAdmBar(){
   const el = $('adm-bar');
   if (!el) return;
-  if (isAdmin()){
-    el.innerHTML = '<div style="display:flex;gap:12px;align-items:center;margin-top:16px">' +
-      '<span class="adm">✓ Parent/guardian mode</span>' +
-      '<button class="ghost" id="adm-out" style="width:auto;margin:0;padding:6px 10px;min-height:0;font-size:14px">Lock again</button></div>';
-    $('adm-out').onclick = () => { DB.setFlag('sm-adm-open', false); renderAdmBar(); renderQs(); };
+  // Nothing set: you can approve freely. Offer the lock rather than impose it.
+  if (!admSet()){
+    el.innerHTML = '<div class="muted" style="margin-top:16px;font-size:14px;line-height:1.55">' +
+      'Handing this device to a student? <a href="#" id="adm-new">Set a code</a> and only you will be ' +
+      'able to release practice questions.</div>';
+    $('adm-new').onclick = e => {
+      e.preventDefault();
+      el.innerHTML = '<div class="lock" style="margin-top:16px"><span class="l-ico">🔒</span>' +
+        '<div class="l-txt">Pick four to six digits. You will need it to release practice questions.</div></div>' +
+        '<div class="pin"><input id="adm-pin" type="password" inputmode="numeric" maxlength="6" ' +
+        'placeholder="••••" autocomplete="off"><button class="primary" id="adm-go">Save code</button></div>' +
+        '<div id="adm-msg" class="muted" style="margin-top:9px;font-size:14px"></div>' +
+        '<button class="ghost" id="adm-skip" style="width:auto;margin-top:4px;padding:6px 0;min-height:0;font-size:14px">Not now</button>';
+      wireAdmPin();
+      $('adm-skip').onclick = () => renderAdmBar();
+    };
     return;
   }
-  el.innerHTML = '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">' +
-    (admSet() ? 'Enter the parent/guardian code to check and release practice questions.'
-              : 'Set a parent/guardian code. You will need it to release practice questions for students.') +
-    '</div></div><div class="pin"><input id="adm-pin" type="password" inputmode="numeric" ' +
-    'maxlength="6" placeholder="••••" autocomplete="off"><button class="primary" id="adm-go">' +
-    (admSet() ? 'Unlock' : 'Set code') + '</button></div><div id="adm-msg" class="muted" style="margin-top:9px;font-size:14px"></div>';
 
+  // A code exists and this session is open.
+  if (isAdmin()){
+    el.innerHTML = '<div style="display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap">' +
+      '<span class="adm">✓ Unlocked</span>' +
+      '<button class="ghost" id="adm-out" style="width:auto;margin:0;padding:6px 10px;min-height:0;font-size:14px">Lock again</button>' +
+      '<button class="ghost" id="adm-clear" style="width:auto;margin:0;padding:6px 10px;min-height:0;font-size:14px">Remove the code</button></div>';
+    const rev = document.createElement('button');
+    rev.className = 'secondary';
+    rev.style.cssText = 'margin-top:14px';
+    rev.textContent = 'Check scanned pages';
+    rev.onclick = renderScanList;
+    el.appendChild(rev);
+    $('adm-out').onclick = () => { DB.setFlag('sm-adm-open', false); renderAdmBar(); renderQs(); };
+    $('adm-clear').onclick = () => {
+      DB.setRaw(ADM, '');
+      localStorage.removeItem(ADM);
+      DB.setFlag('sm-adm-open', false);
+      renderAdmBar(); renderQs();
+    };
+    return;
+  }
+  // Locked: a code exists and this session has not opened it.
+  el.innerHTML = '<div class="lock"><span class="l-ico">🔒</span><div class="l-txt">' +
+    'Enter your code to check and release practice questions.</div></div>' +
+    '<div class="pin"><input id="adm-pin" type="password" inputmode="numeric" maxlength="6" ' +
+    'placeholder="••••" autocomplete="off"><button class="primary" id="adm-go">Unlock</button></div>' +
+    '<div id="adm-msg" class="muted" style="margin-top:9px;font-size:14px"></div>';
+  wireAdmPin();
+}
+
+function wireAdmPin(){
   $('adm-go').onclick = async () => {
     const v = ($('adm-pin').value || '').trim();
     const msg = $('adm-msg');
     if (v.length < 4){ msg.textContent = 'Use at least four digits.'; return; }
     if (!admSet()){
       DB.setRaw(ADM, await hash(v));
+      msg.textContent = '';
       DB.setFlag('sm-adm-open', true);
       renderAdmBar(); renderQs();
     } else if (await hash(v) === DB.raw(ADM)){
@@ -1795,6 +2085,143 @@ function renderAdmBar(){
     }
   };
 }
+
+/* ── the report a grown-up reads ────────────────────────── */
+// Built from what is already stored, so it works offline and needs no server.
+// sendReport() is the seam for email later — everything above it stays the same.
+const MAIL = 'sm-mail-v1';
+
+function reportData(){
+  const all = subs();
+  const w = who() || {};
+  const since = all.length ? all[all.length - 1].ts : Date.now();
+
+  let missedPts = 0, fixedPts = 0;
+  const kw = {}, tp = {};
+  all.forEach(x => {
+    (x.missed1 || []).forEach(pt => {
+      missedPts++;
+      kw[pt] = kw[pt] || { n: 0, fixed: 0 };
+      kw[pt].n++;
+      if ((x.gained || []).includes(pt)) { kw[pt].fixed++; fixedPts++; }
+    });
+    const k = ((x.level || '') + ' ' + (x.chapter || '')).trim() || 'Other';
+    tp[k] = tp[k] || { n: 0, miss: 0 };
+    tp[k].n++;
+    tp[k].miss += (x.missed1 || []).length;
+  });
+
+  const rate = missedPts ? Math.round(100 * fixedPts / missedPts) : null;
+  const top = Object.entries(kw).sort((a, b) => b[1].n - a[1].n).slice(0, 5);
+  const topics = Object.entries(tp).sort((a, b) => b[1].miss - a[1].miss);
+  const stuck = top.filter(([, v]) => v.n >= 2 && v.fixed / v.n < 0.5);
+
+  return {
+    name: w.name || 'Your child', nick: w.nick || '', school: w.school || '',
+    from: since, to: Date.now(),
+    answered: all.length,
+    fullyFixed: all.filter(x => x.recovered).length,
+    stillOpen: all.filter(x => (x.missed2 || []).length > 0).length,
+    rate, top, topics, stuck,
+    notes: (DB.get(NOTES, '') || '').trim().length,
+  };
+}
+
+function reportHtml(d){
+  const day = t => new Date(t).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const row = (a, b) => '<tr><td>' + a + '</td><td>' + b + '</td></tr>';
+  const verdict = d.rate === null
+    ? 'Not enough answers yet to see a pattern.'
+    : d.rate >= 60
+      ? 'Most missed points come back on the second try. That means the science is understood and the <em>wording</em> is what needs practice — the quickest kind of gain.'
+      : 'Missed points are not often coming back on the second try. That points at the ideas themselves rather than the wording, so it is worth going over them together.';
+
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+    '<title>Science report — ' + d.name + '</title><style>' +
+    'body{font-family:Georgia,serif;max-width:640px;margin:40px auto;padding:0 24px;color:#1a1a1a;line-height:1.6}' +
+    'h1{font-size:26px;margin:0 0 4px}h2{font-size:17px;margin:32px 0 10px;border-bottom:2px solid #ddd;padding-bottom:6px}' +
+    '.sub{color:#666;font-size:14px;margin:0 0 28px}table{width:100%;border-collapse:collapse;font-size:15px}' +
+    'td{padding:8px 0;border-bottom:1px solid #eee}td:last-child{text-align:right;font-weight:bold}' +
+    '.big{font-size:15px;background:#f6f4f0;padding:16px 18px;border-left:4px solid #1a1a1a;margin:16px 0}' +
+    'li{margin:6px 0;font-size:15px}.f{margin-top:36px;padding-top:14px;border-top:1px solid #ddd;color:#777;font-size:13px}' +
+    '@media print{body{margin:0}}</style></head><body>' +
+    '<h1>Science — how it is going</h1>' +
+    '<p class="sub">' + d.name + (d.school ? ' · ' + d.school : '') + '<br>' +
+      day(d.from) + ' to ' + day(d.to) + '</p>' +
+    '<h2>In numbers</h2><table>' +
+      row('Questions answered', d.answered) +
+      row('Sorted out on the second try', d.fullyFixed) +
+      row('Still to come back to', d.stillOpen) +
+      row('Recovery rate', d.rate === null ? '—' : d.rate + '%') +
+    '</table>' +
+    '<div class="big"><strong>What that means.</strong> ' + verdict + '</div>' +
+    (d.top.length
+      ? '<h2>Points missed most</h2><ul>' + d.top.map(([pt, v]) =>
+          '<li>' + pt + ' — missed ' + v.n + ' time' + (v.n > 1 ? 's' : '') +
+          ', regained ' + v.fixed + '</li>').join('') + '</ul>'
+      : '') +
+    (d.stuck.length
+      ? '<h2>Worth going over together</h2><ul>' + d.stuck.map(([pt]) =>
+          '<li>' + pt + '</li>').join('') +
+        '</ul><p style="font-size:14px;color:#555">These did not come back on the second attempt, which ' +
+        'usually means the idea needs another look rather than more practice.</p>'
+      : '') +
+    (d.topics.length
+      ? '<h2>By topic</h2><table>' + d.topics.slice(0, 8).map(([k, v]) =>
+          row(k, v.n + ' answered')).join('') + '</table>'
+      : '') +
+    '<div class="f">Made by the Science marking app on ' + day(Date.now()) +
+      '. Marks are for a teacher or tutor to read — the app never shows them to the student.</div>' +
+    '</body></html>';
+}
+
+function renderReport(){
+  const el = $('rep-sum');
+  if (!el) return;
+  const d = reportData();
+  el.textContent = d.answered
+    ? d.answered + ' answered so far' + (d.rate === null ? '' : ' · ' + d.rate + '% recovery')
+    : 'Nothing to report yet. Answer a few questions first.';
+  const m = $('rep-mail');
+  if (m && !m.value) m.value = DB.raw(MAIL) || '';
+}
+
+$('rep-get').onclick = () => {
+  const d = reportData();
+  if (!d.answered){ $('rep-msg').textContent = 'Answer a question or two first.'; return; }
+  const stamp = new Date().toISOString().slice(0, 10);
+  const safe = (d.name || 'student').replace(/[^a-z0-9]+/gi, '-');
+  const blob = new Blob([reportHtml(d)], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Science-report_' + safe + '_' + stamp + '.html';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+};
+
+// The seam for email. When a server exists, this posts to it; nothing else changes.
+async function sendReport(to, d){
+  const res = await fetch('/api/report', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ to, subject: 'Science report — ' + d.name, html: reportHtml(d) }),
+  });
+  if (!res.ok) throw new Error('not ready');
+  return true;
+}
+
+$('rep-send').onclick = async () => {
+  const to = ($('rep-mail').value || '').trim();
+  const msg = $('rep-msg');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)){ msg.textContent = 'Pop in a full email address.'; return; }
+  DB.setRaw(MAIL, to);
+  msg.textContent = 'Sending…';
+  try {
+    await sendReport(to, reportData());
+    msg.textContent = 'Sent to ' + to + '.';
+  } catch(e){
+    msg.textContent = 'Email is not switched on yet. Your address is saved, and the download works now.';
+  }
+};
 
 /* ── study music, made in the browser ───────────────────── */
 // Four slow loops. No files to download, nothing to stream, works offline.
@@ -1811,6 +2238,9 @@ const TUNES = [
   { name: 'Morning revision',   note: 'a little brighter',
     root: 60, bpm: 68, chords: [[0,4,7,9],[-2,3,7,10],[-5,0,4,7],[-7,-2,2,5]],
     rain: .05, bell: .34, cut: 1200 },
+  { name: 'Quiet fan',          note: 'almost nothing, just hum',
+    root: 48, bpm: 40, chords: [[0,7,12,19],[0,7,12,19],[-2,5,10,17],[-2,5,10,17]],
+    rain: .40, bell: .03, cut: 380 },
 ];
 let ac = null, mNode = null, mTimer = null, mTune = -1;
 const hz = n => 440 * Math.pow(2, (n - 69) / 12);
@@ -1891,7 +2321,7 @@ function mPlay(i){
 }
 
 function renderTunes(){
-  const el = $('m-list');
+  const el = $('m-tunes');
   if (!el) return;
   el.innerHTML = TUNES.map((t, i) =>
     '<div class="m-row' + (mTune === i ? ' on' : '') + '" data-t="' + i + '">' +
@@ -1911,11 +2341,96 @@ document.addEventListener('click', e => {
 });
 renderTunes();
 
+
+/* ══ SCANS ═══════════════════════════════════════════════════════════════════
+   Photographed pages live here. Kept separately from DB because a scan is
+   hundreds of KB and localStorage caps at about five.
+
+   The JPEG is the stored record; the PDF is generated from it on demand, so
+   nothing is stored twice. SCANS.pdf(id) hands back a Blob, which is exactly
+   what a Supabase storage upload wants later:
+       await sb.storage.from('scans').upload(id + '.pdf', await SCANS.pdf(id))
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SCANS = {
+  db: null,
+
+  open(){
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((ok, no) => {
+      const r = indexedDB.open('sm-scans', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('scans', { keyPath: 'id' });
+      r.onsuccess = () => { this.db = r.result; ok(this.db); };
+      r.onerror = () => no(r.error);
+    });
+  },
+
+  async tx(mode){ return (await this.open()).transaction('scans', mode).objectStore('scans'); },
+
+  async put(rec){
+    const s = await this.tx('readwrite');
+    return new Promise((ok, no) => { const q = s.put(rec); q.onsuccess = ok; q.onerror = () => no(q.error); });
+  },
+
+  async get(id){
+    const s = await this.tx('readonly');
+    return new Promise(ok => { const q = s.get(id); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); });
+  },
+
+  async all(){
+    const s = await this.tx('readonly');
+    return new Promise(ok => { const q = s.getAll(); q.onsuccess = () => ok(q.result || []); q.onerror = () => ok([]); });
+  },
+
+  async del(id){
+    const s = await this.tx('readwrite');
+    return new Promise(ok => { const q = s.delete(id); q.onsuccess = ok; q.onerror = ok; });
+  },
+
+  // A one-page PDF wrapping the JPEG. No library: a JPEG is a legal PDF image
+  // stream under DCTDecode, so it is embedded byte for byte.
+  async pdf(id){
+    const rec = await this.get(id);
+    if (!rec) return null;
+    const bin = atob(rec.jpeg);
+    const img = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) img[i] = bin.charCodeAt(i);
+
+    const W = rec.w, H = rec.h;
+    const parts = [], offs = [];
+    let len = 0;
+    const enc = new TextEncoder();
+    const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+    const obj = (n, body) => { offs[n] = len; push(n + ' 0 obj\n' + body + '\nendobj\n'); };
+
+    push('%PDF-1.4\n');
+    obj(1, '<</Type/Catalog/Pages 2 0 R>>');
+    obj(2, '<</Type/Pages/Kids[3 0 R]/Count 1>>');
+    obj(3, '<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + W + ' ' + H + ']' +
+           '/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>');
+
+    offs[4] = len;
+    push('4 0 obj\n<</Type/XObject/Subtype/Image/Width ' + W + '/Height ' + H +
+         '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + img.length + '>>\nstream\n');
+    push(img);
+    push('\nendstream\nendobj\n');
+
+    const content = 'q ' + W + ' 0 0 ' + H + ' 0 0 cm /Im0 Do Q';
+    obj(5, '<</Length ' + content.length + '>>\nstream\n' + content + '\nendstream');
+
+    const xref = len;
+    let x = 'xref\n0 6\n0000000000 65535 f \n';
+    for (let i = 1; i <= 5; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+    push(x + 'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n' + xref + '\n%%EOF');
+
+    return new Blob(parts, { type: 'application/pdf' });
+  },
+};
+
 /* ── question folders ─────────────────────────────────── */
 const SRC='sm-src-v1', TWN='sm-twin-v1';
 let folder='source', derived=null, twinSourceId=null;
 
-const qsShow = n => ['home','new','review','twin','mcqrun'].forEach(x =>
+const qsShow = n => ['home','new','review','twin','mcqrun','scan','scanone'].forEach(x =>
   $('qs-'+x).classList.toggle('hide', x !== n));
 let newFormat = 'written', mcqItem = null, mcqPick = null;
 
@@ -1932,7 +2447,7 @@ function renderQs(){
   const h = $('qs-h'), sub = $('qs-sub'), add = $('qs-add');
   if (h) h.innerHTML = folder === 'source' ? 'Add your own<br>questions.' : 'Practice I<br>made for you.';
   if (sub) sub.textContent = folder === 'source'
-    ? 'Type in any question from a paper and I will work out what it is testing and what a full answer needs. These stay yours — I only use them to build fresh practice.'
+    ? 'Type in a question from a paper, or take a photo. I work out what a good answer needs. These stay yours. I only use them to make new practice.'
     : 'Fresh questions on the same ideas, in new situations. Approve one and it joins the list you can answer.';
   if (add) add.classList.toggle('hide', folder !== 'source');
   if (!rows.length){
@@ -2027,11 +2542,175 @@ function showReview(d){
   qsShow('review'); window.scrollTo(0,0);
 }
 
-$('rv-save').onclick = () => {
+$('rv-save').onclick = async () => {
   const all = load(SRC);
-  all.unshift({ id: 's' + Date.now(), ts: Date.now(), scheme: derived });
+  const id = 's' + Date.now();
+  all.unshift({ id, ts: Date.now(), scheme: derived });
   save(SRC, all.slice(0,200));
+  // File the photographed page against this question, for checking later.
+  if (pendingScan){
+    try { await SCANS.put({ id, ...pendingScan }); } catch(e){}
+    pendingScan = null;
+  }
   derived = null; renderQs(); fillQuestionPicker();
+};
+
+
+/* ── admin: the scanned page behind a question ──────────── */
+// Hidden unless a code is unlocked. Students never see a source page.
+let scanOne = null;
+
+async function renderScanList(){
+  qsShow('scan');
+  const recs = await SCANS.all();
+  const src = load(SRC);
+  const rows = recs
+    .map(r => ({ rec: r, q: src.find(x => x.id === r.id) }))
+    .filter(x => x.q)
+    .sort((a,b) => b.rec.ts - a.rec.ts);
+
+  $('sc-h').textContent = rows.length ? 'Check what was read.' : 'No scanned pages yet.';
+  $('sc-sub').textContent = rows.length
+    ? 'Every photographed question is kept here with its original page. Read it against the scan, fix anything, then release it as practice.'
+    : 'Photograph a question and the page is kept here, so you can check the transcript against the original.';
+
+  $('sc-list').innerHTML = rows.map(x => {
+    const rel = load(TWN).some(t => t.sourceId === x.q.id);
+    return '<div class="item" data-scan="' + x.q.id + '" style="cursor:pointer">' +
+      '<div style="display:flex;gap:14px;align-items:flex-start">' +
+      '<img src="data:image/jpeg;base64,' + x.rec.jpeg + '" alt="" ' +
+      'style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex:none;border:1.5px solid var(--rule)">' +
+      '<div style="flex:1;min-width:0">' +
+      '<div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' +
+      (x.q.scheme.q || '').slice(0,90) + '</div>' +
+      '<div class="muted" style="margin-top:6px;font-size:14px">' +
+      new Date(x.rec.ts).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) +
+      ' · ' + (x.q.scheme.level || '') + ' ' + (x.q.scheme.topic || '') +
+      (rel ? ' · released' : ' · not released yet') + '</div></div></div></div>';
+  }).join('') || '<div class="empty">Nothing scanned yet.</div>';
+
+  $('sc-list').querySelectorAll('[data-scan]').forEach(n =>
+    n.onclick = () => openScan(n.dataset.scan));
+}
+
+async function openScan(id){
+  const rec = await SCANS.get(id);
+  const row = load(SRC).find(x => x.id === id);
+  if (!rec || !row) return renderScanList();
+  scanOne = { id, rec, row };
+  $('so-err').classList.add('hide');
+  $('so-h').textContent = (row.scheme.level || '') + ' ' + (row.scheme.topic || '');
+  $('so-shot').innerHTML = '<img src="data:image/jpeg;base64,' + rec.jpeg + '" alt="The original page">';
+  $('so-q').value = row.scheme.q || '';
+  drawScanDgm();
+  qsShow('scanone'); window.scrollTo(0,0);
+}
+
+function drawScanDgm(){
+  const row = scanOne && scanOne.row;
+  const el = $('so-dgm');
+  if (!row) return;
+  if (row.image){
+    el.innerHTML = '<div class="dgm" style="margin-top:12px"><img src="' + row.image +
+      '" alt="Picture for this question" style="width:100%;height:auto;display:block;border-radius:8px"></div>';
+  } else {
+    const svg = svgFor(row.scheme.diagram);
+    el.innerHTML = svg
+      ? '<div class="dgm" style="margin-top:12px">' + svg + '</div>'
+      : '<div class="muted" style="margin-top:12px;font-size:14px">No picture attached.</div>';
+  }
+}
+
+$('sc-back').onclick = renderQs;
+$('so-back').onclick = renderScanList;
+
+$('so-pdf').onclick = async () => {
+  if (!scanOne) return;
+  const blob = await SCANS.pdf(scanOne.id);
+  if (!blob) return;
+  const name = (scanOne.row.scheme.topic || 'question').replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name + '-' + new Date(scanOne.rec.ts).toISOString().slice(0,10) + '.pdf';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+};
+
+$('so-del').onclick = async () => {
+  if (!scanOne) return;
+  await SCANS.del(scanOne.id);
+  renderScanList();
+};
+
+// Keep the photographed diagram: crop the lower part of the page, which is
+// where a diagram sits on almost every paper, and let it be replaced if wrong.
+$('so-crop').onclick = () => {};
+document.querySelector('label[for="so-crop"]').onclick = async e => {
+  e.preventDefault();
+  if (!scanOne) return;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = Math.round(img.height * .55);
+    c.getContext('2d').drawImage(img, 0, Math.round(img.height * .45), c.width, c.height, 0, 0, c.width, c.height);
+    saveScanImage(c.toDataURL('image/jpeg', .82));
+  };
+  img.src = 'data:image/jpeg;base64,' + scanOne.rec.jpeg;
+};
+
+$('so-img').onchange = async e => {
+  const f = e.target.files[0];
+  if (!f || !scanOne) return;
+  try {
+    const b64 = await toJpeg(f);
+    saveScanImage('data:image/jpeg;base64,' + b64);
+  } catch(err){
+    $('so-err').textContent = 'That picture would not open. A JPG or PNG always works.';
+    $('so-err').classList.remove('hide');
+  }
+};
+
+function saveScanImage(dataUrl){
+  const all = load(SRC);
+  const row = all.find(x => x.id === scanOne.id);
+  if (!row) return;
+  row.image = dataUrl;
+  save(SRC, all);
+  scanOne.row = row;
+  drawScanDgm();
+}
+
+$('so-save').onclick = () => {
+  const all = load(SRC);
+  const row = all.find(x => x.id === scanOne.id);
+  if (!row) return;
+  row.scheme.q = $('so-q').value.trim() || row.scheme.q;
+  save(SRC, all);
+  scanOne.row = row;
+  $('so-err').classList.remove('hide');
+  $('so-err').textContent = 'Saved.';
+  setTimeout(() => $('so-err').classList.add('hide'), 1800);
+};
+
+// Straight to practice, carrying the edited wording and the attached picture.
+$('so-release').onclick = () => {
+  const all = load(SRC);
+  const row = all.find(x => x.id === scanOne.id);
+  if (!row) return;
+  row.scheme.q = $('so-q').value.trim() || row.scheme.q;
+  save(SRC, all);
+
+  const twins = load(TWN);
+  twins.unshift({
+    id: 't' + Date.now(), ts: Date.now(), sourceId: row.id,
+    stem: row.scheme.q, level: row.scheme.level, topic: row.scheme.topic,
+    questionType: row.scheme.questionType, approved: true,
+    image: row.image || null,
+    scheme: row.scheme,
+  });
+  save(TWN, twins.slice(0,200));
+  fillQuestionPicker();
+  renderScanList();
 };
 
 async function makeTwin(id){
@@ -2079,7 +2758,7 @@ async function makeTwin(id){
       '</div></div>').join('') +
       (rejected ? '<div class="muted" style="margin-top:16px;font-size:14px">' + rejected +
         ' rejected before reaching you — ' + why.join('; ') + '.</div>' : '') +
-      '<div class="muted" style="margin-top:16px;font-size:14px">Saved under “Practice I made”. Mark them ready when you are happy with them.</div>';
+      '<div class="muted" style="margin-top:16px;font-size:14px">Saved under “AI practice”. Mark them ready when you are happy with them.</div>';
   } catch(e){
     $('tw-err').textContent = e.message; $('tw-err').classList.remove('hide');
     $('tw-body').innerHTML = '';
@@ -2122,7 +2801,7 @@ function pickMcq(n){
       'What would have to change in the question for a different option to be right?' :
       'What made you rule the other three out?';
   } else {
-    $('mq-says').textContent = o.says || 'Not that one — but your choice tells me something useful.';
+    $('mq-says').textContent = o.says || 'Not that one. But your choice tells me something useful.';
     $('mq-ponder').textContent = o.ponder || 'Think of a time you have seen this happen. What did you notice?';
   }
   $('mq-step').textContent = 'Now explain it';
@@ -2134,7 +2813,7 @@ function pickMcq(n){
 $('mq-submit').onclick = async () => {
   $('mq-err').classList.add('hide');
   const why = censor($('mq-why').value.trim());
-  if (!why) { $('mq-err').textContent = 'Write your reason first — even one line.'; $('mq-err').classList.remove('hide'); return; }
+  if (!why) { $('mq-err').textContent = 'Write your reason first. Even one line.'; $('mq-err').classList.remove('hide'); return; }
   if (isRude($('mq-why').value)) $('mq-why').value = why;
 
   $('mq-submit').disabled = true; $('mq-submit').textContent = 'Reading…';
@@ -2357,6 +3036,8 @@ function renderStats(){
     $('st-sub').textContent = 'Only ' + rate + '% of missed marking points were regained. That points at understanding rather than wording — worth teaching, not drilling.';
   }
 }
+
+armIdle();   // last: idleT and curView must exist before the first timer
 </script>
 </body>
 </html>
