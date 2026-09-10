@@ -1,4 +1,4 @@
-import { guard, lockOn, normEmail, getMember, sendLink, redeemLink, requestMember, kv } from './_shared.js';
+import { guard, lockOn, normEmail, getMember, putMember, sendLink, redeemLink, requestMember, kv } from './_shared.js';
 
 // The three things a browser can do before it is signed in.
 //   session — is the lock on, and does this browser hold a valid session?
@@ -35,6 +35,22 @@ export default async function handler(req, res) {
       const m = await getMember(e);
       if (m && m.active) await sendLink(e, req);
       return res.status(200).json(reply);
+    }
+
+    // Signed-in members only, from here down.
+    if (action === 'me' || action === 'guardian') {
+      if (!lockOn()) return res.status(200).json({ locked: false, ok: true, email: '', guardian: '' });
+      const who = await requestMember(req);
+      if (!who) return res.status(401).json({ error: 'Please sign in to use Science Marking.', signIn: true });
+      const m = await getMember(who);
+      if (action === 'guardian') {
+        // Where session reports go besides the member. Empty clears it.
+        const g = String(email || '').trim() ? normEmail(email) : '';
+        if (String(email || '').trim() && !g) return res.status(400).json({ error: 'That is not an email address.' });
+        await putMember({ ...m, guardian: g, updatedAt: Date.now() });
+        return res.status(200).json({ ok: true, email: who, guardian: g });
+      }
+      return res.status(200).json({ ok: true, email: who, guardian: (m && m.guardian) || '' });
     }
 
     return res.status(400).json({ error: 'Unknown action' });

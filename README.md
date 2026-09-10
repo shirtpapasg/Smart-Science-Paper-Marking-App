@@ -71,3 +71,21 @@ address, which it does by default.
 Testing before turning the lock on: leave `ACCESS_LOCK` unset, open
 `/admin.html`, grant yourself access and check the email arrives. Then set
 `ACCESS_LOCK=on` and redeploy.
+
+## Session reports
+
+While the lock is on, everything a member does in one sitting is recorded
+against their account — questions added, pages photographed, answers written,
+what the app showed back — and mailed to the registered email and the guardian's
+email when the window closes or an hour passes with nothing done. Records expire
+after 48 hours.
+
+    api/log.js         one event per action, the photographed pages, and "end"
+    api/report-run.js  sweep: mails any session quiet for an hour. Needs CRON_SECRET.
+                       vercel.json runs it daily; point any scheduler at it more
+                       often with an `x-cron-key: <CRON_SECRET>` header.
+
+The guardian email is set on admin.html when granting access, or from the app's
+progress screen by someone holding the device's parent code.
+
+    CRON_SECRET        long random string, at least 16 characters

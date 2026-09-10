@@ -893,6 +893,7 @@
     <div class="muted" style="margin-top:8px;font-size:14px">A one-page summary of how it is going. What was answered, what is sticking, and what to work on next.
       How the marking works is explained at <a href="https://smart-science-marking-site.vercel.app" target="_blank" rel="noopener">Smart Science Marking</a>.</div>
     <div id="rep-sum" class="muted" style="margin-top:12px;font-size:14px"></div>
+    <div id="rep-to" class="muted" style="margin-top:10px;font-size:14px;line-height:1.55"></div>
     <button class="secondary" id="rep-get" style="min-height:48px;font-size:15px">Download the report</button>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
       <div class="muted" style="font-size:13.5px">Send it by email instead. Coming soon</div>
@@ -1334,7 +1335,7 @@ function goView(v){
   if (v === 'qs' && !qsResume()) renderQs();
   if (v === 'mist') renderMistakes();
   if (v === 'prac') renderPractice();
-  if (v === 'stats'){ renderStats(); renderBuddyPick(); renderReport(); }
+  if (v === 'stats'){ renderStats(); renderBuddyPick(); renderReport(); renderReportTo(); }
 }
 
 document.querySelectorAll('.nav button').forEach(b =>
@@ -1405,6 +1406,8 @@ async function gateBoot(){
   }
   try {
     const d = await callApiOnce('/api/access', { action:'session' });
+    gateLocked = !!d.locked;
+    if (d.locked && d.ok) LOG.event('start', { name: (who() || {}).name || '' });
     if (!d.locked || d.ok) return gateClose();
   } catch(e){
     // The server could not be reached. Leave the app usable; every call it
@@ -1426,6 +1429,85 @@ $('g-form').onsubmit = async e => {
   $('g-go').disabled = false; $('g-go').textContent = 'Send me a sign-in link';
 };
 gateBoot();
+
+/* ── the session record ─────────────────────────────────
+   While the lock is on, everything a member does in one sitting is recorded
+   against their account — questions added, pages photographed, answers written,
+   what the app showed back — and mailed to the registered email and the
+   guardian's email when the window closes or an hour passes with nothing done.
+   Events are queued so they arrive in order; a failure to record never
+   interrupts the pupil. */
+let gateLocked = false;
+const LOG = {
+  sid: null, q: Promise.resolve(), idleT: null, ended: false,
+  on(){ return gateLocked && !!sessionToken(); },
+  id(){
+    if (!this.sid){
+      try { this.sid = sessionStorage.getItem('sm-sid') || ''; } catch(e){}
+      if (!this.sid){
+        this.sid = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2,'0')).join('');
+        try { sessionStorage.setItem('sm-sid', this.sid); } catch(e){}
+      }
+    }
+    return this.sid;
+  },
+  send(body){ return callApiOnce('/api/log', { ...body, sid: this.id() }); },
+  event(type, data){
+    if (!this.on()) return;
+    this.ended = false; this.touch();
+    this.q = this.q.then(() => this.send({ action:'event', ev:{ type, ...(data || {}) } })).catch(() => {});
+  },
+  // The photographed pages go first, so the event can name them.
+  photo(shots, transcript){
+    if (!this.on()) return;
+    this.ended = false; this.touch();
+    this.q = this.q.then(async () => {
+      const refs = [];
+      for (const s of (shots || []).slice(0, 3)){
+        try { const r = await this.send({ action:'image', jpeg: s }); if (r && r.ref) refs.push(r.ref); } catch(e){}
+      }
+      await this.send({ action:'event', ev:{ type:'photo', pages: (shots || []).length, images: refs, transcript } });
+    }).catch(() => {});
+  },
+  // Closing the window can only send a beacon, which carries no headers, so
+  // the session token travels in the body for that one call.
+  end(beacon){
+    if (!this.on() || this.ended || !this.sid) return;
+    this.ended = true; clearTimeout(this.idleT);
+    if (beacon && navigator.sendBeacon){
+      const body = JSON.stringify({ action:'end', sid: this.id(), session: sessionToken() });
+      navigator.sendBeacon('/api/log', new Blob([body], { type:'application/json' }));
+    } else {
+      this.q = this.q.then(() => this.send({ action:'end', session: sessionToken() })).catch(() => {});
+    }
+    this.sid = null;                                   // the next thing done starts a new session
+    try { sessionStorage.removeItem('sm-sid'); } catch(e){}
+  },
+  touch(){ clearTimeout(this.idleT); this.idleT = setTimeout(() => this.end(false), 60 * 60 * 1000); },
+};
+['pointerdown','keydown'].forEach(ev => addEventListener(ev, () => { if (LOG.on() && !LOG.ended && LOG.sid) LOG.touch(); }, { passive:true }));
+addEventListener('pagehide', () => LOG.end(true));
+
+// Who the session reports go to. Only someone holding the parent code can change it.
+async function renderReportTo(){
+  const el = $('rep-to'); if (!el) return;
+  if (!gateLocked){ el.innerHTML = ''; return; }
+  try {
+    const d = await callApiOnce('/api/access', { action:'me' });
+    el.innerHTML = 'Session reports go to <b>' + esc(d.email) + '</b>' +
+      (d.guardian ? ' and <b>' + esc(d.guardian) + '</b>' : '') + '.' +
+      (isAdmin() ? ' <a href="#" id="rep-g">' + (d.guardian ? 'Change' : 'Add a parent or guardian') + '</a>'
+                 : ' A parent or guardian with the code can change this.');
+    const a = $('rep-g');
+    if (a) a.onclick = async e => {
+      e.preventDefault();
+      const v = prompt('Which parent or guardian email should also get the session reports? Leave empty for none.', d.guardian || '');
+      if (v === null) return;
+      try { await callApiOnce('/api/access', { action:'guardian', email: v.trim() }); renderReportTo(); }
+      catch(err){ el.insertAdjacentHTML('beforeend', '<div class="err" style="margin-top:8px">' + esc(err.message) + '</div>'); }
+    };
+  } catch(e){ el.innerHTML = ''; }
+}
 
 async function callApiOnce(path, body){
   const ctl = new AbortController();
@@ -1622,6 +1704,8 @@ function renderDone(r2, first, peeked, a2){
   $('tutornote').textContent = isAdmin() ? (r2.tutorNote || '') : '';
   $('early').textContent = r2.answerRequestedEarly ? 'The answer was opened before a second attempt.' : '';
   sheetData = { kind:'oe', sel: selected(), r2, a1: a1txt, a2: a2 || '' };
+  LOG.event('answer', { q: ((selected() || {}).meta || {}).q || '', a1: a1txt, a2: a2 || '',
+    marks: r2.marks ?? null, max: r2.maxMarks ?? null, model: r2.modelAnswer || '' });
 
   // ── save to the mistake book ──
   const qm = (selected() || {}).meta || {};
@@ -1932,6 +2016,7 @@ async function handlePhoto(files){
       return;
     }
     $('nq').value = d.question + (d.diagramNote ? '\n\n[Picture: ' + d.diagramNote + ']' : '');
+    LOG.photo(shots, d.question);
     box.innerHTML = '<div class="card"><span class="eyebrow" style="color:var(--mid)">Is this right?</span>' +
       '<div class="muted" style="margin-top:8px">I have put what I read into the box below. Have a quick look and fix anything I got wrong. I only read the printed question, never handwriting.' +
       (d.moreOnPage ? ' There was more than one question on that page, so I took the clearest one.' : '') +
@@ -2693,6 +2778,7 @@ async function askHelp(q){
   $('h-out').innerHTML = '<div class="busy"><i></i>Thinking…</div>';
   try {
     const d = await callApi('/api/help', { question: q });
+    LOG.event('help', { q, a: String(d.answer || '') });
     $('h-out').innerHTML = '<div class="h-a">' +
       String(d.answer || '').replace(/[<>]/g, '') +
       (d.tab ? '<div style="margin-top:10px"><a href="#" data-jump="' + d.tab +
@@ -3311,6 +3397,8 @@ async function deriveScheme(text){
   try {
     derived = await callApi('/api/derive', { questionText: text, format: newFormat });
     chime();
+    LOG.event('scheme', { q: derived.q || text, format: newFormat, marks: derived.marks,
+      model: derived.modelAnswer || derived.whyCorrect || '' });
     if (newFormat === 'mcq'){ startMcq(derived); }
     else showReview(derived);
   } catch(e){
@@ -3566,6 +3654,7 @@ async function makeTwin(id){
       scheme:{ q:t.stem, level:t.level, topic:t.topic, questionType:t.questionType, marks:t.marks,
         concept:t.concept, markingPoints:t.markingPoints, modelAnswer:t.modelAnswer, diagram:t.diagram } }));
     save(TWN, all.slice(0,200));
+    LOG.event('practice', { stems: kept.map(t => t.stem) });
     $('tw-body').innerHTML = kept.map(t =>
       '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.45">' + t.stem + '</div>' +
       '<div class="muted" style="margin-top:8px;font-size:14px">' + (t.object||'') + ' · ' + (t.marks||'') + (t.marks == 1 ? ' mark' : ' marks') + '</div>' +
@@ -3658,6 +3747,8 @@ $('mq-submit').onclick = async () => {
       $('mq-fb').classList.add('hide'); $('mq-done').classList.remove('hide');
       $('mq-step').textContent = 'Done';
       sheetData = { kind:'mcq', item: mcqItem, pick: mcqPick, r };
+      LOG.event('mcq', { q: mcqItem.q, chose: '(' + mcqPick.n + ') ' + mcqPick.text, correct: !!mcqPick.correct,
+        why, marks: r.marks ?? null, model: mcqItem.whyCorrect || '' });
 
       const all = subs();
       all.unshift({ ts: Date.now(), qi: 'mcq', level: mcqItem.level || '', chapter: mcqItem.topic || '',

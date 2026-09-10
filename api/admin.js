@@ -6,7 +6,7 @@ import { guard, safeEqual, normEmail, getMember, grantMember, revokeMember, send
 // reachable from the pupil app.
 export default async function handler(req, res) {
   if (!(await guard(req, res, { open: true }))) return;
-  const { key, action, email, note } = req.body || {};
+  const { key, action, email, note, guardian } = req.body || {};
   const want = process.env.ADMIN_KEY;
   if (!want || want.length < 16 || !safeEqual(key, want)) return res.status(401).json({ error: 'Not allowed' });
 
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     if (!e) return res.status(400).json({ error: 'That is not an email address.' });
 
     if (action === 'grant') {
-      await grantMember(e, 'admin', String(note || '').slice(0, 120));
+      await grantMember(e, 'admin', String(note || '').slice(0, 120), guardian);
       return res.status(200).json({ ok: true, message: e + ' now has access. A sign-in link has been sent.' });
     }
     if (action === 'revoke') {

@@ -38,6 +38,9 @@
   <label for="email">Member's email</label>
   <input id="email" type="email" autocomplete="off" placeholder="name@example.com">
 
+  <label for="guardian">Parent or guardian email (optional, gets the session reports too)</label>
+  <input id="guardian" type="email" autocomplete="off" placeholder="parent@example.com">
+
   <label for="note">Note (optional, admin grants only)</label>
   <input id="note" type="text" maxlength="120" placeholder="e.g. tester, P5 tuition group">
 
@@ -56,21 +59,21 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;
 function say(t, err){ const m = $('msg'); m.textContent = t; m.className = err ? 'err' : ''; m.style.display = 'block'; }
 
 async function call(action){
-  const key = $('key').value.trim(), email = $('email').value.trim(), note = $('note').value.trim();
+  const key = $('key').value.trim(), email = $('email').value.trim(), note = $('note').value.trim(), guardian = $('guardian').value.trim();
   if (!key) return say('Enter the admin key first.', true);
   if (action !== 'list' && !email) return say('Enter the member\'s email.', true);
   if (action === 'revoke' && !confirm('Take access away from ' + email + '?')) return;
   document.querySelectorAll('button').forEach(b => b.disabled = true);
   try {
     const r = await fetch('/api/admin', { method:'POST', headers:{'content-type':'application/json'},
-      body: JSON.stringify({ key, action, email, note }) });
+      body: JSON.stringify({ key, action, email, note, guardian }) });
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error || 'Request failed (' + r.status + ')');
     if (action === 'list'){
       const rows = (d.members || []);
-      $('list').innerHTML = rows.length ? '<table><tr><th>Email</th><th>Source</th><th>Access</th><th>Note</th></tr>' +
+      $('list').innerHTML = rows.length ? '<table><tr><th>Email</th><th>Source</th><th>Access</th><th>Guardian</th><th>Note</th></tr>' +
         rows.map(m => '<tr><td>' + esc(m.email) + '</td><td>' + esc(m.source) + '</td><td' + (m.active ? '' : ' class="off"') + '>' +
-          (m.active ? 'yes' : 'off') + '</td><td>' + esc(m.note) + '</td></tr>').join('') + '</table>' : '<p class="muted">No members yet.</p>';
+          (m.active ? 'yes' : 'off') + '</td><td>' + esc(m.guardian) + '</td><td>' + esc(m.note) + '</td></tr>').join('') + '</table>' : '<p class="muted">No members yet.</p>';
       say(rows.length + ' member' + (rows.length === 1 ? '' : 's') + '.');
     } else say(d.message || 'Done.');
   } catch(e){ say(e.message, true); }

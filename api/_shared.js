@@ -104,10 +104,11 @@ export async function putMember(m) {
 
 // Grant access and post the sign-in link. Idempotent: a repeat payment or a
 // second grant re-activates and re-sends rather than duplicating.
-export async function grantMember(email, source, note) {
+export async function grantMember(email, source, note, guardian) {
   const now = Date.now();
   const cur = (await getMember(email)) || { email, createdAt: now };
-  await putMember({ ...cur, source: cur.source || source, active: true, note: note || cur.note || '', updatedAt: now });
+  await putMember({ ...cur, source: cur.source || source, active: true, note: note || cur.note || '',
+    guardian: normEmail(guardian) || cur.guardian || '', updatedAt: now });
   return sendLink(email);
 }
 
@@ -189,15 +190,102 @@ export async function requestMember(req) {
 }
 
 // ── mail, through Resend's REST API ──
-export async function sendMail(to, subject, html, text) {
+export async function sendMail(to, subject, html, text, attachments) {
   const key = process.env.RESEND_API_KEY, from = process.env.MAIL_FROM;
   if (!key || !from) throw new Error('Mail is not configured');
+  const msg = { from, to: Array.isArray(to) ? to : [to], subject, html, text };
+  if (attachments && attachments.length) msg.attachments = attachments;
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { authorization: 'Bearer ' + key, 'content-type': 'application/json' },
-    body: JSON.stringify({ from, to: [to], subject, html, text }),
+    body: JSON.stringify(msg),
   });
   if (!r.ok) throw new Error('Mail failed: ' + (await r.text()).slice(0, 200));
+  return true;
+}
+
+/* ═══ SESSION REPORTS ═══════════════════════════════════════════════════════
+   Everything a member does in one sitting — questions added, pages photographed,
+   answers written, what the app showed back — is recorded against their account
+   and mailed to the registered email and the guardian's email when the window
+   closes or after an hour with no activity. Records live 48 hours, long enough
+   to be mailed and retried, then expire.
+
+     logmeta:<sid>   {email, started, last, mailed?}
+     log:<sid>       list of events, JSON, in order
+     imgn:<sid>      how many page photos were stored
+     img:<sid>:<n>   a photographed page, JPEG base64
+     logs:open       sids not yet mailed, for the sweep
+   ═══════════════════════════════════════════════════════════════════════════ */
+export const LOG_TTL = 172800;
+const SGT = { timeZone: 'Asia/Singapore' };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const when = t => new Date(t).toLocaleTimeString('en-SG', { ...SGT, hour: '2-digit', minute: '2-digit' });
+const day = t => new Date(t).toLocaleDateString('en-SG', { ...SGT, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+export async function logMeta(sid) {
+  const r = await kv('GET', 'logmeta:' + sid);
+  try { return r ? JSON.parse(r) : null; } catch (e) { return null; }
+}
+
+function eventHtml(ev) {
+  const row = (label, body) => '<div style="margin:14px 0;padding:12px 14px;border-left:4px solid #d5dbe7;background:#f7f8fb">' +
+    '<div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#4d5b76">' + when(ev.t) + ' · ' + esc(label) + '</div>' + body + '</div>';
+  const p = (k, v) => v ? '<p style="margin:6px 0"><b>' + esc(k) + ':</b> ' + esc(v) + '</p>' : '';
+  switch (ev.type) {
+    case 'start': return row('Session started', p('Profile', ev.name || 'not set'));
+    case 'photo': return row('Question photographed', p('Pages', ev.pages) + p('Read from the page', ev.transcript) +
+      (ev.images && ev.images.length ? '<p style="margin:6px 0;color:#4d5b76">Attached as ' + ev.images.map(n => 'page-' + n + '.jpg').join(', ') + '</p>' : ''));
+    case 'scheme': return row('Question added', p('Question', ev.q) + p('Type', ev.format === 'mcq' ? 'multiple choice' : 'written') +
+      p('Full answer the app worked out', ev.model) + p('Marks', ev.marks));
+    case 'answer': return row('Answer marked', p('Question', ev.q) + p('First attempt', ev.a1) + p('Second attempt', ev.a2) +
+      p('Marks', ev.marks != null ? ev.marks + ' of ' + ev.max : '') + p('Full answer shown to the pupil', ev.model));
+    case 'mcq': return row('Multiple choice answered', p('Question', ev.q) + p('Chose', ev.chose) + p('Correct', ev.correct ? 'yes' : 'no') +
+      p('Pupil\'s reason', ev.why) + p('Explanation shown to the pupil', ev.model));
+    case 'practice': return row('Practice generated', (ev.stems || []).map(s => '<p style="margin:6px 0">' + esc(s) + '</p>').join(''));
+    case 'help': return row('Asked the helper', p('Question', ev.q) + p('Reply', ev.a));
+    case 'end': return row('Session ended', '');
+    default: return row(ev.type || 'Activity', p('Details', JSON.stringify(ev).slice(0, 400)));
+  }
+}
+
+export async function sendReport(sid) {
+  const meta = await logMeta(sid);
+  if (!meta || meta.mailed) { await kv('SREM', 'logs:open', sid); return false; }
+  const events = ((await kv('LRANGE', 'log:' + sid, 0, -1)) || [])
+    .map(s => { try { return JSON.parse(s); } catch (e) { return null; } }).filter(Boolean);
+  const real = events.filter(e => e.type !== 'start' && e.type !== 'end');
+  if (!real.length) {   // opened and closed without doing anything: nothing to report
+    await kv('SET', 'logmeta:' + sid, JSON.stringify({ ...meta, mailed: Date.now(), empty: true }), 'EX', LOG_TTL);
+    await kv('SREM', 'logs:open', sid);
+    return false;
+  }
+  const member = await getMember(meta.email);
+  const to = [meta.email];
+  if (member && member.guardian && member.guardian !== meta.email) to.push(member.guardian);
+
+  const attachments = [];
+  const n = Number(await kv('GET', 'imgn:' + sid)) || 0;
+  for (let i = 1; i <= Math.min(n, 12); i++) {
+    const b = await kv('GET', 'img:' + sid + ':' + i);
+    if (b) attachments.push({ filename: 'page-' + i + '.jpg', content: b });
+  }
+
+  const started = meta.started || events[0].t, ended = meta.last || events[events.length - 1].t;
+  const title = 'Science Marking — session report, ' + day(started);
+  const html = '<div style="font-family:system-ui,sans-serif;font-size:16px;line-height:1.55;color:#1d2a44;max-width:640px">' +
+    '<p style="font-size:20px;font-weight:700;margin:0 0 4px">Science Marking</p>' +
+    '<p style="margin:0 0 16px;color:#4d5b76">Session report for ' + esc(meta.email) + '<br>' + esc(day(started)) + ', ' + when(started) + ' to ' + when(ended) + '</p>' +
+    '<p>Everything below is exactly what happened in the app: the questions worked on, the words your child wrote, and the words the app showed back. ' +
+    (attachments.length ? 'The photographed pages are attached. ' : '') + 'This report is sent every time the app is closed or left for an hour.</p>' +
+    events.map(eventHtml).join('') +
+    '<p style="font-size:14px;color:#4d5b76;margin-top:24px">Something look wrong? Reply to this email. The mark that counts is always the one your child\'s teacher gives.</p></div>';
+  const text = 'Science Marking — session report\n' + day(started) + ', ' + when(started) + ' to ' + when(ended) + '\n\n' +
+    events.map(e => when(e.t) + '  ' + e.type + '  ' + JSON.stringify(e).slice(0, 600)).join('\n');
+
+  await sendMail(to, title, html, text, attachments);
+  await kv('SET', 'logmeta:' + sid, JSON.stringify({ ...meta, mailed: Date.now(), to }), 'EX', LOG_TTL);
+  await kv('SREM', 'logs:open', sid);
   return true;
 }
 
@@ -217,17 +305,21 @@ export async function guard(req, res, opts = {}) {
     if (!ok) { res.status(403).json({ error: 'Not allowed' }); return false; }
   }
 
-  const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-  const now = Date.now();
-  const recent = (hits.get(ip) || []).filter(t => now - t < WINDOW_MS);
-  if (recent.length >= MAX_HITS) {
+  // Per-IP rate limit. Activity logging is exempt ({ light: true }): it is
+  // cheap, member-authenticated, and a busy pupil produces a lot of it.
+  if (!opts.light) {
+    const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+    const now = Date.now();
+    const recent = (hits.get(ip) || []).filter(t => now - t < WINDOW_MS);
+    if (recent.length >= MAX_HITS) {
+      hits.set(ip, recent);
+      res.status(429).json({ error: 'Too many requests. Wait a few minutes.' });
+      return false;
+    }
+    recent.push(now);
+    if (!hits.has(ip) && hits.size >= MAX_IPS) hits.delete(hits.keys().next().value);
     hits.set(ip, recent);
-    res.status(429).json({ error: 'Too many requests. Wait a few minutes.' });
-    return false;
   }
-  recent.push(now);
-  if (!hits.has(ip) && hits.size >= MAX_IPS) hits.delete(hits.keys().next().value);
-  hits.set(ip, recent);
 
   const body = req.body || {};
   for (const [field, cap] of Object.entries(CAPS)) {
