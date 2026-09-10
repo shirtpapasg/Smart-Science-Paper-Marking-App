@@ -70,7 +70,11 @@ export function buildUser(item, answer, attempt, firstAnswer, mcList) {
 export function buildUserFromScheme(scheme, answer, attempt, firstAnswer, mcList) {
   const pts = (scheme.markingPoints || []).map((m, i) => (i+1) + '. ' + m.point + ' [' + m.marks + ']').join('\n');
   return [
-    'QUESTION: ' + scheme.q,
+    // A part of a longer question carries the shared set-up with it. Without the
+    // stem, "as shown below" and the whole situation are lost, and the part is
+    // marked blind.
+    scheme.stem ? 'THE SHARED SET-UP — read once, it applies to every part of this question:\n' + scheme.stem : '',
+    scheme.stem ? 'THIS PART' + (scheme.label ? ' ' + scheme.label : '') + ': ' + scheme.q : 'QUESTION: ' + scheme.q,
     'LEVEL: ' + (scheme.level || 'primary') + ' · ' + (scheme.topic || ''),
     'QUESTION TYPE: ' + (scheme.questionType || 'explain'),
     'TOTAL MARKS: ' + (scheme.marks || pts.length),
@@ -168,6 +172,50 @@ export function buildDeriveUser(questionText, syllabusTopics, exclusions) {
     'plainWhy: two or three sentences for a parent with no science background,',
     '  saying why the answer is the answer.',
   ].join('\n');
+}
+
+// A question with parts (a), (b), (c): one scheme per part, one shared stem.
+export function buildDerivePartsUser(questionText, syllabusTopics, exclusions, knownStem) {
+  return [
+    'QUESTION WITH SEVERAL PARTS. Write ONE mark scheme PER PART.',
+    questionText,
+    '',
+    knownStem ? 'THE SHARED STEM WAS ALREADY READ FROM EARLIER PAGES:' : '',
+    knownStem ? knownStem : '',
+    knownStem ? 'The text above holds only the remaining part(s). Reuse this stem as given; do not rewrite it.' : '',
+    knownStem ? '' : '',
+    'SYLLABUS TOPICS available (pick the closest):',
+    syllabusTopics,
+    '',
+    'TERMS THE SYLLABUS SAYS ARE NOT REQUIRED (never demand these):',
+    exclusions,
+    '',
+    'Return exactly this shape:',
+    '{"stem":"the shared set-up, written once","level":"P4","topic":"","outcome":"","diagram":null,',
+    '"parts":[{"label":"(a)","q":"","questionType":"explain","marks":1,',
+    '"concept":"the general science fact, true of any question on this idea",',
+    '"evidence":["the specific things in THIS question a pupil must use"],',
+    '"markingPoints":[{"point":"","marks":1}],',
+    '"alsoAccept":[""],"doNotAccept":[""],"outOfSyllabus":null,"modelAnswer":"",',
+    '"cecl":{"choice":"","evidence":"","concept":"","link":""},"plainWhy":"","diagram":null}]}',
+    '',
+    'stem: everything the parts share — the set-up, the people, the objects, the diagram. Written',
+    '  once, at the top. Never repeated inside a part.',
+    'parts: one entry per sub-part, in the order printed, label exactly as printed, e.g. "(a)".',
+    '  q is that part\'s own question only. A part that depends on an earlier answer says so',
+    '  in its own q, e.g. "Using your answer to (a), explain…".',
+    'Each part gets its own marks, marking points, model answer, cecl and plainWhy, following',
+    '  the same rules as a single question. Marks compose in halves.',
+    'modelAnswer: the full answer to that part, in the order its marking points require.',
+    'cecl: that part\'s model answer broken into Choice, Evidence from the question, Concept, Link.',
+    'plainWhy: two or three sentences for a parent with no science background, saying why that',
+    '  part\'s answer is the answer.',
+    'outOfSyllabus: a short sentence if the part demands an excluded term, otherwise null.',
+    '',
+    DIAGRAM_SPEC,
+    'If the stem describes a physical set-up, put the diagram at the top level. A part gets its',
+    'own diagram only when it introduces a new set-up; otherwise leave its diagram null.',
+  ].filter((line, i, arr) => line !== '' || (arr[i-1] !== '')).join('\n');
 }
 
 // ── Generating extra practice from an approved scheme ──

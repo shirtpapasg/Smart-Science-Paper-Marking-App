@@ -499,6 +499,7 @@
     <h1>Let's have a go.</h1>
     <p class="muted">Pick a question. Write your answer like you would on paper. I will show you the good bits and what to add.</p>
     <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-tag" class="muted" style="margin-top:9px;font-size:14px"></div><div id="q-err"></div></div>
+    <div id="mk-stem"></div>
     <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
       <textarea id="a1" maxlength="800" placeholder="Type your answer here…"></textarea></div>
@@ -602,6 +603,10 @@
       </div>
       <div class="muted" id="fmt-note" style="margin-top:9px;font-size:14px"></div>
     </div>
+    <div id="nq-group" class="card hide" style="margin-top:16px"><span class="eyebrow" style="color:var(--mid)">Adding another part</span>
+      <div id="nq-group-stem" style="margin-top:8px;font-size:15px;line-height:1.5"></div>
+      <div class="muted" style="margin-top:8px;font-size:14px">Photograph or type just the next part. The set-up above is carried across.
+        <a href="#" id="nq-group-off">Start a different question instead</a></div></div>
     <div id="nq-pair">
       <div class="nq-col"><label for="nq">The question</label>
         <textarea id="nq" maxlength="1500" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
@@ -616,6 +621,11 @@
     <span class="eyebrow">Here's what I worked out</span>
     <h2 id="rv-q" style="margin-top:10px"></h2>
     <div id="rv-flag" class="card flag hide"></div>
+    <div id="rv-stem-dgm"></div>
+    <!-- A question with parts: the stem sits above in #rv-q, and this holds one
+         body per part. The single-question body below is hidden meanwhile. -->
+    <div id="rv-parts" class="hide"></div>
+    <div id="rv-single">
     <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
       <div id="rv-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
     <div id="rv-dgm"></div>
@@ -637,11 +647,21 @@
     <div id="rv-dna-box" style="margin-top:24px"><span class="eyebrow">Close, but no mark</span>
       <div id="rv-dna"></div>
       <div class="muted" style="margin-top:10px;font-size:14px">These sound right and use the right words, but the science underneath is wrong.</div></div>
+    </div>
+    <div id="rv-actions">
     <button class="primary" id="rv-save">That looks right · save it</button>
     <div style="display:flex;gap:10px;margin-top:12px">
       <button class="secondary" id="rv-retry" style="margin:0;text-align:center">Have another go</button>
       <button class="ghost" id="rv-cancel" style="margin:0;text-align:center;border:2px solid var(--rule)">Discard</button>
     </div>
+    </div>
+    <!-- After saving: a question whose parts were photographed separately continues here. -->
+    <div id="rv-more" class="card hide" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Saved</span>
+      <div style="margin-top:8px;font-size:17px">Is there another part of this question on a later page?</div>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="primary" id="rv-more-yes" style="margin:0;min-height:48px;font-size:15px">Yes, add the next page</button>
+        <button class="ghost" id="rv-more-no" style="margin:0;min-height:48px;font-size:15px;border:2px solid var(--rule)">No, that's all</button>
+      </div></div>
   </div>
 
 
@@ -1161,6 +1181,15 @@ function showMarkDiagram(){
     const bits = [m.level, m.topic || m.chapter].filter(Boolean);
     tag.textContent = bits.length ? bits.join(' · ') : '';
   }
+  const st = $('mk-stem');
+  if (st){
+    const s = sel && sel.scheme;
+    st.innerHTML = (s && s.stem)
+      ? '<div class="card" style="margin-top:16px"><span class="eyebrow" style="color:var(--mid)">The set-up this part belongs to</span>' +
+        '<div style="margin-top:8px;font-size:16px;line-height:1.55">' + shEsc(s.stem) + '</div>' +
+        '<div class="muted" style="margin-top:8px;font-size:14px">Answer part ' + shEsc(s.label || '') + ' only.</div></div>'
+      : '';
+  }
   const el = $('mk-dgm');
   if (!el) return;
   // A picture attached by an adult wins over the one I draw.
@@ -1296,7 +1325,7 @@ function fillQuestionPicker(){
   const cut = (t, n) => { t = String(t||''); return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t; };
   const opt = q => '<option value="bank:'+q.i+'">' + cut(q.q, 96) + '</option>';
   const mine = load(SRC).map(r => '<option value="src:'+r.id+'">' +
-    cut(r.scheme.q, 96) + '</option>').join('');
+    cut((r.scheme.label ? r.scheme.label + ' ' : '') + r.scheme.q, 96) + '</option>').join('');
   const prac = load(TWN).filter(t => t.approved).map(r => '<option value="twin:'+r.id+'">' +
     cut(r.stem, 96) + '</option>').join('');
   const prev = $('q').value;
@@ -1441,7 +1470,8 @@ function renderDone(r2, first, peeked, a2){
   const missedNow = (r2.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase);
   const all = subs();
   all.unshift({
-    ts: Date.now(), qi: $('q').value, level: qm.level || '', chapter: qm.chapter || qm.topic || '', q: qm.q || '',
+    ts: Date.now(), qi: $('q').value, level: qm.level || '', chapter: qm.chapter || qm.topic || '',
+    q: (qm.label ? qm.label + ' ' : '') + (qm.q || ''),
     a1: a1txt, a2: a2 || '', peeked: !!peeked,
     marks1: first?.marks ?? null, marks2: r2.marks ?? null, maxMarks: r2.maxMarks ?? null,
     missed1: (first?.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase),
@@ -1745,6 +1775,7 @@ async function handlePhoto(files){
       return;
     }
     $('nq').value = d.question + (d.diagramNote ? '\n\n[Picture: ' + d.diagramNote + ']' : '');
+    readParts = Array.isArray(d.parts) ? d.parts : [];
     box.innerHTML = '<div class="card"><span class="eyebrow" style="color:var(--mid)">Is this right?</span>' +
       '<div class="muted" style="margin-top:8px">I have put what I read into the box below. Have a quick look and fix anything I got wrong. I only read the printed question, never handwriting.' +
       (d.moreOnPage ? ' There was more than one question on that page, so I took the clearest one.' : '') +
@@ -3026,6 +3057,9 @@ function qsResume(){
   return true;
 }
 let newFormat = 'written', mcqItem = null, mcqPick = null;
+// Sub-part labels the photo reader found, and the question being continued
+// across pages: { groupId, stem, level, topic } while a later page is added.
+let readParts = [], groupCtx = null;
 
 document.querySelectorAll('#v-qs .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-qs .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -3049,10 +3083,15 @@ function renderQs(){
       : 'Nothing here yet. Open one of your own questions and I will build fresh practice from it.') + '</div>';
     return;
   }
+  let lastGroup = null;
   $('qs-list').innerHTML = rows.map(r => {
-    const q = r.scheme ? r.scheme.q : r.stem;
+    const s = r.scheme;
+    const q = s ? ((s.label ? s.label + ' ' : '') + s.q) : r.stem;
+    const head = (s && s.stem && r.groupId && r.groupId !== lastGroup)
+      ? '<div class="muted" style="margin:18px 0 4px;font-size:14px;line-height:1.5"><b style="font-family:var(--round)">Shared set-up</b> · ' + shEsc(s.stem) + '</div>' : '';
+    if (r.groupId) lastGroup = r.groupId;
     const meta = (r.scheme ? (r.scheme.level + ' · ' + r.scheme.topic) : (r.level + ' · ' + r.topic));
-    return '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + q + '</div>' +
+    return head + '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + q + '</div>' +
       '<div class="muted" style="margin-top:6px;font-size:14px">' + meta + ' · ' + typeLabel(r.scheme ? r.scheme.questionType : r.questionType) +
       (folder === 'source' ? ' · ' + ((r.scheme.markingPoints||[]).length) + ' marking points' : '') +
       (folder === 'twin' && !r.approved ? ' · <span style="color:var(--accent)">have a look</span>' : '') + '</div>' +
@@ -3078,7 +3117,7 @@ function renderQs(){
 function camReset(){
   ['cam-out','cam-check'].forEach(id => { const n = $(id); if (n) n.innerHTML = ''; });
   const pair = $('nq-pair'); if (pair) pair.classList.remove('paired');
-  pendingScan = null;
+  pendingScan = null; readParts = [];
 }
 // Both kinds arrive the same way — off a photo — so there is one door in and the
 // format is worked out rather than chosen up front. The chips let you correct it.
@@ -3101,12 +3140,13 @@ document.querySelectorAll('#fmt-chips .chip').forEach(c => c.onclick = () =>
   setFormat(c.dataset.fmt, 'You set this yourself.'));
 
 $('qs-add').onclick = () => {
+  groupCtx = null; showGroupBanner();
   $('nq').value = ''; camReset(); $('nq-err').classList.add('hide');
   setFormat('written', 'I will work this out from the page. Change it if I get it wrong.');
   qsShow('new');
 };
-$('nq-cancel').onclick = renderQs;
-$('rv-cancel').onclick = renderQs;
+$('nq-cancel').onclick = () => { groupCtx = null; renderQs(); };
+$('rv-cancel').onclick = () => { groupCtx = null; renderQs(); };
 $('tw-back').onclick = renderQs;
 $('rv-retry').onclick = () => deriveScheme($('nq').value.trim());
 
@@ -3121,7 +3161,8 @@ async function deriveScheme(text){
   $('nq-go').disabled = true; $('nq-go').textContent = 'Writing the scheme…';
   try { audioCtx(); } catch(e){}
   try {
-    derived = await callApi('/api/derive', { questionText: text, format: newFormat });
+    derived = await callApi('/api/derive', { questionText: text, format: newFormat,
+      parts: readParts, stem: groupCtx ? groupCtx.stem : undefined });
     chime();
     if (newFormat === 'mcq'){ startMcq(derived); }
     else showReview(derived);
@@ -3139,7 +3180,53 @@ const TYPE_LABEL = {
 const typeLabel = t => TYPE_LABEL[String(t||'').toLowerCase()]
   || (t ? String(t).charAt(0).toUpperCase() + String(t).slice(1) : '—');
 
+// One part's body on the review screen — the same sections as a single question.
+function partReviewHtml(p, d){
+  const rows = (arr, cls, empty) => (arr||[]).filter(Boolean).map(x =>
+    '<div class="row"><span class="tick' + (cls ? ' ' + cls : '') + '"></span><div style="flex:1">' + shEsc(x) + '</div></div>').join('')
+    || '<div class="muted">' + empty + '</div>';
+  return '<div class="rv-part" style="margin-top:28px;padding-top:20px;border-top:2px solid var(--ink)">' +
+    '<span class="eyebrow">Part ' + shEsc(p.label || '') + '</span>' +
+    '<h2 style="margin-top:8px">' + shEsc(p.q || '') + '</h2>' +
+    (p.outOfSyllabus ? '<div class="card flag"><span class="eyebrow">Worth knowing</span><div style="margin-top:8px">' + shEsc(p.outOfSyllabus) + '</div></div>' : '') +
+    '<div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>' +
+      '<div style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px">' + shEsc(p.modelAnswer || '') + '</div></div>' +
+    svgFor(p.diagram) +
+    '<div class="stat"><div><b>' + shEsc(p.level || d.level || '—') + '</b><span>Level</span></div>' +
+      '<div><b>' + shEsc(typeLabel(p.questionType)) + '</b><span>Type</span></div>' +
+      '<div><b>' + shEsc(p.marks || '—') + '</b><span>Marks</span></div></div>' +
+    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">The unchanging concept</span>' +
+      '<div style="margin-top:8px;font-size:17px;line-height:1.55">' + shEsc(p.concept || '') + '</div></div>' +
+    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What this part supplies</span>' +
+      '<div style="margin-top:8px">' + rows(p.evidence, 'info', 'None listed.') + '</div></div>' +
+    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What earns the marks</span><div>' +
+      (p.markingPoints||[]).map((m,i) =>
+        '<div class="row"><div style="flex:none;width:20px;font-family:var(--round);font-weight:700;color:var(--mid);font-variant-numeric:tabular-nums">' + (i+1) + '</div>' +
+        '<div style="flex:1">' + shEsc(m.point) + '</div>' +
+        '<div style="flex:none;font-family:var(--round);font-weight:700;font-variant-numeric:tabular-nums">' + shEsc(m.marks) + '</div></div>').join('') + '</div></div>' +
+    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Also accept</span>' +
+      '<div>' + rows(p.alsoAccept, '', 'Nothing beyond the marking points above.') + '</div></div>' +
+    '<div style="margin-top:24px"><span class="eyebrow">Close, but no mark</span>' +
+      '<div>' + rows(p.doNotAccept, 'open', 'None listed.') + '</div></div>' +
+    '</div>';
+}
+
 function showReview(d){
+  $('rv-actions').classList.remove('hide'); $('rv-more').classList.add('hide');
+  const multi = Array.isArray(d.parts) && d.parts.length > 0;
+  $('rv-single').classList.toggle('hide', multi);
+  $('rv-parts').classList.toggle('hide', !multi);
+  $('rv-stem-dgm').innerHTML = '';
+  if (multi){
+    // The stem is lifted out and shown once; every part repeats the body below it.
+    $('rv-q').textContent = d.stem || '';
+    $('rv-flag').classList.add('hide');
+    $('rv-stem-dgm').innerHTML = svgFor(d.diagram) +
+      '<div class="muted" style="margin-top:10px;font-size:14px">This set-up is shared. Each part below is marked on its own, with the set-up carried along.</div>';
+    $('rv-parts').innerHTML = d.parts.map(p => partReviewHtml(p, d)).join('');
+    qsShow('review'); window.scrollTo(0,0);
+    return;
+  }
   $('rv-q').textContent = d.q || '';
   $('rv-level').textContent = d.level || '—';
   $('rv-type').textContent = typeLabel(d.questionType);
@@ -3169,17 +3256,58 @@ function showReview(d){
 }
 
 $('rv-save').onclick = async () => {
+  const d = derived; if (!d) return;
   const all = load(SRC);
-  const id = 's' + Date.now();
-  all.unshift({ id, ts: Date.now(), scheme: derived });
+  const ts = Date.now();
+  const multi = Array.isArray(d.parts) && d.parts.length > 0;
+  let scanId, first;
+  if (multi){
+    // One row per part. They share a groupId and the stem, so a pupil answering
+    // part (b) sees the set-up and part (b) only, and the marker sees both.
+    const groupId = (groupCtx && groupCtx.groupId) || ('g' + ts);
+    const stem = d.stem || (groupCtx && groupCtx.stem) || '';
+    const rows = d.parts.map((p, i) => ({
+      id: 's' + ts + '-' + i, ts: ts + i, groupId, scanId: 's' + ts + '-0',
+      scheme: { ...p, q: p.q || '', label: p.label || '', stem,
+        level: p.level || d.level || (groupCtx && groupCtx.level) || '',
+        topic: p.topic || d.topic || (groupCtx && groupCtx.topic) || '',
+        outcome: p.outcome || d.outcome || '', diagram: p.diagram || d.diagram || null, format: 'written' },
+    }));
+    rows.slice().reverse().forEach(r => all.unshift(r));   // (a) ends up above (b)
+    first = rows[0]; scanId = first.id;
+    groupCtx = { groupId, stem, level: first.scheme.level, topic: first.scheme.topic };
+  } else {
+    const groupId = (groupCtx && groupCtx.groupId) || ('g' + ts);
+    first = { id: 's' + ts, ts, groupId, scanId: 's' + ts, scheme: d };
+    all.unshift(first); scanId = first.id;
+    // A single scheme may still be page one of a longer question: its whole
+    // text serves as the stem if the tutor adds a later page.
+    groupCtx = { groupId, stem: (groupCtx && groupCtx.stem) || d.q || '', level: d.level || '', topic: d.topic || '' };
+  }
   save(SRC, all.slice(0,200));
-  // File the photographed page against this question, for checking later.
+  // File the photographed page(s) against this batch, for checking later.
   if (pendingScan){
-    try { await SCANS.put({ id, ...pendingScan }); } catch(e){}
+    try { await SCANS.put({ id: scanId, ...pendingScan }); } catch(e){}
     pendingScan = null;
   }
-  derived = null; renderQs(); fillQuestionPicker();
+  derived = null; fillQuestionPicker();
+  $('rv-actions').classList.add('hide'); $('rv-more').classList.remove('hide');
+  $('rv-more').scrollIntoView({ block: 'center' });
 };
+
+// Continue the same question on the next page, stem and groupId retained.
+function showGroupBanner(){
+  const b = $('nq-group'); if (!b) return;
+  b.classList.toggle('hide', !groupCtx);
+  if (groupCtx) $('nq-group-stem').textContent = groupCtx.stem.length > 220 ? groupCtx.stem.slice(0, 219).trimEnd() + '…' : groupCtx.stem;
+}
+$('rv-more-yes').onclick = () => {
+  $('nq').value = ''; camReset(); $('nq-err').classList.add('hide');
+  setFormat('written', 'The next part of the same question.');
+  showGroupBanner(); qsShow('new'); window.scrollTo(0,0);
+};
+$('rv-more-no').onclick = () => { groupCtx = null; renderQs(); };
+$('nq-group-off').onclick = e => { e.preventDefault(); groupCtx = null; showGroupBanner(); };
 
 
 /* ── admin: the scanned page behind a question ──────────── */
@@ -3208,7 +3336,7 @@ async function renderScanList(){
       'style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex:none;border:1.5px solid var(--rule)">' +
       '<div style="flex:1;min-width:0">' +
       '<div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' +
-      (x.q.scheme.q || '').slice(0,90) + '</div>' +
+      ((x.q.scheme.stem ? x.q.scheme.stem + ' ' : '') + (x.q.scheme.label ? x.q.scheme.label + ' ' : '') + (x.q.scheme.q || '')).slice(0,90) + '</div>' +
       '<div class="muted" style="margin-top:6px;font-size:14px">' +
       new Date(x.rec.ts).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) +
       ' · ' + (x.q.scheme.level || '') + ' ' + (x.q.scheme.topic || '') +
@@ -3348,7 +3476,9 @@ async function makeTwin(id){
   $('tw-body').innerHTML = '<div class="empty">Holding the concept, changing the situation. This takes a moment.</div>';
   const used = load(TWN).map(t => t.object).filter(Boolean);
   try {
-    const d = await callApi('/api/twin', { scheme: row.scheme, avoid: used, count: 2 });
+    const s = row.scheme;
+    const forTwin = s.stem ? { ...s, q: s.stem + '\n' + (s.label ? s.label + ' ' : '') + s.q } : s;
+    const d = await callApi('/api/twin', { scheme: forTwin, avoid: used, count: 2 });
     const kept = [], why = [];
     (d.twins||[]).forEach(t => {
       const g = t.gate || {};
@@ -3568,7 +3698,8 @@ function oeSheet(d, scan){
   h += '</div>';
 
   const q = s.q || m.q;
-  if (q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' + shEsc(q) + '</div></div>';
+  if (q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' +
+    (s.stem ? shEsc(s.stem) + '<br><br><strong>' + shEsc(s.label || '') + '</strong> ' : '') + shEsc(q) + '</div></div>';
 
   const tries = [];
   if (d.a1) tries.push('<div class="sh-try"><div class="lbl">First try</div><div class="t">“' + shEsc(d.a1) + '”</div></div>');
@@ -3600,8 +3731,12 @@ async function sheetScan(d){
     if (d.kind === 'mcq') return pendingScan ? pendingScan.jpeg : null;
     const v = $('q').value || '';
     let id = null;
-    if (v.startsWith('src:')) id = v.slice(4);
-    else if (v.startsWith('twin:')){ const t = load(TWN).find(x => x.id === v.slice(5)); id = (t && t.sourceId) || null; }
+    if (v.startsWith('src:')){ const r = load(SRC).find(x => x.id === v.slice(4)); id = (r && r.scanId) || v.slice(4); }
+    else if (v.startsWith('twin:')){
+      const t = load(TWN).find(x => x.id === v.slice(5));
+      const r = t && load(SRC).find(x => x.id === t.sourceId);
+      id = (r && r.scanId) || (t && t.sourceId) || null;
+    }
     if (!id) return null;
     const rec = await SCANS.get(id);
     return rec && rec.jpeg ? rec.jpeg : null;
