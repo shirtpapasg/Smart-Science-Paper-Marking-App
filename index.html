@@ -53,6 +53,7 @@
   a{color:var(--accent)}
   a:hover{color:var(--ink)}
   .wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
+  :root{--pair-h:430px}
   h1{font-family:var(--round);font-weight:700;font-size:26px;line-height:1.2;margin:0}
   h2{font-family:var(--round);font-weight:700;font-size:22px;line-height:1.25;margin:0}
   .eyebrow{font-family:var(--round);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
@@ -100,64 +101,6 @@
   .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
   .hide{display:none !important}
-
-  /* ── answer sheet ─────────────────────────────────────────
-     A normal view: it scrolls in the wrap and the tabs, buddy and tools stay
-     put. Only @media print strips the chrome. Body font for the sheet, the
-     rounded font for the CECL box — that contrast is deliberate. */
-  #sheet{--teal:#1c5b56;--teal-bg:#e9f2f1;--teal-rule:#a9cbc7;font-family:var(--body);color:var(--ink)}
-  #sheet .sh-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-  #sheet .sh-actions button{margin:0;width:auto}
-  #sheet .sh-page{display:flex;flex-direction:column;gap:12px;min-height:60vh}
-  #sheet .rnd{font-family:var(--round);font-weight:700}
-  #sheet .lbl{font-family:var(--round);font-weight:700;font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--mid)}
-  #sheet .sh-hd{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:9px}
-  #sheet .sh-band{background:var(--accent-bg);border:2px solid var(--accent);padding:16px 18px}
-  #sheet .sh-pills{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-  #sheet .sh-pill{font-family:var(--round);font-weight:700;font-size:16px;background:var(--accent);color:#fff;padding:5px 12px}
-  #sheet .sh-pill.line{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}
-  #sheet .sh-box{border:1.5px solid var(--rule);background:var(--surface);padding:13px 15px;margin-top:5px;font-size:16px;line-height:1.55}
-  #sheet .sh-items{margin-top:5px;border-top:1.5px solid var(--rule)}
-  #sheet .sh-item{display:grid;grid-template-columns:minmax(0,168px) minmax(0,1fr);gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
-  #sheet .sh-item:last-child{border-bottom:1.5px solid var(--rule)}
-  #sheet .sh-item .rnd{font-size:16.5px}
-  #sheet .sh-item .p{font-size:16px;line-height:1.5}
-  #sheet .sh-why{font-size:16.5px;line-height:1.6;margin-top:5px}
-  #sheet .sh-lose{font-size:16px;line-height:1.5;padding-left:13px;border-left:3px solid var(--rule)}
-  #sheet .sh-mine{display:inline-block;border:2px dotted var(--accent);border-radius:999px;padding:1px 11px;color:var(--accent)}
-  #sheet .sh-try{display:grid;grid-template-columns:minmax(0,96px) minmax(0,1fr);gap:12px;font-size:16px;line-height:1.5}
-  #sheet .sh-try .lbl{padding-top:2px}
-  #sheet .sh-try .t{padding-left:12px;border-left:3px solid var(--rule)}
-  #sheet .sh-try.second .t{border-left-color:var(--accent)}
-  #sheet .sh-cecl{background:var(--teal-bg);border:2px solid var(--teal);padding:15px 17px;margin-top:2px;font-family:var(--round);font-weight:700;color:var(--teal)}
-  #sheet .sh-cecl .lbl{color:var(--teal)}
-  #sheet .sh-cecl .intro{font-size:16px;line-height:1.45;margin-top:4px}
-  #sheet .sh-cecl-rows{margin-top:11px;display:flex;flex-direction:column;gap:9px}
-  #sheet .sh-cecl-row{display:grid;grid-template-columns:minmax(0,22px) minmax(0,1fr);gap:11px}
-  #sheet .sh-cecl-row b{font-size:19px;line-height:1}
-  #sheet .sh-cecl-row .k{font-size:16px}
-  #sheet .sh-cecl-row .v{font-size:16px;line-height:1.5;color:#1a1a1a;margin-top:2px}
-  #sheet .sh-cecl-foot{margin-top:12px;padding-top:10px;border-top:1.5px solid var(--teal-rule);font-size:16px;line-height:1.55}
-  #sheet .sh-tail{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:12px}
-  #sheet .sh-scan{padding-top:12px;border-top:2px solid var(--ink)}
-  #sheet .sh-scan p{font-size:16px;line-height:1.5;margin:5px 0 0}
-  #sheet .sh-scanbox{margin-top:9px;border:1.5px solid var(--rule);background:var(--surface);padding:6px}
-  #sheet .sh-scanbox img{display:block;width:100%;height:150px;object-fit:contain}
-  #sheet .sh-foot{border-top:1.5px solid var(--rule);padding-top:9px;display:flex;gap:10px;align-items:baseline}
-  #sheet .sh-foot .note{font-size:16px;color:var(--mid);line-height:1.5}
-  @media print{
-    body.sheet-open .nav,body.sheet-open #pip,body.sheet-open #pip-menu,body.sheet-open #tools,
-    body.sheet-open #music,body.sheet-open #nudge,body.sheet-open #deflect,
-    body.sheet-open #sheet .sh-actions{display:none !important}
-    body.sheet-open{background:#fff;color:#1a1a1a}
-    body.sheet-open .wrap{max-width:none;margin:0;padding:0}
-    body.sheet-open .wrap>section{display:none !important}
-    body.sheet-open #sheet{display:block !important;
-      --ink:#1a1a1a;--bg:#fff;--surface:#f0eeea;--rule:#d8d4cd;--mid:#6b6660;--accent:#b3402b;--accent-bg:#f7e8e4}
-    body.sheet-open #sheet .sh-page{min-height:0}
-    @page{size:A4;margin:20mm}
-    body.sheet-open #sheet,body.sheet-open #sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  }
   .opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-top:12px;
     padding:16px 18px;background:#fff;border:1.5px solid var(--rule);border-radius:14px;
     font-family:var(--body);font-weight:400;font-size:17px;line-height:1.45;min-height:auto;
@@ -330,6 +273,17 @@
   .cam input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
   .shot{margin-top:16px;border:2px solid var(--rule);padding:12px;background:#fff}
   .shot img{width:100%;height:auto;display:block}
+  /* Transcript left, photograph right, the same height, so the two can be read
+     against each other without scrolling. Below ~620px they stack instead. */
+  #nq-pair{display:flex;flex-wrap:wrap;gap:18px;margin-top:24px;align-items:flex-start}
+  #nq-pair > .nq-col{flex:1 1 270px;min-width:0}
+  #cam-check:empty{display:none}
+  #cam-check .shot{margin-top:0}
+  #cam-check .shot + .shot{margin-top:12px}
+  #nq{min-height:300px}
+  #nq-pair.paired #nq{height:var(--pair-h);min-height:0}
+  #nq-pair.paired #cam-check{max-height:calc(var(--pair-h) + 34px);overflow:auto;
+    padding-right:2px}
   .busy{display:flex;gap:10px;align-items:center;margin-top:16px;font-size:15px;color:var(--mid)}
   @keyframes spin{to{transform:rotate(360deg)}}
   .busy i{width:16px;height:16px;flex:none;border:2px solid var(--rule);
@@ -370,7 +324,7 @@
   /* Loading ring. The buddy is the only thing on screen during a model call,
      so it carries the progress instead of a separate spinner. */
   #pip::before{content:'';position:absolute;inset:-8px;border-radius:50%;
-    background:conic-gradient(from 0deg,transparent 0 18%,var(--accent) 46%,#7a9fc9 62%,transparent 82% 100%);
+    background:conic-gradient(from 0deg,#ff5252,#ff9f1c,#ffd23f,#4caf82,#2e9bd6,#7a5cd6,#ff5252);
     -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 6px));
     mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 6px));
     opacity:0;transition:opacity .22s;animation:pip-spin 1.1s linear infinite;pointer-events:none}
@@ -502,7 +456,6 @@
         <div style="font-family:var(--round);font-weight:700;font-size:32px;line-height:1;font-variant-numeric:tabular-nums" id="marks"></div>
         <div class="muted" id="tutornote" style="margin-top:12px"></div>
         <div class="muted" id="early" style="margin-top:10px"></div></div></div>
-    <button class="secondary" id="export-oe">Export this answer</button>
     <button class="secondary" id="restart">Answer another question</button>
   </div>
   <div id="deflect" class="hide"><span class="d-ico">✦</span><div class="d-txt"></div></div>
@@ -548,9 +501,11 @@
       </div>
       <div class="muted" id="fmt-note" style="margin-top:9px;font-size:14px"></div>
     </div>
-    <div style="margin-top:24px"><label for="nq">The question</label>
-      <textarea id="nq" maxlength="1500" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
-    <div id="cam-check"></div>
+    <div id="nq-pair">
+      <div class="nq-col"><label for="nq">The question</label>
+        <textarea id="nq" maxlength="1500" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
+      <div class="nq-col" id="cam-check"></div>
+    </div>
     <button class="primary" id="nq-go">Work out the answer</button>
     <button class="ghost" id="nq-cancel">Cancel</button>
     <div id="nq-err" class="err hide"></div>
@@ -652,7 +607,6 @@
       <h2 id="mq-head" style="margin-top:10px"></h2>
       <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">Why that one is right</span>
         <div id="mq-why-right" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:17px"></div></div>
-      <button class="secondary" id="export-mcq">Export this answer</button>
       <button class="secondary" id="mq-next">Back to my questions</button>
     </div>
     <div id="mq-err" class="err hide"></div>
@@ -776,9 +730,6 @@
     <div id="st-topic"></div>
   </div>
 </section>
-
-<!-- ══ ANSWER SHEET ══ a printable page for a parent. Filled by buildSheet(). -->
-<div id="sheet" class="hide"></div>
 
 </div>
 
@@ -1118,13 +1069,12 @@ addEventListener('orientationchange', () => setTimeout(syncNavHeight, 250));
 // Progress is reached through the pet rather than the nav, so the switch has to
 // work from either place.
 function goView(v){
-  $('sheet').classList.add('hide'); document.body.classList.remove('sheet-open');
   document.querySelectorAll('.nav button').forEach(x =>
     x.classList.toggle('on', x.dataset.v === v));
   ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
   curView = v; armIdle();
-  if (v === 'qs') renderQs();
+  if (v === 'qs' && !qsResume()) renderQs();
   if (v === 'mist') renderMistakes();
   if (v === 'prac') renderPractice();
   if (v === 'stats'){ renderStats(); renderBuddyPick(); renderReport(); }
@@ -1350,7 +1300,6 @@ function renderDone(r2, first, peeked, a2){
   $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
   $('tutornote').textContent = r2.tutorNote || '';
   $('early').textContent = r2.answerRequestedEarly ? 'The answer was opened before a second attempt.' : '';
-  sheetData = { kind:'oe', sel: selected(), r2, a1: a1txt, a2: a2 || '' };
 
   // ── save to the mistake book ──
   const qm = (selected() || {}).meta || {};
@@ -1389,6 +1338,43 @@ const BUDDIES = {
   cat:        { name:'Momo',  label:'🐱 Momo',  frames:['cat-sit.png','cat-happy.png','cat-stand.png','cat-cheer.png'] },
   none:       { name:null,   label:'None',    frames:[] },
 };
+// A short sound each, so you know the job finished without looking at the
+// screen — and know which animal you picked without looking either. Made from
+// oscillators rather than files: nothing to download, nothing to host.
+// f is a frequency path, t is the start offset in seconds, d the length.
+const CHIMES = {
+  chinchilla: [ { f:[1180,1580], t:0,    d:.075, type:'triangle', g:.070 },
+                { f:[1580,2000], t:.085, d:.080, type:'triangle', g:.060 } ],
+  lizard:     [ { f:[430,300],   t:0,    d:.065, type:'sawtooth', g:.055, lp:900 },
+                { f:[430,290],   t:.100, d:.065, type:'sawtooth', g:.050, lp:900 },
+                { f:[385,250],   t:.200, d:.085, type:'sawtooth', g:.042, lp:800 } ],
+  cat:        [ { f:[520,780,610], t:0,  d:.34,  type:'triangle', g:.085, lp:2400 } ],
+  none:       [ { f:[720,720],   t:0,    d:.09,  type:'sine',     g:.055 } ],
+};
+
+function chime(){
+  let ctx; try { ctx = audioCtx(); } catch(e){ return; }
+  const parts = CHIMES[buddyId()] || CHIMES.none;
+  const t0 = ctx.currentTime + .02;
+  parts.forEach(p => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = p.type;
+    const s = t0 + p.t, e = s + p.d;
+    o.frequency.setValueAtTime(p.f[0], s);
+    // Ramps have to target something above zero, hence the small floor values.
+    p.f.slice(1).forEach((f, i) =>
+      o.frequency.exponentialRampToValueAtTime(f, s + p.d * (i + 1) / (p.f.length - 1)));
+    g.gain.setValueAtTime(.0001, s);
+    g.gain.exponentialRampToValueAtTime(p.g, s + .012);
+    g.gain.exponentialRampToValueAtTime(.0001, e);
+    let node = o;
+    if (p.lp){ const bq = ctx.createBiquadFilter(); bq.type = 'lowpass';
+               bq.frequency.value = p.lp; o.connect(bq); node = bq; }
+    node.connect(g); g.connect(ctx.destination);
+    o.start(s); o.stop(e + .03);
+  });
+}
+
 const BKEY = 'sm-buddy-v1';
 const buddyId = () => { const v = localStorage.getItem(BKEY); return BUDDIES[v] ? v : 'chinchilla'; };
 
@@ -1604,6 +1590,7 @@ async function handlePhoto(files){
   const list = files && files.length ? [...files].slice(0, 3) : (files ? [files] : []);
   if (!list.length) return;
   const box = $('cam-out');
+  try { audioCtx(); } catch(e){}   // unlocked here, while the tap still counts
   $('nq-err').classList.add('hide');
   box.innerHTML = '<div class="busy"><i></i>Reading the question off your ' +
     (list.length > 1 ? list.length + ' pages…' : 'photo…') + '</div>';
@@ -1635,15 +1622,18 @@ async function handlePhoto(files){
         : 'No numbered options on the page, so I read it as a written question.');
     const chk = $('cam-check');
     if (chk) chk.innerHTML =
-      '<span class="eyebrow" style="color:var(--mid);display:block;margin-top:20px">Compare with your ' +
+      '<span class="eyebrow" style="color:var(--mid);display:block;margin-bottom:10px">Compare with your ' +
       (pendingScan.pages.length > 1 ? pendingScan.pages.length + ' pages' : 'photo') + '</span>' +
       pendingScan.pages.map((p, i) => '<div class="shot">' +
         (pendingScan.pages.length > 1 ? '<div class="muted" style="font-size:13px;margin-bottom:8px">Page ' + (i+1) + '</div>' : '') +
         '<img src="data:image/jpeg;base64,' + p + '" alt="Page ' + (i+1) + ' of the question"></div>').join('');
+    $('nq-pair').classList.add('paired');
+    chime();
     $('nq').focus();
   } catch(e){
     box.innerHTML = '';
     const chk = $('cam-check'); if (chk) chk.innerHTML = '';
+    $('nq-pair').classList.remove('paired');
     $('nq-err').textContent = /decode/.test(e.message)
       ? 'That image would not open. A JPG or PNG always works; on an iPhone you can also set Camera to Most Compatible.'
       : e.message;
@@ -2380,6 +2370,13 @@ const TUNES = [
     rain: .40, bell: .03, cut: 380 },
 ];
 let ac = null, mNode = null, mTimer = null, mTune = -1;
+// One context for the whole app. Browsers only allow audio after a tap, so this
+// is called early in the tap that starts a job, not when the sound plays.
+function audioCtx(){
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+  return ac;
+}
 const hz = n => 440 * Math.pow(2, (n - 69) / 12);
 
 function mStop(){
@@ -2396,8 +2393,7 @@ function mPlay(i){
   if (!t) return;
   if (mTune === i){ mStop(); return; }
   if (mNode) mStop();
-  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-  if (ac.state === 'suspended') ac.resume();
+  audioCtx();
   mTune = i;
 
   const bus = ac.createGain(); bus.gain.value = 0;
@@ -2567,8 +2563,26 @@ const SCANS = {
 const SRC='sm-src-v1', TWN='sm-twin-v1';
 let folder='source', derived=null, twinSourceId=null;
 
-const qsShow = n => ['home','new','review','twin','mcqrun','scan','scanone'].forEach(x =>
-  $('qs-'+x).classList.toggle('hide', x !== n));
+// Where you were inside the Questions tab. A scheme costs a model call and ten
+// seconds of waiting, so leaving the tab — for the buddy, the mistake book,
+// anything — must not throw it away. The sub-screen is remembered and restored.
+// The list, the scan screens and the admin bar are cheap to rebuild, so those
+// go back to the list as before.
+let qsAt = 'home';
+const QS_KEEP = ['new','review','twin','mcqrun'];
+const qsShow = n => {
+  qsAt = n;
+  ['home','new','review','twin','mcqrun','scan','scanone'].forEach(x =>
+    $('qs-'+x).classList.toggle('hide', x !== n));
+};
+// True when there was unfinished work to come back to. A model call still in
+// flight is fine: the ring lives on the buddy, so it keeps turning on whatever
+// tab you are on, and the result lands on the screen waiting behind this one.
+function qsResume(){
+  if (QS_KEEP.indexOf(qsAt) < 0) return false;
+  qsShow(qsAt);
+  return true;
+}
 let newFormat = 'written', mcqItem = null, mcqPick = null;
 
 document.querySelectorAll('#v-qs .chip').forEach(c => c.onclick = () => {
@@ -2619,7 +2633,11 @@ function renderQs(){
   });
 }
 
-function camReset(){ ['cam-out','cam-check'].forEach(id => { const n = $(id); if (n) n.innerHTML = ''; }); pendingScan = null; }
+function camReset(){
+  ['cam-out','cam-check'].forEach(id => { const n = $(id); if (n) n.innerHTML = ''; });
+  const pair = $('nq-pair'); if (pair) pair.classList.remove('paired');
+  pendingScan = null;
+}
 // Both kinds arrive the same way — off a photo — so there is one door in and the
 // format is worked out rather than chosen up front. The chips let you correct it.
 function setFormat(f, why){
@@ -2659,8 +2677,10 @@ $('nq-go').onclick = () => deriveScheme($('nq').value.trim());
 async function deriveScheme(text){
   if (!text) { $('nq-err').textContent = 'Type the question first.'; $('nq-err').classList.remove('hide'); return; }
   $('nq-go').disabled = true; $('nq-go').textContent = 'Writing the scheme…';
+  try { audioCtx(); } catch(e){}
   try {
     derived = await callApi('/api/derive', { questionText: text, format: newFormat });
+    chime();
     if (newFormat === 'mcq'){ startMcq(derived); }
     else showReview(derived);
   } catch(e){
@@ -2999,7 +3019,6 @@ $('mq-submit').onclick = async () => {
       renderMcqOpts(true);
       $('mq-fb').classList.add('hide'); $('mq-done').classList.remove('hide');
       $('mq-step').textContent = 'Done';
-      sheetData = { kind:'mcq', item: mcqItem, pick: mcqPick, r };
 
       const all = subs();
       all.unshift({ ts: Date.now(), qi: 'mcq', level: mcqItem.level || '', chapter: mcqItem.topic || '',
@@ -3021,164 +3040,6 @@ $('mq-submit').onclick = async () => {
 };
 
 $('mq-next').onclick = () => { mcqItem = null; mcqPick = null; renderQs(); };
-
-/* ── answer sheet export ─────────────────────────────────
-   One printable page for a parent or tutor: the answer, the question, what the
-   child wrote, and how a full-mark answer is built. Everything on it comes from
-   the scheme and the marking result. A field that is missing means its section
-   is left out — nothing is ever filled with placeholder text. */
-let sheetData = null, sheetFrom = null;
-const shEsc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const shLbl = (t, style) => '<div class="lbl"' + (style ? ' style="' + style + '"' : '') + '>' + shEsc(t) + '</div>';
-const shPill = (t, line) => '<div class="sh-pill' + (line ? ' line' : '') + '">' + shEsc(t) + '</div>';
-const shMarks = n => n + (n === 1 ? ' mark' : ' marks');
-
-function shHeader(kind, level, topic){
-  return '<div class="sh-hd"><div class="rnd" style="font-size:14px">Science Marking</div>' +
-    '<div class="lbl" style="margin-left:auto;color:var(--ink)">' +
-    shEsc([kind, level, topic].filter(Boolean).join(' · ')) + '</div></div>';
-}
-
-// The block above the footer. Omitted entirely when there is no scan.
-function shScan(jpeg){
-  if (!jpeg) return '';
-  return '<div class="sh-scan">' + shLbl('The page your child photographed', 'color:var(--ink)') +
-    '<p>Only the question above was read by the camera, so compare it against this photo. ' +
-    'Your child typed their own answer — no handwriting was read, so the words quoted above are exactly what they wrote.</p>' +
-    '<div class="sh-scanbox"><img src="data:image/jpeg;base64,' + jpeg + '" alt="The page that was photographed"></div></div>';
-}
-
-function shFoot(){
-  const when = new Date().toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'numeric' });
-  return '<div class="sh-foot"><div class="note">Check anything unfamiliar with your child\'s school teacher — ' +
-    'schools word things slightly differently.</div>' +
-    '<div class="lbl" style="margin-left:auto;white-space:nowrap">' + shEsc(when) + '</div></div>';
-}
-
-function mcqSheet(d, scan){
-  const it = d.item || {}, pick = d.pick || {}, opts = it.options || [];
-  const right = opts.find(o => o.correct);
-  const label = o => '(' + o.n + ') ' + (o.text || '');
-  let h = shHeader('Multiple choice', it.level, it.topic);
-
-  h += '<div class="sh-band">' + shLbl('The answer', 'color:var(--accent)');
-  if (right) h += '<div class="rnd" style="font-size:31px;line-height:1.15;margin-top:5px">' + shEsc(label(right)) + '</div>';
-  if (it.plainWhy) h += '<div style="font-size:16.5px;line-height:1.5;margin-top:7px">' + shEsc(it.plainWhy) + '</div>';
-  const pills = [];
-  if (it.marks) pills.push(shPill(shMarks(it.marks)));
-  if (pick.n) pills.push(shPill('Your child chose (' + pick.n + ')', true));
-  if (pills.length) h += '<div class="sh-pills">' + pills.join('') + '</div>';
-  h += '</div>';
-
-  if (it.q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' + shEsc(it.q) +
-    (opts.length ? '<br><span style="color:var(--mid)">' + opts.map(o => shEsc(label(o))).join(' &nbsp; ') + '</span>' : '') +
-    '</div></div>';
-
-  const items = (it.items || []).filter(x => x && (x.name || x.plain));
-  if (items.length) h += '<div>' + shLbl('What each item is for') + '<div class="sh-items">' +
-    items.map(x => '<div class="sh-item"><div class="rnd">' + shEsc((x.tag ? '(' + x.tag + ') ' : '') + (x.name || '')) +
-      '</div><div class="p">' + shEsc(x.plain || '') + '</div></div>').join('') + '</div></div>';
-
-  if (it.plainWhy) h += '<div>' + shLbl('Why that is the answer') + '<div class="sh-why">' + shEsc(it.plainWhy) + '</div></div>';
-
-  const wrong = opts.filter(o => !o.correct && o.says);
-  if (wrong.length) h += '<div>' + shLbl('Why the other choices lose the mark') +
-    '<div style="margin-top:5px;display:flex;flex-direction:column;gap:6px">' +
-    wrong.map(o => '<div class="sh-lose"><strong' + (pick.n === o.n ? ' class="sh-mine"' : '') + '>' +
-      shEsc(label(o)) + '</strong> — ' + shEsc(o.says) + '</div>').join('') + '</div></div>';
-
-  return h + '<div class="sh-tail">' + shScan(scan) + shFoot() + '</div>';
-}
-
-function oeSheet(d, scan){
-  const sel = d.sel || {}, s = sel.scheme || {}, m = sel.meta || {}, r = d.r2 || {};
-  const level = s.level || m.level, topic = s.topic || m.topic || m.chapter;
-  const model = s.modelAnswer || r.modelAnswer;
-  const max = r.maxMarks ?? s.marks;
-  let h = shHeader('Open-ended', level, topic);
-
-  h += '<div class="sh-band">' + shLbl('The answer', 'color:var(--accent)');
-  if (model) h += '<div class="rnd" style="font-size:20px;line-height:1.35;margin-top:5px">' + shEsc(model) + '</div>';
-  const pills = [];
-  if (max) pills.push(shPill(shMarks(max)));
-  if (max && r.marks != null) pills.push(shPill('Your child scored ' + r.marks + ' of ' + max, true));
-  if (pills.length) h += '<div class="sh-pills">' + pills.join('') + '</div>';
-  h += '</div>';
-
-  const q = s.q || m.q;
-  if (q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' + shEsc(q) + '</div></div>';
-
-  const tries = [];
-  if (d.a1) tries.push('<div class="sh-try"><div class="lbl">First try</div><div class="t">“' + shEsc(d.a1) + '”</div></div>');
-  if (d.a2) tries.push('<div class="sh-try second"><div class="lbl">Second try</div><div class="t">“' + shEsc(d.a2) + '”</div></div>');
-  if (tries.length) h += '<div>' + shLbl('What your child wrote') +
-    '<div style="margin-top:5px;display:flex;flex-direction:column;gap:7px">' + tries.join('') + '</div></div>';
-
-  const c = s.cecl || {};
-  const parts = [
-    ['C', 'choice',   'Choice — what you say happens'],
-    ['E', 'evidence', 'Evidence — what the question tells you'],
-    ['C', 'concept',  'Concept — the science fact, always true'],
-    ['L', 'link',     'Link — joining the fact to this question'],
-  ].filter(p => c[p[1]]);
-  if (parts.length) h += '<div class="sh-cecl">' + shLbl('How a full-mark answer is built · C E C L') +
-    '<div class="intro">Four parts, in this order. Every good explanation answer has all four.</div>' +
-    '<div class="sh-cecl-rows">' + parts.map(p => '<div class="sh-cecl-row"><b>' + p[0] + '</b><div>' +
-      '<div class="k">' + shEsc(p[2]) + '</div><div class="v">' + shEsc(c[p[1]]) + '</div></div></div>').join('') + '</div>' +
-    '<div class="sh-cecl-foot"><strong>If you help with one thing, help with L.</strong> Most children can say the fact. ' +
-    'Far fewer join it to the thing in front of them.</div></div>';
-
-  return h + '<div class="sh-tail">' + shScan(scan) + shFoot() + '</div>';
-}
-
-// The scan already held for this question — the same one the admin
-// "Check scanned pages" screen shows. A typed-in question has none.
-async function sheetScan(d){
-  try {
-    if (d.kind === 'mcq') return pendingScan ? pendingScan.jpeg : null;
-    const v = $('q').value || '';
-    let id = null;
-    if (v.startsWith('src:')) id = v.slice(4);
-    else if (v.startsWith('twin:')){ const t = load(TWN).find(x => x.id === v.slice(5)); id = (t && t.sourceId) || null; }
-    if (!id) return null;
-    const rec = await SCANS.get(id);
-    return rec && rec.jpeg ? rec.jpeg : null;
-  } catch(e){ return null; }
-}
-
-function openSheet(){
-  sheetFrom = curView;
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.add('hide'));
-  $('sheet').classList.remove('hide');
-  document.body.classList.add('sheet-open');
-  window.scrollTo(0,0);
-}
-
-// Back to exactly the screen the sheet came from, without re-rendering it —
-// the result the pupil was looking at must still be there.
-function closeSheet(){
-  $('sheet').classList.add('hide');
-  document.body.classList.remove('sheet-open');
-  const v = sheetFrom || 'mark';
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
-  window.scrollTo(0,0);
-}
-
-async function buildSheet(){
-  if (!sheetData) return;
-  const d = sheetData;
-  const scan = await sheetScan(d);
-  $('sheet').innerHTML =
-    '<div class="sh-actions"><button class="primary" id="sh-pdf">Save as PDF</button>' +
-    '<button class="ghost" id="sh-back">Back to the answer</button></div>' +
-    '<div class="sh-page">' + (d.kind === 'mcq' ? mcqSheet(d, scan) : oeSheet(d, scan)) + '</div>';
-  $('sh-pdf').onclick = () => window.print();
-  $('sh-back').onclick = closeSheet;
-  openSheet();
-  window.print();
-}
-$('export-oe').onclick = buildSheet;
-$('export-mcq').onclick = buildSheet;
 
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
