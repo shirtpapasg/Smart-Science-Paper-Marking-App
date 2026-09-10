@@ -202,6 +202,10 @@ function route(){
 
 /* ── the list: every activity in the book ── */
 const KIND = { lab3d:'Experiment', observe:'Observation', make:'Make it' };
+// Same rule as the app: no parent code set, or unlocked with it, counts as the adult.
+const adminDevice = () => { try { return !localStorage.getItem('sm-adm-v1') || sessionStorage.getItem('sm-adm-open') === '1'; } catch(e){ return false; } };
+const tags = a => (a.cc21 || []).map(t => '<span class="badge kind">' + esc(t) + '</span>').join('') +
+                  (a.skills || []).map(t => '<span class="badge soon">' + esc(t) + '</span>').join('');
 async function renderList(){
   $('act').classList.add('hide'); $('list').classList.remove('hide');
   $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p><div class="busy">Loading…</div>';
@@ -210,13 +214,15 @@ async function renderList(){
     const p = prog();
     $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p>' +
       d.chapters.map(ch => '<div style="margin-top:28px"><span class="eyebrow">Chapter ' + ch.n + '</span><h2 style="margin-top:6px">' + esc(ch.title) + '</h2>' +
-        ch.activities.map(a => {
-          const done = (p[a.id] || {}).done;
-          return '<div class="item' + (a.status === 'ready' ? ' link' : '') + '"' + (a.status === 'ready' ? ' data-open="' + a.id + '"' : '') + '>' +
+        ch.activities.filter(a => a.status !== 'review' || adminDevice()).map(a => {
+          const done = (p[a.id] || {}).done, open = a.status === 'ready' || a.status === 'review';
+          return '<div class="item' + (open ? ' link' : '') + '"' + (open ? ' data-open="' + a.id + '"' : '') + '>' +
             '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="eyebrow">' + esc(a.code) + '</span>' +
             '<h3 style="flex:1">' + esc(a.title) + '</h3>' +
-            (a.status === 'ready' ? '<span class="badge">' + (done ? 'Done' : 'Ready') + '</span>' : '<span class="badge soon">Coming soon</span>') + '</div>' +
-            '<div class="muted" style="margin-top:6px">' + KIND[a.kind] + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + (a.sim ? ' · runs in 3D' : '') + '</div></div>';
+            (a.status === 'ready' ? '<span class="badge">' + (done ? 'Done' : 'Ready') + '</span>' :
+             a.status === 'review' ? '<span class="badge" style="background:var(--warn-bg);color:var(--warn)">In review</span>' : '<span class="badge soon">Coming soon</span>') + '</div>' +
+            '<div class="muted" style="margin-top:6px">' + KIND[a.kind] + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + (a.sim ? ' · runs in 3D' : '') + '</div>' +
+            '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 0">' + tags(a).replace(/margin-left:8px/g, '') + '</div></div>';
         }).join('') + '</div>').join('');
     $('list').querySelectorAll('[data-open]').forEach(el => el.onclick = () => { location.hash = '#a/' + el.dataset.open; });
   } catch(e){ $('list').innerHTML += '<div class="err">' + esc(e.message) + '</div>'; }
@@ -237,6 +243,7 @@ function renderActivity(a){
   let h = '<button class="ghost" style="width:auto;padding-left:0" onclick="location.hash=\'\'">← All experiments</button>' +
     '<span class="eyebrow">' + esc(a.chapter) + ' · ' + esc(a.code) + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + '</span>' +
     '<h1 style="margin-top:8px">' + esc(a.title) + '</h1>' +
+    '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 0">' + tags(a).replace(/margin-left:8px/g, '') + '</div>' +
     '<div class="card idea"><span class="eyebrow" style="color:var(--accent)">The big idea</span><div style="margin-top:6px;font-family:var(--round);font-weight:600;font-size:18px">' + esc(a.bigIdea) + '</div></div>' +
     '<p style="margin-top:16px"><b>What we are finding out.</b> ' + esc(a.aim) + '</p>';
   if (a.safety && a.safety.length) h += '<div class="card warn"><span class="eyebrow" style="color:var(--warn)">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>';
@@ -350,7 +357,7 @@ async function markExplain(a, key){
   const state = box._state || { attempt: 1, first: '' };
   btn.disabled = true; btn.textContent = 'Checking…';
   try {
-    const r = await api('/api/lab-mark', { id: a.id, ...where, answer, attempt: state.attempt, firstAnswer: state.first });
+    const r = await api('/api/lab', { action:'mark', id: a.id, ...where, answer, attempt: state.attempt, firstAnswer: state.first });
     if (r.deflect){ out.innerHTML = '<div class="card">' + esc(r.deflect) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; return; }
     const hits = (r.keywords || []).filter(k => k.hit).map(k => k.phrase), gaps = r.gaps || [];
     let h = '<div class="verdict">' + esc(r.verdict || 'Checked') + '</div><div>' + esc(r.headline || '') + '</div>';

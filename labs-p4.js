@@ -29,8 +29,10 @@
 
 export const LABS = [
 {
-  id: 'p4-7-3', level: 'P4', chapter: 'Effects of Heat', code: '7.3', minutes: 40,
+  id: 'p4-7-3', level: 'P4', chapter: 'Effects of Heat', code: '7.3', minutes: 40, kind: 'lab3d', status: 'ready',
   title: 'Heat gain and heat loss',
+  cc21: ['Critical Thinking', 'Communication'],
+  skills: ['Analysing Data', 'Communicating with Evidence', 'Using Models'],
   bigIdea: 'When something gains heat it expands. When it loses heat it contracts. Enough heat gain or loss can also change its state.',
   aim: 'Find out what happens to a solid, a liquid and a gas when they gain heat and when they lose heat — and watch ice change state.',
   safety: [
@@ -205,34 +207,46 @@ export const LABS = [
 //   lab3d   an apparatus experiment with a 3D scene, like the Heat Lab
 //   observe an observation or sorting activity, with animated 2D diagrams
 //   make    something the pupil builds or performs, with a photo of the result
-// A record here has no parts yet, so the Lab page shows it as coming soon.
+// status runs soon → review → ready. "review" is visible only on a device
+// unlocked with the parent code, so every animation is looked over before a
+// family can see it. A record without parts shows as coming soon.
+//
+// Tags use the same vocabulary as the science skillset map:
+//   cc21    21st Century Competencies — Critical Thinking, Adaptive Thinking,
+//           Inventive Thinking, Communication, Collaboration, Information
+//           Skills, Civic Literacy, Global Literacy, Cross-Cultural
+//   skills  science practices — Analysing Data, Communicating with Evidence,
+//           Using Models, Designing Investigations, Informed Decisions,
+//           Explaining & Designing
+// No school is named anywhere in these records, in the pages, or in the
+// simulations. That is a rule, not a preference.
 const SOON = [
-  ['1.1', 'Plant System', 'A walk among the plants', 'observe'],
-  ['1.2', 'Plant System', 'What each part of a plant does', 'make'],
-  ['1.3', 'Plant System', 'Looking closely at plants', 'observe'],
-  ['1.4', 'Plant System', 'What a plant needs to stay alive', 'observe'],
-  ['2.1', 'Human Systems', 'The systems inside you', 'observe'],
-  ['2.2', 'Human Systems', 'Where your food goes', 'observe'],
-  ['2.3', 'Human Systems', 'What if a part stopped working?', 'observe'],
-  ['2.4', 'Human Systems', 'Build the digestive system', 'make'],
-  ['3.1', 'Matter', 'Is it matter?', 'observe'],
-  ['3.2', 'Matter', 'Solids, liquids and gases side by side', 'observe'],
-  ['3.3', 'Matter', 'Weighing and measuring things', 'lab3d'],
-  ['3.4', 'Matter', 'Plan and run a fair test', 'lab3d'],
-  ['4.1', 'Light', 'Seeing in the dark', 'lab3d'],
-  ['5.1', 'Shadows', 'Making shadows', 'lab3d'],
-  ['5.2', 'Shadows', 'Big shadow, small shadow', 'lab3d'],
-  ['5.3', 'Shadows', 'Where the shadow falls', 'lab3d'],
-  ['5.4', 'Shadows', 'The shape of a shadow', 'lab3d'],
-  ['5.5', 'Shadows', 'Put on a shadow show', 'make'],
-  ['6.1', 'Heat', 'Reading a thermometer', 'lab3d'],
-  ['6.2', 'Heat', 'Why temperature changes', 'lab3d'],
-  ['6.3', 'Heat', 'Heat is not temperature', 'lab3d'],
-  ['7.1', 'Effects of Heat', 'Heat on the move', 'lab3d'],
-  ['7.2', 'Effects of Heat', 'Good and poor conductors', 'lab3d'],
-  ['7.4', 'Effects of Heat', 'Keeping things cold', 'lab3d'],
+  ['1.1', 'Plant System', 'A walk among the plants', 'observe', ['Information Skills'], ['Analysing Data']],
+  ['1.2', 'Plant System', 'What each part of a plant does', 'make', ['Communication', 'Inventive Thinking'], ['Using Models', 'Communicating with Evidence']],
+  ['1.3', 'Plant System', 'Looking closely at plants', 'observe', ['Information Skills', 'Critical Thinking'], ['Analysing Data']],
+  ['1.4', 'Plant System', 'What a plant needs to stay alive', 'observe', ['Critical Thinking', 'Civic Literacy'], ['Designing Investigations', 'Informed Decisions']],
+  ['2.1', 'Human Systems', 'The systems inside you', 'observe', ['Information Skills'], ['Using Models']],
+  ['2.2', 'Human Systems', 'Where your food goes', 'observe', ['Critical Thinking'], ['Using Models', 'Analysing Data']],
+  ['2.3', 'Human Systems', 'What if a part stopped working?', 'observe', ['Critical Thinking', 'Adaptive Thinking'], ['Explaining & Designing']],
+  ['2.4', 'Human Systems', 'Build the digestive system', 'make', ['Inventive Thinking', 'Collaboration'], ['Using Models', 'Communicating with Evidence']],
+  ['3.1', 'Matter', 'Is it matter?', 'observe', ['Critical Thinking'], ['Analysing Data']],
+  ['3.2', 'Matter', 'Solids, liquids and gases side by side', 'observe', ['Critical Thinking', 'Communication'], ['Analysing Data', 'Communicating with Evidence']],
+  ['3.3', 'Matter', 'Weighing and measuring things', 'lab3d', ['Information Skills'], ['Analysing Data']],
+  ['3.4', 'Matter', 'Plan and run a fair test', 'lab3d', ['Critical Thinking', 'Inventive Thinking'], ['Designing Investigations', 'Analysing Data']],
+  ['4.1', 'Light', 'Seeing in the dark', 'lab3d', ['Critical Thinking'], ['Analysing Data', 'Communicating with Evidence']],
+  ['5.1', 'Shadows', 'Making shadows', 'lab3d', ['Inventive Thinking'], ['Using Models']],
+  ['5.2', 'Shadows', 'Big shadow, small shadow', 'lab3d', ['Critical Thinking'], ['Analysing Data', 'Designing Investigations']],
+  ['5.3', 'Shadows', 'Where the shadow falls', 'lab3d', ['Critical Thinking'], ['Analysing Data']],
+  ['5.4', 'Shadows', 'The shape of a shadow', 'lab3d', ['Critical Thinking', 'Communication'], ['Analysing Data', 'Communicating with Evidence']],
+  ['5.5', 'Shadows', 'Put on a shadow show', 'make', ['Communication', 'Collaboration', 'Inventive Thinking'], ['Using Models']],
+  ['6.1', 'Heat', 'Reading a thermometer', 'lab3d', ['Information Skills'], ['Analysing Data']],
+  ['6.2', 'Heat', 'Why temperature changes', 'lab3d', ['Critical Thinking'], ['Designing Investigations', 'Analysing Data']],
+  ['6.3', 'Heat', 'Heat is not temperature', 'lab3d', ['Critical Thinking', 'Adaptive Thinking'], ['Communicating with Evidence']],
+  ['7.1', 'Effects of Heat', 'Heat on the move', 'lab3d', ['Critical Thinking'], ['Using Models', 'Communicating with Evidence']],
+  ['7.2', 'Effects of Heat', 'Good and poor conductors', 'lab3d', ['Critical Thinking'], ['Designing Investigations', 'Analysing Data']],
+  ['7.4', 'Effects of Heat', 'Keeping things cold', 'lab3d', ['Inventive Thinking', 'Critical Thinking'], ['Designing Investigations', 'Informed Decisions']],
 ];
-SOON.forEach(([code, chapter, title, kind]) => LABS.push({
-  id: 'p4-' + code.replace('.', '-'), level: 'P4', chapter, code, title, kind, status: 'soon',
+SOON.forEach(([code, chapter, title, kind, cc21, skills]) => LABS.push({
+  id: 'p4-' + code.replace('.', '-'), level: 'P4', chapter, code, title, kind, status: 'soon', cc21, skills,
 }));
 LABS.sort((a, b) => parseFloat(a.code) - parseFloat(b.code));

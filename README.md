@@ -80,10 +80,10 @@ what the app showed back — and mailed to the registered email and the guardian
 email when the window closes or an hour passes with nothing done. Records expire
 after 48 hours.
 
-    api/log.js         one event per action, the photographed pages, and "end"
-    api/report-run.js  sweep: mails any session quiet for an hour. Needs CRON_SECRET.
-                       vercel.json runs it daily; point any scheduler at it more
-                       often with an `x-cron-key: <CRON_SECRET>` header.
+    api/log.js         POST: one event per action, the photographed pages, and "end".
+                       GET with CRON_SECRET: the sweep that mails any session quiet
+                       for an hour. vercel.json runs it daily; any scheduler can call
+                       it more often with an `x-cron-key: <CRON_SECRET>` header.
 
 The guardian email is set on admin.html when granting access, or from the app's
 progress screen by someone holding the device's parent code.
@@ -100,8 +100,17 @@ submitted is ordinary text, so marking and the session record are unchanged.
 ## The lab (members only)
 
 `lab.html` is the experiment library: every activity in the Primary 4 book,
-rewritten in our own words, with predict, test and explain steps. Records live
-in `labs-p4.js`; `api/lab.js` serves them without model answers and
-`api/lab-mark.js` marks the written steps. Both sit behind the same member
+rewritten in our own words, with predict, test and explain steps. Records live in
+`labs-p4.js`; `api/lab.js` serves them without model answers and marks the
+written steps (actions list, get, mark). Both sit behind the same member
 session as everything else. `labs/observation-a` and `labs/observation-b` are
 reserved for the observation-skills work.
+
+Three rules for the lab:
+
+- Vercel's Hobby plan allows 12 serverless functions. `api/` holds 11. Add a
+  new action to an existing route rather than a new file.
+- Every activity carries `cc21` and `skills` tags in the skillset-map
+  vocabulary, and moves soon → review → ready. "review" shows only on a device
+  unlocked with the parent code, so each animation is looked over first.
+- No school is named anywhere — records, pages, simulations, questions, answers.
