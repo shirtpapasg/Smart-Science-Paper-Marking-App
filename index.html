@@ -101,64 +101,6 @@
   .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
   .hide{display:none !important}
-
-  /* ── answer sheet ─────────────────────────────────────────
-     A normal view: it scrolls in the wrap and the tabs, buddy and tools stay
-     put. Only @media print strips the chrome. Body font for the sheet, the
-     rounded font for the CECL box — that contrast is deliberate. */
-  #sheet{--teal:#1c5b56;--teal-bg:#e9f2f1;--teal-rule:#a9cbc7;font-family:var(--body);color:var(--ink)}
-  #sheet .sh-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-  #sheet .sh-actions button{margin:0;width:auto}
-  #sheet .sh-page{display:flex;flex-direction:column;gap:12px;min-height:60vh}
-  #sheet .rnd{font-family:var(--round);font-weight:700}
-  #sheet .lbl{font-family:var(--round);font-weight:700;font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--mid)}
-  #sheet .sh-hd{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:9px}
-  #sheet .sh-band{background:var(--accent-bg);border:2px solid var(--accent);padding:16px 18px}
-  #sheet .sh-pills{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-  #sheet .sh-pill{font-family:var(--round);font-weight:700;font-size:16px;background:var(--accent);color:#fff;padding:5px 12px}
-  #sheet .sh-pill.line{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}
-  #sheet .sh-box{border:1.5px solid var(--rule);background:var(--surface);padding:13px 15px;margin-top:5px;font-size:16px;line-height:1.55}
-  #sheet .sh-items{margin-top:5px;border-top:1.5px solid var(--rule)}
-  #sheet .sh-item{display:grid;grid-template-columns:minmax(0,168px) minmax(0,1fr);gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
-  #sheet .sh-item:last-child{border-bottom:1.5px solid var(--rule)}
-  #sheet .sh-item .rnd{font-size:16.5px}
-  #sheet .sh-item .p{font-size:16px;line-height:1.5}
-  #sheet .sh-why{font-size:16.5px;line-height:1.6;margin-top:5px}
-  #sheet .sh-lose{font-size:16px;line-height:1.5;padding-left:13px;border-left:3px solid var(--rule)}
-  #sheet .sh-mine{display:inline-block;border:2px dotted var(--accent);border-radius:999px;padding:1px 11px;color:var(--accent)}
-  #sheet .sh-try{display:grid;grid-template-columns:minmax(0,96px) minmax(0,1fr);gap:12px;font-size:16px;line-height:1.5}
-  #sheet .sh-try .lbl{padding-top:2px}
-  #sheet .sh-try .t{padding-left:12px;border-left:3px solid var(--rule)}
-  #sheet .sh-try.second .t{border-left-color:var(--accent)}
-  #sheet .sh-cecl{background:var(--teal-bg);border:2px solid var(--teal);padding:15px 17px;margin-top:2px;font-family:var(--round);font-weight:700;color:var(--teal)}
-  #sheet .sh-cecl .lbl{color:var(--teal)}
-  #sheet .sh-cecl .intro{font-size:16px;line-height:1.45;margin-top:4px}
-  #sheet .sh-cecl-rows{margin-top:11px;display:flex;flex-direction:column;gap:9px}
-  #sheet .sh-cecl-row{display:grid;grid-template-columns:minmax(0,22px) minmax(0,1fr);gap:11px}
-  #sheet .sh-cecl-row b{font-size:19px;line-height:1}
-  #sheet .sh-cecl-row .k{font-size:16px}
-  #sheet .sh-cecl-row .v{font-size:16px;line-height:1.5;color:#1a1a1a;margin-top:2px}
-  #sheet .sh-cecl-foot{margin-top:12px;padding-top:10px;border-top:1.5px solid var(--teal-rule);font-size:16px;line-height:1.55}
-  #sheet .sh-tail{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:12px}
-  #sheet .sh-scan{padding-top:12px;border-top:2px solid var(--ink)}
-  #sheet .sh-scan p{font-size:16px;line-height:1.5;margin:5px 0 0}
-  #sheet .sh-scanbox{margin-top:9px;border:1.5px solid var(--rule);background:var(--surface);padding:6px}
-  #sheet .sh-scanbox img{display:block;width:100%;height:150px;object-fit:contain}
-  #sheet .sh-foot{border-top:1.5px solid var(--rule);padding-top:9px;display:flex;gap:10px;align-items:baseline}
-  #sheet .sh-foot .note{font-size:16px;color:var(--mid);line-height:1.5}
-  @media print{
-    body.sheet-open .nav,body.sheet-open #pip,body.sheet-open #pip-menu,body.sheet-open #tools,
-    body.sheet-open #music,body.sheet-open #nudge,body.sheet-open #deflect,
-    body.sheet-open #sheet .sh-actions{display:none !important}
-    body.sheet-open{background:#fff;color:#1a1a1a}
-    body.sheet-open .wrap{max-width:none;margin:0;padding:0}
-    body.sheet-open .wrap>section{display:none !important}
-    body.sheet-open #sheet{display:block !important;
-      --ink:#1a1a1a;--bg:#fff;--surface:#f0eeea;--rule:#d8d4cd;--mid:#6b6660;--accent:#b3402b;--accent-bg:#f7e8e4}
-    body.sheet-open #sheet .sh-page{min-height:0}
-    @page{size:A4;margin:20mm}
-    body.sheet-open #sheet,body.sheet-open #sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  }
   .opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-top:12px;
     padding:16px 18px;background:#fff;border:1.5px solid var(--rule);border-radius:14px;
     font-family:var(--body);font-weight:400;font-size:17px;line-height:1.45;min-height:auto;
@@ -251,6 +193,48 @@
   .m-row.on{background:var(--ink);color:var(--bg)}
   .m-row b{flex:1;font-family:var(--round);font-weight:700}
   .m-row span{font-size:13px;opacity:.7}
+  /* Notes are a document, so the pad stays white paper in both themes. The
+     colours you pick then mean the same thing on screen and in the exported
+     Word file — a black word does not turn white when you switch to dark. */
+  #n-panel{width:min(560px,calc(100vw - 28px))}
+  .n-fold{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .n-fold button{font-family:var(--round);font-weight:700;font-size:13px;padding:7px 12px;
+    min-height:0;border:1.5px solid var(--rule);border-radius:999px;background:transparent;
+    color:var(--mid);cursor:pointer;margin:0;width:auto}
+  .n-fold button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  .n-fold button.add{border-style:dashed}
+  .n-list{max-height:132px;overflow:auto;margin-top:10px;border:1.5px solid var(--rule);
+    border-radius:12px;background:var(--surface)}
+  .n-list div{padding:9px 12px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--rule);
+    display:flex;gap:10px;align-items:baseline}
+  .n-list div:last-child{border-bottom:0}
+  .n-list div.on{background:var(--accent-bg)}
+  .n-list b{font-family:var(--round);font-weight:700;flex:1;min-width:0;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .n-list span{font-size:12px;color:var(--mid);flex:none}
+  .n-list .none{color:var(--mid);cursor:default;display:block}
+  .n-bar{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:12px}
+  .n-bar button{width:44px;height:44px;min-height:0;margin:0;padding:0;font-size:15px;
+    border:1.5px solid var(--rule);border-radius:10px;background:transparent;color:var(--ink);
+    cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .n-bar button:hover{background:var(--surface)}
+  .n-bar select{width:auto;min-height:0;height:44px;padding:0 28px 0 10px;margin:0;font-size:13px;
+    font-family:var(--round);font-weight:700;border-radius:10px;background-position:right 8px center}
+  .n-cols{display:flex;margin-left:2px}
+  .n-cols i{width:30px;height:44px;cursor:pointer;display:flex;align-items:center;
+    justify-content:center}
+  .n-cols i::after{content:'';width:22px;height:22px;border-radius:50%;background:var(--sw);
+    box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55),0 0 0 1px rgba(26,26,26,.18)}
+  #n-title{width:100%;margin-top:10px;padding:11px 14px;min-height:44px;
+    border:1.5px solid var(--rule);border-radius:10px;
+    font-family:var(--round);font-weight:700;font-size:17px;background:#fff;color:#1a1a1a}
+  #n-title:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,64,43,.10)}
+  #n-text{margin-top:8px;min-height:190px;max-height:38vh;overflow:auto;padding:13px 14px;
+    border:1.5px solid var(--rule);border-radius:10px;background:#fff;color:#1a1a1a;
+    font-family:var(--round);font-weight:700;font-size:16px;line-height:1.55;outline:none}
+  #n-text:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(179,64,43,.10)}
+  #n-text:empty::before{content:attr(data-ph);color:#9a948e}
+  #n-text ul{margin:6px 0;padding-left:22px}
   .m-svc{display:flex;gap:8px;margin-top:12px}
   .m-svc a{flex:1;text-align:center;padding:11px 6px;border:1.5px solid var(--rule);border-radius:12px;
     font-family:var(--round);font-weight:700;font-size:13px;color:var(--ink);text-decoration:none}
@@ -514,7 +498,6 @@
         <div style="font-family:var(--round);font-weight:700;font-size:32px;line-height:1;font-variant-numeric:tabular-nums" id="marks"></div>
         <div class="muted" id="tutornote" style="margin-top:12px"></div>
         <div class="muted" id="early" style="margin-top:10px"></div></div></div>
-    <button class="secondary" id="export-oe">Export this answer</button>
     <button class="secondary" id="restart">Answer another question</button>
   </div>
   <div id="deflect" class="hide"><span class="d-ico">✦</span><div class="d-txt"></div></div>
@@ -666,7 +649,6 @@
       <h2 id="mq-head" style="margin-top:10px"></h2>
       <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">Why that one is right</span>
         <div id="mq-why-right" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:17px"></div></div>
-      <button class="secondary" id="export-mcq">Export this answer</button>
       <button class="secondary" id="mq-next">Back to my questions</button>
     </div>
     <div id="mq-err" class="err hide"></div>
@@ -791,9 +773,6 @@
   </div>
 </section>
 
-<!-- ══ ANSWER SHEET ══ a printable page for a parent. Filled by buildSheet(). -->
-<div id="sheet" class="hide"></div>
-
 </div>
 
 <div id="music">
@@ -894,12 +873,40 @@
       <div style="font-family:var(--round);font-weight:700;font-size:16px">My notes</div>
       <span class="muted" id="n-saved" style="margin-left:auto;font-size:13px"></span>
     </div>
-    <div class="muted" style="margin-top:5px;font-size:14px">Anything you want to remember. Saved as you type.</div>
-    <textarea id="n-text" style="min-height:200px;margin-top:12px;font-size:16px"
-      placeholder="Heat always moves from hotter to colder…"></textarea>
+    <div class="muted" style="margin-top:5px;font-size:14px">Saved as you type. Export the lot as a Word document.</div>
+
+    <div class="n-fold" id="n-folders"></div>
+    <div class="n-list" id="n-list"></div>
+
+    <div class="n-bar">
+      <button data-cmd="bold" title="Bold" style="font-weight:900">B</button>
+      <button data-cmd="italic" title="Italic" style="font-style:italic;font-family:Georgia,serif">I</button>
+      <button data-cmd="underline" title="Underline" style="text-decoration:underline">U</button>
+      <button data-cmd="insertUnorderedList" title="Bullet list">≔</button>
+      <select id="n-font" title="Font">
+        <option value="">Handwritten</option>
+        <option value="Arial">Clean</option>
+        <option value="Georgia">Book</option>
+      </select>
+      <select id="n-size" title="Size">
+        <option value="2">Small</option>
+        <option value="3" selected>Normal</option>
+        <option value="5">Big</option>
+        <option value="6">Title</option>
+      </select>
+      <span class="n-cols" id="n-cols"></span>
+      <button data-cmd="removeFormat" title="Back to plain">⌫</button>
+    </div>
+
+    <input id="n-title" placeholder="Give this note a name" autocomplete="off">
+    <div id="n-text" contenteditable="true" role="textbox" aria-multiline="true"
+      aria-label="Note" data-ph="Heat always moves from hotter to colder…"></div>
+
     <div class="m-svc" style="margin-top:10px">
-      <a href="#" id="n-clear">Clear</a>
+      <a href="#" id="n-new">New note</a>
       <a href="#" id="n-copy">Copy</a>
+      <a href="#" id="n-del">Delete</a>
+      <a href="#" id="n-exp">Export</a>
     </div>
   </div>
   <button class="m-fab" id="n-fab" aria-label="My notes">✎</button>
@@ -1132,7 +1139,6 @@ addEventListener('orientationchange', () => setTimeout(syncNavHeight, 250));
 // Progress is reached through the pet rather than the nav, so the switch has to
 // work from either place.
 function goView(v){
-  $('sheet').classList.add('hide'); document.body.classList.remove('sheet-open');
   document.querySelectorAll('.nav button').forEach(x =>
     x.classList.toggle('on', x.dataset.v === v));
   ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
@@ -1364,7 +1370,6 @@ function renderDone(r2, first, peeked, a2){
   $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
   $('tutornote').textContent = r2.tutorNote || '';
   $('early').textContent = r2.answerRequestedEarly ? 'The answer was opened before a second attempt.' : '';
-  sheetData = { kind:'oe', sel: selected(), r2, a1: a1txt, a2: a2 || '' };
 
   // ── save to the mistake book ──
   const qm = (selected() || {}).meta || {};
@@ -1880,24 +1885,331 @@ $('t-fab').onclick = () =>
   applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 
 /* ── notes ──────────────────────────────────────────────── */
-const NOTES = 'sm-notes-v1';
-let nT = null;
-$('n-text').value = DB.raw(NOTES) || '';
-$('n-text').oninput = () => {
+// A small notebook: folders hold notes, notes hold formatted text. The old
+// single scratchpad becomes the first note the first time this runs, so nobody
+// loses what they had written.
+const NOTES = 'sm-notes-v1';          // the old plain-text pad, migrated once
+const NOTES2 = 'sm-notes-v2';
+const NCOLS = ['#1a1a1a','#b3402b','#1f6feb','#1a7f4b','#7a5cd6'];
+let nT = null, nb = null, nSel = null, nFolder = null;
+
+const nid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+function nbLoad(){
+  nb = DB.get(NOTES2, null);
+  if (!nb || !Array.isArray(nb.folders) || !nb.folders.length){
+    const old = (DB.raw(NOTES) || '').trim();
+    nb = { folders: [{ id:'f0', name:'General' }], notes: [] };
+    if (old) nb.notes.push({ id: nid('n'), folder:'f0', title:'My notes', ts: Date.now(),
+      html: old.split(/\n/).map(l => '<div>' + esc(l) + '</div>').join('') });
+  }
+  nFolder = nb.folders[0].id;
+  nSel = (nb.notes.find(n => n.folder === nFolder) || {}).id || null;
+}
+
+function nbSave(){
+  DB.set(NOTES2, nb);
+  $('n-saved').textContent = 'saved';
+  clearTimeout(nbSave.t);
+  nbSave.t = setTimeout(() => { if ($('n-saved')) $('n-saved').textContent = ''; }, 1600);
+}
+
+const nNote = () => nb.notes.find(n => n.id === nSel) || null;
+
+function nRenderFolders(){
+  $('n-folders').innerHTML =
+    nb.folders.map(f => '<button data-f="' + f.id + '"' + (f.id === nFolder ? ' class="on"' : '') +
+      '>' + esc(f.name) + (f.id === nFolder && nb.folders.length > 1 ? ' ×' : '') + '</button>').join('') +
+    '<button class="add" data-add="1">+ Folder</button>';
+  $('n-folders').querySelectorAll('[data-f]').forEach(b => b.onclick = () => {
+    if (b.dataset.f === nFolder && nb.folders.length > 1) return nDropFolder(b.dataset.f);
+    nFolder = b.dataset.f;
+    nSel = (nb.notes.find(n => n.folder === nFolder) || {}).id || null;
+    nRender();
+  });
+  $('n-folders').querySelector('[data-add]').onclick = () => {
+    const name = (prompt('Name this folder — a topic works well, like Heat or Light.') || '').trim();
+    if (!name) return;
+    const f = { id: nid('f'), name };
+    nb.folders.push(f); nFolder = f.id; nSel = null;
+    nbSave(); nRender();
+  };
+}
+
+// Deleting a folder must never delete work by surprise, so its notes move to
+// the first folder rather than going with it.
+function nDropFolder(id){
+  const f = nb.folders.find(x => x.id === id);
+  const held = nb.notes.filter(n => n.folder === id).length;
+  if (!confirm('Remove the folder "' + f.name + '"?' +
+    (held ? ' Its ' + held + ' note' + (held>1?'s':'') + ' will move to ' + nb.folders[0].name + '.' : ''))) return;
+  nb.folders = nb.folders.filter(x => x.id !== id);
+  nb.notes.forEach(n => { if (n.folder === id) n.folder = nb.folders[0].id; });
+  nFolder = nb.folders[0].id;
+  nSel = (nb.notes.find(n => n.folder === nFolder) || {}).id || null;
+  nbSave(); nRender();
+}
+
+function nRenderList(){
+  const rows = nb.notes.filter(n => n.folder === nFolder)
+    .sort((a,b) => b.ts - a.ts);
+  $('n-list').innerHTML = rows.length
+    ? rows.map(n => '<div data-n="' + n.id + '"' + (n.id === nSel ? ' class="on"' : '') + '><b>' +
+        esc(n.title || 'Untitled note') + '</b><span>' +
+        new Date(n.ts).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) +
+        '</span></div>').join('')
+    : '<div class="none">Nothing in here yet. Tap <b style="display:inline">New note</b>.</div>';
+  $('n-list').querySelectorAll('[data-n]').forEach(r => r.onclick = () => {
+    nFlush(); nSel = r.dataset.n; nRender();
+  });
+}
+
+function nRender(){
+  nRenderFolders(); nRenderList();
+  const n = nNote();
+  $('n-title').value = n ? (n.title || '') : '';
+  $('n-text').innerHTML = n ? (n.html || '') : '';
+  $('n-title').disabled = !n;
+  $('n-text').setAttribute('contenteditable', n ? 'true' : 'false');
+}
+
+// Writes the editor back into the note. Called before anything that swaps
+// which note is on screen, so a keystroke inside the debounce is never lost.
+function nFlush(){
+  const n = nNote(); if (!n) return;
+  n.title = $('n-title').value;
+  n.html = $('n-text').innerHTML;
+  n.ts = Date.now();
+  DB.set(NOTES2, nb);
+}
+
+$('n-cols').innerHTML = NCOLS.map(c =>
+  '<i data-c="' + c + '" style="--sw:' + c + '" title="Colour"></i>').join('');
+
+// mousedown + preventDefault keeps the selection alive; a click would have
+// moved focus out of the editor first and the command would apply to nothing.
+function nCmd(cmd, val){
+  $('n-text').focus();
+  try { document.execCommand(cmd, false, val); } catch(e){}
+  nTouch();
+}
+document.querySelectorAll('.n-bar button[data-cmd]').forEach(b => {
+  b.onmousedown = e => e.preventDefault();
+  b.onclick = () => nCmd(b.dataset.cmd);
+});
+$('n-cols').onmousedown = e => e.preventDefault();
+$('n-cols').onclick = e => { const c = e.target.dataset.c; if (c) nCmd('foreColor', c); };
+$('n-font').onmousedown = e => e.stopPropagation();
+$('n-font').onchange = e => nCmd('fontName', e.target.value || 'Comic Neue');
+$('n-size').onchange = e => nCmd('fontSize', e.target.value);
+
+function nTouch(){
   clearTimeout(nT);
   $('n-saved').textContent = '';
-  nT = setTimeout(() => {
-    DB.setRaw(NOTES, $('n-text').value);
-    $('n-saved').textContent = 'saved';
-    setTimeout(() => { if ($('n-saved')) $('n-saved').textContent = ''; }, 1600);
-  }, 500);
+  nT = setTimeout(() => { nFlush(); nbSave(); nRenderList(); }, 600);
+}
+$('n-text').oninput = nTouch;
+$('n-title').oninput = nTouch;
+
+$('n-new').onclick = e => { e.preventDefault();
+  nFlush();
+  const n = { id: nid('n'), folder: nFolder, title: '', ts: Date.now(), html: '' };
+  nb.notes.push(n); nSel = n.id; nbSave(); nRender(); $('n-title').focus();
 };
-$('n-fab').onclick = e => { e.stopPropagation(); $('n-panel').classList.toggle('open'); };
-$('n-clear').onclick = e => { e.preventDefault();
-  if (confirm('Clear all your notes?')){ $('n-text').value = ''; DB.setRaw(NOTES, ''); } };
+$('n-del').onclick = e => { e.preventDefault();
+  const n = nNote(); if (!n) return;
+  if (!confirm('Delete "' + (n.title || 'this note') + '"?')) return;
+  nb.notes = nb.notes.filter(x => x.id !== n.id);
+  nSel = (nb.notes.find(x => x.folder === nFolder) || {}).id || null;
+  nbSave(); nRender();
+};
 $('n-copy').onclick = async e => { e.preventDefault();
-  try { await navigator.clipboard.writeText($('n-text').value); $('n-saved').textContent = 'copied'; }
+  try { await navigator.clipboard.writeText($('n-text').innerText); $('n-saved').textContent = 'copied'; }
   catch(err){ $('n-saved').textContent = 'could not copy'; } };
+$('n-exp').onclick = e => { e.preventDefault(); nFlush(); exportNotesDocx(); };
+$('n-fab').onclick = e => { e.stopPropagation(); $('n-panel').classList.toggle('open'); };
+
+nbLoad(); nRender();
+
+/* ── notes → Word ───────────────────────────────────────
+   A .docx is a zip of XML. Store-only, no compression, so the writer stays
+   short; Word and Google Docs both open it identically. Formatting is written
+   on each run, which means no styles.xml to keep in step with the editor. */
+const CRCT = (() => { const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++){ let c = i;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0; }
+  return t; })();
+const crc32 = u8 => { let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRCT[(c ^ u8[i]) & 255] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0; };
+
+function zipStore(files){
+  const enc = new TextEncoder(), parts = [], central = [];
+  const u16 = n => [n & 255, (n >>> 8) & 255];
+  const u32 = n => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+  let off = 0;
+  files.forEach(f => {
+    const name = enc.encode(f.name), body = enc.encode(f.text);
+    const c = crc32(body), len = body.length;
+    const head = [].concat(u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
+                           u32(c), u32(len), u32(len), u16(name.length), u16(0));
+    parts.push(new Uint8Array(head), name, body);
+    Array.prototype.push.apply(central, [].concat(
+      u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(c), u32(len), u32(len), u16(name.length), u16(0), u16(0), u16(0), u16(0),
+      u32(0), u32(off), Array.from(name)));
+    off += head.length + name.length + len;
+  });
+  parts.push(new Uint8Array(central));
+  parts.push(new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0),
+    u16(files.length), u16(files.length), u32(central.length), u32(off), u16(0))));
+  return new Blob(parts,
+    { type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+
+// The editor writes Comic Neue, which nobody else has installed. Word and Docs
+// both have Comic Sans, so the handwritten look survives the trip.
+const FONTMAP = { 'comic neue':'Comic Sans MS', 'comic sans ms':'Comic Sans MS',
+                  arial:'Arial', georgia:'Georgia', nunito:'Calibri' };
+const SZMAP = { 1:16, 2:20, 3:22, 4:26, 5:32, 6:40, 7:52 };
+const xesc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function hex6(c){
+  c = String(c || '').trim();
+  const m = c.match(/^rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/i);
+  if (m) return [1,2,3].map(i => (+m[i]).toString(16).padStart(2,'0')).join('').toUpperCase();
+  if (/^#[0-9a-f]{3}$/i.test(c)) return c.slice(1).split('').map(x => x + x).join('').toUpperCase();
+  if (/^#[0-9a-f]{6}$/i.test(c)) return c.slice(1).toUpperCase();
+  return null;
+}
+
+// Walks what the editor produced and flattens it to paragraphs of formatted
+// runs. execCommand emits b/i/u, font tags and spans, so all four are handled.
+function docxParas(root){
+  const out = [];
+  let p = { bullet:false, runs:[] };
+  out.push(p);
+  const brk = bullet => { p = { bullet:!!bullet, runs:[] }; out.push(p); };
+  const walk = (node, f) => {
+    node.childNodes.forEach(n => {
+      if (n.nodeType === 3){ if (n.nodeValue) p.runs.push(Object.assign({}, f, { t:n.nodeValue })); return; }
+      if (n.nodeType !== 1) return;
+      const tag = n.tagName.toLowerCase();
+      if (tag === 'br'){ brk(p.bullet); return; }
+      if (tag === 'li'){ brk(true); walk(n, f); brk(false); return; }
+      if (tag === 'div' || tag === 'p' || tag === 'ul' || tag === 'ol'){
+        if (p.runs.length) brk(false);
+        walk(n, f);
+        if (p.runs.length) brk(false);
+        return;
+      }
+      const g = Object.assign({}, f);
+      if (tag === 'b' || tag === 'strong') g.b = true;
+      if (tag === 'i' || tag === 'em') g.i = true;
+      if (tag === 'u' || tag === 'ins') g.u = true;
+      if (tag === 'font'){
+        const c = hex6(n.getAttribute('color')); if (c) g.color = c;
+        const face = n.getAttribute('face'); if (face) g.font = face;
+        const sz = +n.getAttribute('size'); if (sz) g.sz = SZMAP[sz] || 22;
+      }
+      const st = n.style;
+      if (st){
+        const c = hex6(st.color); if (c) g.color = c;
+        if (st.fontWeight === 'bold' || +st.fontWeight >= 600) g.b = true;
+        if (st.fontStyle === 'italic') g.i = true;
+        if (String(st.textDecoration || '').indexOf('underline') >= 0) g.u = true;
+        if (st.fontFamily) g.font = st.fontFamily;
+      }
+      walk(n, g);
+    });
+  };
+  walk(root, {});
+  return out.filter(x => x.runs.some(r => String(r.t).trim()));
+}
+
+function runXml(r){
+  const raw = String(r.font || '').split(',')[0].replace(/["']/g,'').trim().toLowerCase();
+  const face = FONTMAP[raw] || (raw ? raw.replace(/\b\w/g, m => m.toUpperCase()) : 'Comic Sans MS');
+  let pr = '<w:rFonts w:ascii="' + face + '" w:hAnsi="' + face + '"/>';
+  if (r.b) pr += '<w:b/>';
+  if (r.i) pr += '<w:i/>';
+  if (r.u) pr += '<w:u w:val="single"/>';
+  if (r.color) pr += '<w:color w:val="' + r.color + '"/>';
+  pr += '<w:sz w:val="' + (r.sz || 22) + '"/>';
+  return '<w:r><w:rPr>' + pr + '</w:rPr><w:t xml:space="preserve">' + xesc(r.t) + '</w:t></w:r>';
+}
+
+function paraXml(p){
+  const pPr = '<w:pPr><w:spacing w:after="' + (p.after == null ? 120 : p.after) + '"/>' +
+    (p.bullet ? '<w:ind w:left="454" w:hanging="227"/>' : '') + '</w:pPr>';
+  const runs = p.bullet ? [{ t:'\u2022 ' }].concat(p.runs) : p.runs;
+  return '<w:p>' + pPr + runs.map(runXml).join('') + '</w:p>';
+}
+
+function exportNotesDocx(){
+  if (!nb.notes.length){ alert('There are no notes to export yet.'); return; }
+  const w = who() || {};
+  const holder = document.createElement('div');
+  const paras = [];
+  const day = t => new Date(t).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const line = (t, sz, color, bold, after) =>
+    paras.push({ runs:[{ t:t, sz:sz, color:color, b:!!bold }], after:after });
+
+  line((w.nick || w.name || 'My') + ' — science notes', 40, '1A1A1A', true, 40);
+  line(day(Date.now()), 20, '6B6660', false, 320);
+
+  nb.folders.forEach(f => {
+    const rows = nb.notes.filter(n => n.folder === f.id).sort((a, b) => a.ts - b.ts);
+    if (!rows.length) return;
+    line(f.name, 32, 'B3402B', true, 140);
+    rows.forEach(n => {
+      line(n.title || 'Untitled note', 26, '1A1A1A', true, 40);
+      line(day(n.ts), 18, '6B6660', false, 120);
+      holder.innerHTML = n.html || '';
+      const body = docxParas(holder);
+      if (body.length) Array.prototype.push.apply(paras, body);
+      else line('(nothing written yet)', 22, '6B6660', false, 120);
+      paras[paras.length - 1].after = 300;
+    });
+  });
+
+  const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' +
+    paras.map(paraXml).join('') +
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>' +
+    '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr>' +
+    '</w:body></w:document>';
+
+  const blob = zipStore([
+    { name:'[Content_Types].xml', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+      '</Types>' },
+    { name:'_rels/.rels', text:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+      '</Relationships>' },
+    { name:'word/document.xml', text:doc },
+  ]);
+
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  const safe = t => String(t).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = [safe(w.name || w.nick || 'science'), 'notes', stamp].filter(Boolean).join('_') + '.docx';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  $('n-saved').textContent = 'exported';
+  setTimeout(() => { if ($('n-saved')) $('n-saved').textContent = ''; }, 2200);
+}
+
 document.addEventListener('click', e => {
   if (!e.target.closest('#tools')){
     $('n-panel').classList.remove('open');
@@ -1909,7 +2221,7 @@ document.addEventListener('click', e => {
    There is no server, so a profile IS a file. Save it, keep it somewhere safe,
    and load it on any other device to carry your work across. */
 const WHO = 'sm-who-v1';
-const keys = () => [KEY, PKEY, SRC, TWN, NOTES, ADM, THEME, WHO, SEEN];
+const keys = () => [KEY, PKEY, SRC, TWN, NOTES, NOTES2, ADM, THEME, WHO, SEEN];
 
 const who = () => DB.get(WHO, null);
 
@@ -2315,7 +2627,7 @@ function reportData(){
     fullyFixed: all.filter(x => x.recovered).length,
     stillOpen: all.filter(x => (x.missed2 || []).length > 0).length,
     rate, top, topics, stuck,
-    notes: (DB.get(NOTES, '') || '').trim().length,
+    notes: ((DB.get(NOTES2, null) || {}).notes || []).length,
   };
 }
 
@@ -3084,7 +3396,6 @@ $('mq-submit').onclick = async () => {
       renderMcqOpts(true);
       $('mq-fb').classList.add('hide'); $('mq-done').classList.remove('hide');
       $('mq-step').textContent = 'Done';
-      sheetData = { kind:'mcq', item: mcqItem, pick: mcqPick, r };
 
       const all = subs();
       all.unshift({ ts: Date.now(), qi: 'mcq', level: mcqItem.level || '', chapter: mcqItem.topic || '',
@@ -3106,164 +3417,6 @@ $('mq-submit').onclick = async () => {
 };
 
 $('mq-next').onclick = () => { mcqItem = null; mcqPick = null; renderQs(); };
-
-/* ── answer sheet export ─────────────────────────────────
-   One printable page for a parent or tutor: the answer, the question, what the
-   child wrote, and how a full-mark answer is built. Everything on it comes from
-   the scheme and the marking result. A field that is missing means its section
-   is left out — nothing is ever filled with placeholder text. */
-let sheetData = null, sheetFrom = null;
-const shEsc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const shLbl = (t, style) => '<div class="lbl"' + (style ? ' style="' + style + '"' : '') + '>' + shEsc(t) + '</div>';
-const shPill = (t, line) => '<div class="sh-pill' + (line ? ' line' : '') + '">' + shEsc(t) + '</div>';
-const shMarks = n => n + (n === 1 ? ' mark' : ' marks');
-
-function shHeader(kind, level, topic){
-  return '<div class="sh-hd"><div class="rnd" style="font-size:14px">Science Marking</div>' +
-    '<div class="lbl" style="margin-left:auto;color:var(--ink)">' +
-    shEsc([kind, level, topic].filter(Boolean).join(' · ')) + '</div></div>';
-}
-
-// The block above the footer. Omitted entirely when there is no scan.
-function shScan(jpeg){
-  if (!jpeg) return '';
-  return '<div class="sh-scan">' + shLbl('The page your child photographed', 'color:var(--ink)') +
-    '<p>Only the question above was read by the camera, so compare it against this photo. ' +
-    'Your child typed their own answer — no handwriting was read, so the words quoted above are exactly what they wrote.</p>' +
-    '<div class="sh-scanbox"><img src="data:image/jpeg;base64,' + jpeg + '" alt="The page that was photographed"></div></div>';
-}
-
-function shFoot(){
-  const when = new Date().toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'numeric' });
-  return '<div class="sh-foot"><div class="note">Check anything unfamiliar with your child\'s school teacher — ' +
-    'schools word things slightly differently.</div>' +
-    '<div class="lbl" style="margin-left:auto;white-space:nowrap">' + shEsc(when) + '</div></div>';
-}
-
-function mcqSheet(d, scan){
-  const it = d.item || {}, pick = d.pick || {}, opts = it.options || [];
-  const right = opts.find(o => o.correct);
-  const label = o => '(' + o.n + ') ' + (o.text || '');
-  let h = shHeader('Multiple choice', it.level, it.topic);
-
-  h += '<div class="sh-band">' + shLbl('The answer', 'color:var(--accent)');
-  if (right) h += '<div class="rnd" style="font-size:31px;line-height:1.15;margin-top:5px">' + shEsc(label(right)) + '</div>';
-  if (it.plainWhy) h += '<div style="font-size:16.5px;line-height:1.5;margin-top:7px">' + shEsc(it.plainWhy) + '</div>';
-  const pills = [];
-  if (it.marks) pills.push(shPill(shMarks(it.marks)));
-  if (pick.n) pills.push(shPill('Your child chose (' + pick.n + ')', true));
-  if (pills.length) h += '<div class="sh-pills">' + pills.join('') + '</div>';
-  h += '</div>';
-
-  if (it.q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' + shEsc(it.q) +
-    (opts.length ? '<br><span style="color:var(--mid)">' + opts.map(o => shEsc(label(o))).join(' &nbsp; ') + '</span>' : '') +
-    '</div></div>';
-
-  const items = (it.items || []).filter(x => x && (x.name || x.plain));
-  if (items.length) h += '<div>' + shLbl('What each item is for') + '<div class="sh-items">' +
-    items.map(x => '<div class="sh-item"><div class="rnd">' + shEsc((x.tag ? '(' + x.tag + ') ' : '') + (x.name || '')) +
-      '</div><div class="p">' + shEsc(x.plain || '') + '</div></div>').join('') + '</div></div>';
-
-  if (it.plainWhy) h += '<div>' + shLbl('Why that is the answer') + '<div class="sh-why">' + shEsc(it.plainWhy) + '</div></div>';
-
-  const wrong = opts.filter(o => !o.correct && o.says);
-  if (wrong.length) h += '<div>' + shLbl('Why the other choices lose the mark') +
-    '<div style="margin-top:5px;display:flex;flex-direction:column;gap:6px">' +
-    wrong.map(o => '<div class="sh-lose"><strong' + (pick.n === o.n ? ' class="sh-mine"' : '') + '>' +
-      shEsc(label(o)) + '</strong> — ' + shEsc(o.says) + '</div>').join('') + '</div></div>';
-
-  return h + '<div class="sh-tail">' + shScan(scan) + shFoot() + '</div>';
-}
-
-function oeSheet(d, scan){
-  const sel = d.sel || {}, s = sel.scheme || {}, m = sel.meta || {}, r = d.r2 || {};
-  const level = s.level || m.level, topic = s.topic || m.topic || m.chapter;
-  const model = s.modelAnswer || r.modelAnswer;
-  const max = r.maxMarks ?? s.marks;
-  let h = shHeader('Open-ended', level, topic);
-
-  h += '<div class="sh-band">' + shLbl('The answer', 'color:var(--accent)');
-  if (model) h += '<div class="rnd" style="font-size:20px;line-height:1.35;margin-top:5px">' + shEsc(model) + '</div>';
-  const pills = [];
-  if (max) pills.push(shPill(shMarks(max)));
-  if (max && r.marks != null) pills.push(shPill('Your child scored ' + r.marks + ' of ' + max, true));
-  if (pills.length) h += '<div class="sh-pills">' + pills.join('') + '</div>';
-  h += '</div>';
-
-  const q = s.q || m.q;
-  if (q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' + shEsc(q) + '</div></div>';
-
-  const tries = [];
-  if (d.a1) tries.push('<div class="sh-try"><div class="lbl">First try</div><div class="t">“' + shEsc(d.a1) + '”</div></div>');
-  if (d.a2) tries.push('<div class="sh-try second"><div class="lbl">Second try</div><div class="t">“' + shEsc(d.a2) + '”</div></div>');
-  if (tries.length) h += '<div>' + shLbl('What your child wrote') +
-    '<div style="margin-top:5px;display:flex;flex-direction:column;gap:7px">' + tries.join('') + '</div></div>';
-
-  const c = s.cecl || {};
-  const parts = [
-    ['C', 'choice',   'Choice — what you say happens'],
-    ['E', 'evidence', 'Evidence — what the question tells you'],
-    ['C', 'concept',  'Concept — the science fact, always true'],
-    ['L', 'link',     'Link — joining the fact to this question'],
-  ].filter(p => c[p[1]]);
-  if (parts.length) h += '<div class="sh-cecl">' + shLbl('How a full-mark answer is built · C E C L') +
-    '<div class="intro">Four parts, in this order. Every good explanation answer has all four.</div>' +
-    '<div class="sh-cecl-rows">' + parts.map(p => '<div class="sh-cecl-row"><b>' + p[0] + '</b><div>' +
-      '<div class="k">' + shEsc(p[2]) + '</div><div class="v">' + shEsc(c[p[1]]) + '</div></div></div>').join('') + '</div>' +
-    '<div class="sh-cecl-foot"><strong>If you help with one thing, help with L.</strong> Most children can say the fact. ' +
-    'Far fewer join it to the thing in front of them.</div></div>';
-
-  return h + '<div class="sh-tail">' + shScan(scan) + shFoot() + '</div>';
-}
-
-// The scan already held for this question — the same one the admin
-// "Check scanned pages" screen shows. A typed-in question has none.
-async function sheetScan(d){
-  try {
-    if (d.kind === 'mcq') return pendingScan ? pendingScan.jpeg : null;
-    const v = $('q').value || '';
-    let id = null;
-    if (v.startsWith('src:')) id = v.slice(4);
-    else if (v.startsWith('twin:')){ const t = load(TWN).find(x => x.id === v.slice(5)); id = (t && t.sourceId) || null; }
-    if (!id) return null;
-    const rec = await SCANS.get(id);
-    return rec && rec.jpeg ? rec.jpeg : null;
-  } catch(e){ return null; }
-}
-
-function openSheet(){
-  sheetFrom = curView;
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.add('hide'));
-  $('sheet').classList.remove('hide');
-  document.body.classList.add('sheet-open');
-  window.scrollTo(0,0);
-}
-
-// Back to exactly the screen the sheet came from, without re-rendering it —
-// the result the pupil was looking at must still be there.
-function closeSheet(){
-  $('sheet').classList.add('hide');
-  document.body.classList.remove('sheet-open');
-  const v = sheetFrom || 'mark';
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
-  window.scrollTo(0,0);
-}
-
-async function buildSheet(){
-  if (!sheetData) return;
-  const d = sheetData;
-  const scan = await sheetScan(d);
-  $('sheet').innerHTML =
-    '<div class="sh-actions"><button class="primary" id="sh-pdf">Save as PDF</button>' +
-    '<button class="ghost" id="sh-back">Back to the answer</button></div>' +
-    '<div class="sh-page">' + (d.kind === 'mcq' ? mcqSheet(d, scan) : oeSheet(d, scan)) + '</div>';
-  $('sh-pdf').onclick = () => window.print();
-  $('sh-back').onclick = closeSheet;
-  openSheet();
-  window.print();
-}
-$('export-oe').onclick = buildSheet;
-$('export-mcq').onclick = buildSheet;
 
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
