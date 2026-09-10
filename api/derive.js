@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const multi = !mcq && ((Array.isArray(readParts) && readParts.length > 1) || labels.length > 1 || !!knownStem);
 
     if (multi) {
-      const out = await callModel(DERIVE_SYSTEM, buildDerivePartsUser(questionText, topics, exclusions, knownStem), 3600);
+      const out = await callModel(DERIVE_SYSTEM, buildDerivePartsUser(questionText, topics, exclusions, knownStem), 4800);
       if (Array.isArray(out.parts) && out.parts.length) {
         out.format = 'parts';
         if (knownStem && !out.stem) out.stem = knownStem;

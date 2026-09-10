@@ -211,6 +211,8 @@ export function buildDerivePartsUser(questionText, syllabusTopics, exclusions, k
     'plainWhy: two or three sentences for a parent with no science background, saying why that',
     '  part\'s answer is the answer.',
     'outOfSyllabus: a short sentence if the part demands an excluded term, otherwise null.',
+    'Keep it compact — the whole reply must fit: at most three items each in evidence, alsoAccept',
+    '  and doNotAccept for a part, and no prose outside the JSON.',
     '',
     DIAGRAM_SPEC,
     'If the stem describes a physical set-up, put the diagram at the top level. A part gets its',
