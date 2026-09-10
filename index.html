@@ -3485,7 +3485,7 @@ async function makeTwin(id){
     save(TWN, all.slice(0,200));
     $('tw-body').innerHTML = kept.map(t =>
       '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.45">' + t.stem + '</div>' +
-      '<div class="muted" style="margin-top:8px;font-size:14px">' + (t.object||'') + ' · ' + (t.marks||'') + ' marks</div>' +
+      '<div class="muted" style="margin-top:8px;font-size:14px">' + (t.object||'') + ' · ' + (t.marks||'') + (t.marks == 1 ? ' mark' : ' marks') + '</div>' +
       svgFor(t.diagram) +
       (adm ? '<div style="margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">' +
         ['choice','evidence','concept','link'].map((k,i) =>
