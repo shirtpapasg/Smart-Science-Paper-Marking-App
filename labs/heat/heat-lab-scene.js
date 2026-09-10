@@ -1,18 +1,3 @@
-/* labs/scenes/heat.js — the 3D bench for activity 7.3, lifted unchanged from the
-   Heat Lab. This is the contract every scene file follows:
-
-     one file · one custom element · three.js pinned from the CDN · no words inside
-
-   Attributes in:  experiment (solid|liquid|gas|feel) · view (apparatus|particles|both)
-                   target (°C) · tool (hand|thermometer|gun) · action (nonce, e.g. "test:123")
-   Events out, on window:
-                   heatlab        every frame, detail = the physics readings
-                   heatlab-test   when a ball-and-ring test finishes, detail {fits, t, ballMm}
-                   heatlab-burst  when the balloon bursts
-                   heatlab-touch  when a block is touched in the feel experiment
-   The lab page supplies every word, button and question. The scene only draws
-   and reports. Sizing: fills its host element; give the host a height.
-   ─────────────────────────────────────────────────────────────────────────── */
 /* <heat-lab-scene> — three.js apparatus + particle-zoom viewer for the
    heat / expansion & contraction lesson.
    Attributes: experiment (solid|liquid|gas|feel), view (apparatus|particles|both),

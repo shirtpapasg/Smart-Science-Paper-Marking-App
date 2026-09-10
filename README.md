@@ -115,12 +115,11 @@ Three rules for the lab:
   unlocked with the parent code, so each animation is looked over first.
 - No school is named anywhere — records, pages, simulations, questions, answers.
 
-### Scenes: the 3D benches
+### The 3D labs
 
-`labs/scenes/<name>.js` — one file, one custom element, three.js pinned from the
-CDN, no words inside. The lab page loads the file when a pupil opens the bench,
-drives the element through attributes (`experiment`, `view`, `target` in °C,
-`action` as a nonce that starts a test) and listens for its events (`heatlab`
-with the readings each frame, `heatlab-test`, `heatlab-burst`). Every word,
-button and reading label comes from the record's `sim` block in `labs-p4.js`.
-`heat.js` is the Heat Lab's scene, lifted unchanged; new scenes follow it.
+Each 3D lab is a self-contained page under `labs/<name>/`, laid out like the
+Heat Lab: a side panel of steps and a bench you can orbit. `labs/heat/` is the
+Heat Lab itself, brought in unchanged, plus a member check at the top of the
+page. The lab page opens a 3D lab full-screen from the "Let's test it now!"
+button and returns to the steps afterwards. The record's `sim` block names the
+page. New labs follow the same layout so a pupil learns it once.

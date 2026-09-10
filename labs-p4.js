@@ -39,39 +39,13 @@ export const LABS = [
     'Only an adult lights the burner and handles the hot ball and the hot flask. Metal stays hot long after the flame is off.',
     'Goggles on whenever there is a flame or hot water.',
   ],
-  // The 3D bench. One scene file (labs/scenes/heat.js) hosts three experiments;
-  // each part says which one, which temperatures to offer, which actions, and
-  // which readings to show. The words here are the only words the bench has.
-  sim: {
-    scene: 'heat', element: 'heat-lab-scene',
-    parts: {
-      a: { experiment: 'solid',
-        controls: [ { label: '🔥 In the flame', target: 250 }, { label: 'Room temperature', target: 30 }, { label: '🧊 In tap water', target: 15 } ],
-        actions: [ { label: 'Test the ring', action: 'test' } ],
-        readout: [ { key: 't', label: 'Ball temperature', unit: '°C' }, { key: 'fits', label: 'Passes through the ring', yes: 'yes', no: 'no' } ] },
-      b: { experiment: 'liquid',
-        controls: [ { label: '🔥 Hot water', target: 90 }, { label: 'Room temperature', target: 30 }, { label: '🧊 Iced water', target: 0 } ],
-        readout: [ { key: 't', label: 'Water temperature', unit: '°C' }, { key: 'riseMm', label: 'Level against the mark', unit: 'mm', signed: true } ] },
-      c: { experiment: 'gas',
-        controls: [ { label: '🔥 Over the burner', target: 250 }, { label: 'Room temperature', target: 30 }, { label: '🧊 Iced water', target: 0 } ],
-        readout: [ { key: 't', label: 'Air temperature', unit: '°C' }, { key: 'balloonMl', label: 'Extra room the air takes up', unit: 'ml' }, { key: 'popped', label: 'Balloon burst', yes: 'yes', no: 'no' } ] },
-    },
-  },
+  // The 3D lab: the Heat Lab page, served from inside the app. The lab page
+  // opens it full-screen from "Let's test it now!" and comes back to the steps.
+  sim: { page: 'labs/heat/index.html', label: "Let's test it now!", covers: ['a', 'b', 'c'] },
   parts: [
     {
       id: 'a', title: 'A metal ball and a ring', who: 'adult demonstration',
       need: ['a metal ball hanging on a chain', 'a metal ring on a handle', 'a Bunsen burner', 'a basin of tap water'],
-      diagram: { viewBox: '0 0 320 200', shapes: [
-        { type:'line', x1:40, y1:40, x2:150, y2:40 },                 // handle of the ball
-        { type:'line', x1:150, y1:40, x2:150, y2:78, dashed:true },   // chain
-        { type:'circle', cx:150, cy:92, r:14, fill:'dark' },          // ball
-        { type:'line', x1:290, y1:130, x2:180, y2:130 },              // handle of the ring
-        { type:'circle', cx:150, cy:130, r:22, fill:'none' },         // ring, outer
-        { type:'circle', cx:150, cy:130, r:16, fill:'none' },         // ring, inner
-      ], labels: [
-        { text:'metal ball', x:60, y:100, leaderTo:[136,92] },
-        { text:'metal ring', x:60, y:170, leaderTo:[132,140] },
-      ] },
       steps: [
         { do: 'Lower the ball through the ring. At room temperature it just fits — only just.' },
         { predict: { q: 'The ball is about to be heated in the flame for two minutes. Will it still pass through the ring?',
@@ -98,20 +72,6 @@ export const LABS = [
     {
       id: 'b', title: 'Coloured water in a narrow tube', who: 'adult demonstration',
       need: ['a flask filled to the brim with tap water', 'a few drops of food colouring and a stirrer', 'a stopper with a narrow glass tube through it', 'a marker pen', 'two basins: one of hot water, one of iced water'],
-      diagram: { viewBox: '0 0 320 200', shapes: [
-        { type:'rect', x:150, y:20, w:8, h:80, fill:'none' },          // tube
-        { type:'rect', x:140, y:95, w:28, h:14, fill:'dark' },         // stopper
-        { type:'line', x1:140, y1:109, x2:110, y2:180 },               // flask left side
-        { type:'line', x1:168, y1:109, x2:198, y2:180 },               // flask right side
-        { type:'line', x1:110, y1:180, x2:198, y2:180 },               // flask base
-        { type:'water', x:112, y:112, w:84, h:68 },                    // coloured water
-        { type:'line', x1:146, y1:60, x2:162, y2:60 },                 // the mark
-        { type:'hatch', x:151, y:60, w:6, h:40 },                      // water in the tube
-      ], labels: [
-        { text:'narrow glass tube', x:200, y:40, leaderTo:[158,45] },
-        { text:'mark at room temperature', x:200, y:70, leaderTo:[162,60] },
-        { text:'coloured water', x:20, y:150, leaderTo:[112,150] },
-      ] },
       steps: [
         { do: 'Colour the water so it is easy to see. Fit the stopper and tube tightly — the water rises a little way up the tube. Mark that level.' },
         { predict: { q: 'The flask is about to stand in hot water. Where will the level in the tube end up?',
@@ -136,19 +96,6 @@ export const LABS = [
     {
       id: 'c', title: 'A balloon on a flask of air', who: 'adult demonstration',
       need: ['an empty flask (it is full of air)', 'a balloon, stretched over the mouth', 'a Bunsen burner with a stand and gauze', 'a basin of iced water'],
-      diagram: { viewBox: '0 0 320 200', shapes: [
-        { type:'arc', x1:132, y1:60, x2:168, y2:60, bulge:-30 },       // limp balloon
-        { type:'rect', x:138, y:60, w:24, h:12, fill:'dark' },         // neck over the mouth
-        { type:'line', x1:138, y1:72, x2:105, y2:170 },
-        { type:'line', x1:162, y1:72, x2:195, y2:170 },
-        { type:'line', x1:105, y1:170, x2:195, y2:170 },
-        { type:'line', x1:90, y1:178, x2:210, y2:178 },                // gauze
-        { type:'rect', x:140, y:186, w:20, h:12, fill:'dark' },        // burner
-      ], labels: [
-        { text:'balloon, not blown up', x:200, y:40, leaderTo:[165,50] },
-        { text:'flask of air', x:20, y:130, leaderTo:[118,130] },
-        { text:'burner', x:220, y:192, leaderTo:[160,192] },
-      ] },
       steps: [
         { predict: { q: 'The flask is about to be warmed over the burner. What will the balloon do?',
           options: ['Blow up', 'Go flatter'], answer: 0 } },
