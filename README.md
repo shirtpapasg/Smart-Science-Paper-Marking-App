@@ -89,3 +89,10 @@ The guardian email is set on admin.html when granting access, or from the app's
 progress screen by someone holding the device's parent code.
 
     CRON_SECRET        long random string, at least 16 characters
+
+## Speak instead of typing
+
+Every box a pupil types into has a "Say it instead" button. It uses the
+browser's own speech recognition (Chrome, Edge, Safari), pinned to English, and
+appends the spoken words to the box. No audio reaches the server; whatever is
+submitted is ordinary text, so marking and the session record are unchanged.

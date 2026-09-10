@@ -589,6 +589,13 @@
   #n-title{background:#fff;color:#1d2a44}
   html[data-theme="dark"] textarea,html[data-theme="dark"] select,
   html[data-theme="dark"] .pin input{background:var(--surface);color:var(--ink)}
+
+  /* Say it instead of typing it: one small button under every answer box. */
+  button.mic{width:auto;min-height:40px;font-size:14px;padding:8px 14px;margin-top:8px;
+    display:inline-flex;gap:8px;align-items:center}
+  button.mic.on{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 3px 0 var(--pen-dark)}
+  button.mic.on span{animation:rbGlow 1.2s ease-in-out infinite}
+  .mic-hint{font-size:13px;line-height:1.5;margin-top:6px;color:var(--mid)}
 </style>
 </head><body>
 <div class="wrap">
@@ -4108,6 +4115,83 @@ function renderStats(){
     $('st-sub').textContent = 'Only ' + rate + '% of missed marking points were regained. That points at understanding rather than wording — worth teaching, not drilling.';
   }
 }
+
+/* ── say it instead of typing it ──────────────────────────
+   For pupils whose spelling gets in the way of asking for help. The browser's
+   own speech recognition, English only, no audio ever leaves for our server.
+   Spoken words are appended to the box; whatever is submitted is the text, so
+   marking, the mistake book and the session record work exactly as before.
+   Chrome, Edge and Safari support it; elsewhere the button explains. */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const MICS = new Set();   // stop functions, so a submit tap finalises the text first
+
+// Spoken punctuation, and a capital letter after each sentence.
+function tidySpeech(t){
+  return String(t || '')
+    .replace(/\s*\b(full stop|period)\b/gi, '.').replace(/\s*\bcomma\b/gi, ',')
+    .replace(/\s*\bquestion mark\b/gi, '?').replace(/\s*\bnew line\b/gi, '\n')
+    .replace(/\s+([.,?])/g, '$1').replace(/([.?]\s+|^\s*)([a-z])/g, (m, a, b) => a + b.toUpperCase()).trim();
+}
+
+function attachMic(id){
+  const ta = $(id); if (!ta) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'mic secondary'; b.innerHTML = '<span>🎤</span>Say it instead';
+  b.setAttribute('aria-label', 'Speak your answer instead of typing it');
+  const hint = document.createElement('div'); hint.className = 'mic-hint';
+  ta.insertAdjacentElement('afterend', b); b.insertAdjacentElement('afterend', hint);
+  if (!SR){ b.disabled = true; hint.textContent = 'Speaking works in Chrome, Edge and Safari. You can still type here.'; return; }
+
+  let rec = null, base = '', finals = '', active = false;
+  const idle = () => { b.classList.remove('on'); b.innerHTML = '<span>🎤</span>Say it instead'; };
+  const stop = () => {
+    if (!active && !rec) return;
+    active = false;
+    if (rec){ try { rec.onend = null; rec.stop(); } catch(e){} rec = null; }
+    ta.value = (base + finals).trimEnd().slice(0, +ta.maxLength > 0 ? +ta.maxLength : 1e6);
+    if (finals) ta.dispatchEvent(new Event('input', { bubbles:true }));
+    idle();
+  };
+  const start = () => {
+    base = ta.value.trim() ? ta.value.replace(/\s*$/, ' ') : ''; finals = '';
+    rec = new SR();
+    rec.lang = 'en-SG'; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+    rec.onresult = e => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++){
+        const r = e.results[i];
+        if (r.isFinal) finals += tidySpeech(r[0].transcript) + ' '; else interim += r[0].transcript;
+      }
+      ta.value = base + finals + interim;
+      ta.scrollTop = ta.scrollHeight;
+    };
+    rec.onerror = e => {
+      hint.textContent =
+        e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'The microphone is blocked. Allow it for this site in your browser settings, then tap again.' :
+        e.error === 'no-speech' ? 'I did not hear anything. Tap the button and speak in English.' :
+        e.error === 'audio-capture' ? 'No microphone was found on this device.' :
+        e.error === 'language-not-supported' ? 'Speaking works in English only.' :
+        e.error === 'aborted' ? '' : 'Speaking did not work just now. You can still type.';
+      stop();
+    };
+    // Browsers end a recognition after a pause; while the button is on, begin again.
+    rec.onend = () => { if (active){ try { rec.start(); } catch(err){ stop(); } } };
+    try {
+      rec.start(); active = true;
+      b.classList.add('on'); b.innerHTML = '<span>●</span>Listening… tap to stop';
+      hint.textContent = 'Speak in English. Say “full stop” to end a sentence. Tap the button when you have finished.';
+    } catch(err){ hint.textContent = 'Speaking did not start. You can still type.'; idle(); }
+  };
+  MICS.add(stop);
+  b.onclick = () => active ? stop() : start();
+}
+
+// Every box a pupil types into. A tap on any other button first finalises the speech.
+['a1','a2','mq-why','p-a','nq','h-ask'].forEach(attachMic);
+document.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (btn && !btn.classList.contains('mic')) MICS.forEach(s => s());
+}, true);
 
 armIdle();   // last: idleT and curView must exist before the first timer
 </script>

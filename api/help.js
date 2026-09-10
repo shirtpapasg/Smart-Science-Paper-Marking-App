@@ -31,6 +31,10 @@ PHOTOS — the camera reads the PRINTED question only, never handwriting. The
 MUSIC — the note button, bottom right. Four slow instrumental loops made in the
   browser. There are also links out to Spotify, Apple Music and YouTube Music.
 NOTES — the pencil button, bottom left. A pad that saves as you type.
+SPEAK INSTEAD OF TYPING — every answer box has a "Say it instead" button. Tap it, speak in
+  English, and the words appear in the box; tap again to stop. Spelling never costs a mark,
+  and speaking removes it as an obstacle for pupils who find writing hard. Chrome, Edge
+  and Safari support it. Nothing you say is sent anywhere except into the box.
 DARK MODE — the half-circle button. Follows your device at first, then remembers.
 THE ANSWER IS NEVER GIVEN ON REQUEST — asking for it gets a friendly refusal.
   It appears after a real second attempt and no sooner.
