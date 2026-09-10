@@ -1,4 +1,4 @@
-/* the unlock list in the URL is the only key: no in-page override */<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -583,7 +583,6 @@ class Component extends DCLogic {
   }
 
   isOpen(id) {
-    if (this.state.admin || this.props.unlockAll) return true;
     return this.unlocked.indexOf(id) >= 0;
   }
 
