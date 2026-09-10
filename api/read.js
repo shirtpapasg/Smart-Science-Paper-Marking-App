@@ -4,8 +4,16 @@ import { callModel, guard } from './_shared.js';
 // The image is passed straight through and never written to storage.
 export default async function handler(req, res) {
   if (!guard(req, res)) return;
-  const { imageBase64, mediaType = 'image/jpeg' } = req.body || {};
-  if (!imageBase64) return res.status(400).json({ error: 'No image supplied' });
+  const body = req.body || {};
+  const mediaType = body.mediaType || 'image/jpeg';
+  // One question can run over two or three pages. They are read in ONE call so
+  // the model keeps the stem, the diagram and every sub-part together — reading
+  // them separately is what loses "as shown below" and the shared set-up.
+  const pages = Array.isArray(body.images) && body.images.length
+    ? body.images
+    : (body.imageBase64 ? [body.imageBase64] : []);
+  if (!pages.length) return res.status(400).json({ error: 'No image supplied' });
+  if (pages.length > 3) return res.status(400).json({ error: 'Three pages at most.' });
 
   const system = [
     'You read Singapore primary school Science exam papers from photographs.',
@@ -14,17 +22,29 @@ export default async function handler(req, res) {
     '- NEVER transcribe handwriting. If the page has a pupil\'s written answer on it, ignore it entirely.',
     '- If the question has a diagram, describe it in one short sentence under diagramNote.',
     '- If several questions are visible, return the clearest complete one and set moreOnPage true.',
+    '- SEVERAL PAGES may be supplied. They are consecutive pages of the SAME question.',
+    '  Transcribe them as one continuous question, in page order, keeping every sub-part',
+    '  ((a), (b), (c)) and the shared stem. Do not repeat the stem for each part, and do',
+    '  not treat a later page as a new question.',
+    '- List the sub-part labels you found in parts, e.g. ["(a)","(b)"]. Empty array if none.',
+    '- Set format to "mcq" only if the printed question offers four numbered options to',
+    '  choose from. Otherwise "written".',
     '- If you cannot read it, set question to an empty string and say why in problem.',
     'Reply with JSON only, no prose and no code fences.',
   ].join('\n');
 
   const user = [
-    { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageBase64 } },
+    ...pages.map(p => ({
+      type: 'image',
+      source: { type: 'base64', media_type: mediaType, data: typeof p === 'string' ? p : p.base64 },
+    })),
     { type: 'text', text: [
-      'Transcribe the printed question from this photograph.',
+      pages.length > 1
+        ? 'These are ' + pages.length + ' consecutive pages of the SAME question. Transcribe them as one question, in order.'
+        : 'Transcribe the printed question from this photograph.',
       'Return exactly this shape:',
-      '{"question":"","marks":null,"diagramNote":null,"moreOnPage":false,"problem":null}',
-      'marks: the number in brackets if the paper shows one, else null.',
+      '{"question":"","marks":null,"parts":[],"format":"written","diagramNote":null,"moreOnPage":false,"problem":null}',
+      'marks: the total number in brackets if the paper shows one, else null.',
     ].join('\n') },
   ];
 
@@ -38,7 +58,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1200,
+        max_tokens: 2000,
         system,
         messages: [{ role: 'user', content: user }],
       }),
