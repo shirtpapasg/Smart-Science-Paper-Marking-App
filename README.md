@@ -114,3 +114,13 @@ Three rules for the lab:
   vocabulary, and moves soon → review → ready. "review" shows only on a device
   unlocked with the parent code, so each animation is looked over first.
 - No school is named anywhere — records, pages, simulations, questions, answers.
+
+### Scenes: the 3D benches
+
+`labs/scenes/<name>.js` — one file, one custom element, three.js pinned from the
+CDN, no words inside. The lab page loads the file when a pupil opens the bench,
+drives the element through attributes (`experiment`, `view`, `target` in °C,
+`action` as a nonce that starts a test) and listens for its events (`heatlab`
+with the readings each frame, `heatlab-test`, `heatlab-burst`). Every word,
+button and reading label comes from the record's `sim` block in `labs-p4.js`.
+`heat.js` is the Heat Lab's scene, lifted unchanged; new scenes follow it.

@@ -95,8 +95,13 @@
   .dark .eyebrow{color:var(--hl)}
   .err{border-left:4px solid var(--warn);background:var(--warn-bg);padding:12px 16px;margin-top:12px;border-radius:0 10px 10px 0}
   .hide{display:none !important}
-  .simbox{margin-top:12px;border:1.5px solid var(--rule);border-radius:14px;overflow:hidden;background:#08131f}
-  .simbox iframe{width:100%;height:620px;border:0;display:block}
+  /* the 3D bench: a scene element in a box, with our buttons and readings around it */
+  .scene-host{height:min(440px,62vw);min-height:260px;border-radius:12px;overflow:hidden;background:#08131f;margin-top:12px}
+  .ctl{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .ctl button{width:auto;margin:0;min-height:40px;font-size:14px;padding:8px 14px}
+  .ctl button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .readout{display:flex;gap:6px 22px;flex-wrap:wrap;margin-top:10px;font-family:var(--round);font-weight:600;font-size:15px}
+  .readout span{color:var(--mid);font-weight:400;font-size:13px;display:block;letter-spacing:.06em;text-transform:uppercase}
   button.mic{width:auto;min-height:40px;font-size:14px;padding:8px 14px;margin-top:8px;display:inline-flex;gap:8px;align-items:center}
   button.mic.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   .mic-hint{font-size:13px;line-height:1.5;margin-top:6px;color:var(--mid)}
@@ -196,6 +201,7 @@ const getProg = (id, key) => ((prog()[id] || {})[key]);
 /* ── router ── */
 addEventListener('hashchange', route);
 function route(){
+  closeScene();
   const m = location.hash.match(/^#a\/([a-z0-9-]+)$/);
   if (m) openActivity(m[1]); else renderList();
 }
@@ -247,13 +253,13 @@ function renderActivity(a){
     '<div class="card idea"><span class="eyebrow" style="color:var(--accent)">The big idea</span><div style="margin-top:6px;font-family:var(--round);font-weight:600;font-size:18px">' + esc(a.bigIdea) + '</div></div>' +
     '<p style="margin-top:16px"><b>What we are finding out.</b> ' + esc(a.aim) + '</p>';
   if (a.safety && a.safety.length) h += '<div class="card warn"><span class="eyebrow" style="color:var(--warn)">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>';
-  if (a.sim) h += '<div class="item"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><h3>' + esc(a.sim.label || 'Run it on screen') + '</h3>' +
-    '<div class="muted">Try each experiment on the 3D bench first, then work through the steps below.</div></div>' +
-    '<button class="primary" id="sim-btn" style="width:auto;margin:0">Open the 3D lab</button></div><div id="sim-box"></div></div>';
   (a.parts || []).forEach((p, pi) => {
     h += '<div style="margin-top:32px"><span class="eyebrow">Part ' + p.id.toUpperCase() + ' · ' + esc(p.who) + '</span><h2 style="margin-top:6px">' + esc(p.title) + '</h2>';
     if (p.need) h += '<div class="card"><span class="eyebrow">What you need</span><ul class="need">' + p.need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>';
     if (p.diagram) h += svgFor(p.diagram);
+    if (a.sim && a.sim.parts && a.sim.parts[p.id]) h += '<div class="item" id="sim-' + p.id + '"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+      '<div style="flex:1"><h3>Run it on the 3D bench</h3><div class="muted">Try it here first — heat it, cool it, watch what happens — then answer the steps below.</div></div>' +
+      '<button class="primary" data-sim="' + p.id + '" style="width:auto;margin:0">Open the bench</button></div><div class="sim-slot"></div></div>';
     let n = 0;
     (p.steps || []).forEach((s, si) => {
       const key = p.id + ':' + si;
@@ -299,13 +305,61 @@ function explainHtml(key, q, marks, where){
     '<button class="primary" data-mark="' + key + '">Check my answer</button><div id="o-' + id + '"></div></div>';
 }
 
+/* ── hosting a scene ──────────────────────────────────────
+   A scene is one file defining one custom element. We load the file when the
+   pupil asks for the bench, put the element in a box, and drive it through
+   attributes: experiment, view, target (°C) and action (a nonce that starts a
+   test). It answers with "heatlab" events carrying its readings, which we show
+   under the box in the words the record gives. One bench open at a time —
+   three live 3D scenes would sink a phone. */
+const SCENES = {};   // scene name -> loading promise
+let liveScene = null;
+function loadScene(name){
+  if (!SCENES[name]) SCENES[name] = new Promise((ok, no) => {
+    const s = document.createElement('script'); s.src = 'labs/scenes/' + name + '.js';
+    s.onload = ok; s.onerror = () => no(new Error('The 3D bench could not be loaded. Check your connection and try again.'));
+    document.head.appendChild(s);
+  });
+  return SCENES[name];
+}
+function closeScene(){
+  if (!liveScene) return;
+  removeEventListener('heatlab', liveScene.onHeat); removeEventListener('heatlab-test', liveScene.onTest); removeEventListener('heatlab-burst', liveScene.onBurst);
+  liveScene.slot.innerHTML = ''; liveScene.btn.disabled = false; liveScene.btn.textContent = 'Open the bench';
+  liveScene = null;
+}
+async function openScene(a, pid, btn){
+  closeScene();
+  const cfg = a.sim.parts[pid], slot = btn.closest('.item').querySelector('.sim-slot');
+  btn.disabled = true; btn.textContent = 'Loading…';
+  try { await loadScene(a.sim.scene); } catch(e){ slot.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; btn.disabled = false; btn.textContent = 'Open the bench'; return; }
+  const narrow = innerWidth < 640;
+  slot.innerHTML = '<div class="scene-host"></div>' +
+    '<div class="ctl" data-role="targets">' + cfg.controls.map((c, i) => '<button class="secondary' + (c.target === 30 ? ' on' : '') + '" data-target="' + c.target + '">' + esc(c.label) + '</button>').join('') + '</div>' +
+    ((cfg.actions || []).length ? '<div class="ctl">' + cfg.actions.map(x => '<button class="primary" data-action="' + esc(x.action) + '">' + esc(x.label) + '</button>').join('') + '</div>' : '') +
+    '<div class="ctl" data-role="views">' + [['apparatus','Apparatus'],['particles','Particles'],['both','Both']].map(v => '<button class="secondary' + ((narrow ? 'apparatus' : 'both') === v[0] ? ' on' : '') + '" data-view="' + v[0] + '">' + v[1] + '</button>').join('') + '</div>' +
+    '<div class="readout">' + cfg.readout.map(r => '<div><span>' + esc(r.label) + '</span><b data-key="' + esc(r.key) + '">—</b></div>').join('') + '</div>' +
+    '<div class="muted" style="margin-top:8px;font-size:14px">Drag to look around, pinch or scroll to zoom. The particle view shows what the particles are doing — they never change size.</div>';
+  const el = document.createElement(a.sim.element);
+  el.setAttribute('experiment', cfg.experiment); el.setAttribute('view', narrow ? 'apparatus' : 'both'); el.setAttribute('target', '30');
+  slot.querySelector('.scene-host').appendChild(el);
+  slot.querySelectorAll('[data-target]').forEach(b => b.onclick = () => { el.setAttribute('target', b.dataset.target); slot.querySelectorAll('[data-target]').forEach(x => x.classList.toggle('on', x === b)); LOG.event('lab', { code: a.code, what: 'bench: ' + cfg.experiment + ' set to ' + b.dataset.target + ' °C' }); });
+  slot.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { el.setAttribute('view', b.dataset.view); slot.querySelectorAll('[data-view]').forEach(x => x.classList.toggle('on', x === b)); });
+  slot.querySelectorAll('[data-action]').forEach(b => b.onclick = () => el.setAttribute('action', b.dataset.action + ':' + Date.now()));
+  const fmt = (r, v) => v == null ? '—' : ('yes' in r) ? (v ? r.yes : r.no) : ((r.signed && v > 0 ? '+' : '') + (Math.round(v * 10) / 10) + (r.unit ? ' ' + r.unit : ''));
+  let last = 0;
+  const onHeat = e => { const now = performance.now(); if (now - last < 200) return; last = now;
+    cfg.readout.forEach(r => { const b = slot.querySelector('[data-key="' + r.key + '"]'); if (b) b.textContent = fmt(r, e.detail[r.key]); }); };
+  const onTest = e => LOG.event('lab', { code: a.code, what: 'bench: tested the ring at ' + Math.round(e.detail.t) + ' °C', result: e.detail.fits ? 'passes through' : 'does not fit' });
+  const onBurst = e => LOG.event('lab', { code: a.code, what: 'bench: the balloon burst at ' + Math.round(e.detail.t) + ' °C' });
+  addEventListener('heatlab', onHeat); addEventListener('heatlab-test', onTest); addEventListener('heatlab-burst', onBurst);
+  liveScene = { slot, btn, onHeat, onTest, onBurst };
+  btn.textContent = 'Bench open';
+  LOG.event('lab', { code: a.code, what: 'opened the 3D bench: ' + cfg.experiment });
+}
+
 function wireActivity(a){
-  const sb = $('sim-btn');
-  if (sb) sb.onclick = () => {
-    $('sim-box').innerHTML = '<div class="simbox"><iframe src="' + esc(a.sim.url) + '" allow="fullscreen" title="' + esc(a.sim.label || '3D lab') + '"></iframe></div>' +
-      '<div class="muted" style="margin-top:8px">Cramped? <a href="' + esc(a.sim.url) + '" target="_blank" rel="noopener">Open it in its own tab</a>.</div>';
-    sb.disabled = true; LOG.event('lab', { code: a.code, what: 'opened the 3D lab' });
-  };
+  $('act').querySelectorAll('[data-sim]').forEach(b => b.onclick = () => openScene(a, b.dataset.sim, b));
   // predictions and observations
   $('act').querySelectorAll('[data-pick]').forEach(b => {
     const key = b.dataset.pick, saved = getProg(a.id, key);

@@ -39,7 +39,24 @@ export const LABS = [
     'Only an adult lights the burner and handles the hot ball and the hot flask. Metal stays hot long after the flame is off.',
     'Goggles on whenever there is a flame or hot water.',
   ],
-  sim: { url: 'https://science-heat-lab.vercel.app', label: 'Run this lab in 3D', covers: ['a','b','c'] },
+  // The 3D bench. One scene file (labs/scenes/heat.js) hosts three experiments;
+  // each part says which one, which temperatures to offer, which actions, and
+  // which readings to show. The words here are the only words the bench has.
+  sim: {
+    scene: 'heat', element: 'heat-lab-scene',
+    parts: {
+      a: { experiment: 'solid',
+        controls: [ { label: '🔥 In the flame', target: 250 }, { label: 'Room temperature', target: 30 }, { label: '🧊 In tap water', target: 15 } ],
+        actions: [ { label: 'Test the ring', action: 'test' } ],
+        readout: [ { key: 't', label: 'Ball temperature', unit: '°C' }, { key: 'fits', label: 'Passes through the ring', yes: 'yes', no: 'no' } ] },
+      b: { experiment: 'liquid',
+        controls: [ { label: '🔥 Hot water', target: 90 }, { label: 'Room temperature', target: 30 }, { label: '🧊 Iced water', target: 0 } ],
+        readout: [ { key: 't', label: 'Water temperature', unit: '°C' }, { key: 'riseMm', label: 'Level against the mark', unit: 'mm', signed: true } ] },
+      c: { experiment: 'gas',
+        controls: [ { label: '🔥 Over the burner', target: 250 }, { label: 'Room temperature', target: 30 }, { label: '🧊 Iced water', target: 0 } ],
+        readout: [ { key: 't', label: 'Air temperature', unit: '°C' }, { key: 'balloonMl', label: 'Extra room the air takes up', unit: 'ml' }, { key: 'popped', label: 'Balloon burst', yes: 'yes', no: 'no' } ] },
+    },
+  },
   parts: [
     {
       id: 'a', title: 'A metal ball and a ring', who: 'adult demonstration',
