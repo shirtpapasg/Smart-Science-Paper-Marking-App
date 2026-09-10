@@ -880,7 +880,8 @@
   </div>
   <div class="card" id="rep-box" style="margin-top:0;margin-bottom:16px">
     <span class="eyebrow" style="color:var(--mid)">Report for a grown-up</span>
-    <div class="muted" style="margin-top:8px;font-size:14px">A one-page summary of how it is going. What was answered, what is sticking, and what to work on next.</div>
+    <div class="muted" style="margin-top:8px;font-size:14px">A one-page summary of how it is going. What was answered, what is sticking, and what to work on next.
+      How the marking works is explained at <a href="https://smart-science-marking-site.vercel.app" target="_blank" rel="noopener">Smart Science Marking</a>.</div>
     <div id="rep-sum" class="muted" style="margin-top:12px;font-size:14px"></div>
     <button class="secondary" id="rep-get" style="min-height:48px;font-size:15px">Download the report</button>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
@@ -1022,6 +1023,8 @@
     <div id="h-out"></div>
     <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)">
       <button class="secondary" id="h-tour" style="min-height:48px;font-size:15px">Walk me around the app</button>
+      <div class="muted" style="margin-top:12px;font-size:13.5px;line-height:1.5">More about how the marking works, and free questions to try, at
+        <a href="https://smart-science-marking-site.vercel.app" target="_blank" rel="noopener">Smart Science Marking</a>.</div>
     </div>
   </div>
   <div class="m-panel" id="n-panel" style="overflow:auto">
@@ -1357,18 +1360,27 @@ async function callApiOnce(path, body){
   } finally { clearTimeout(timer); }
 
   const text = await res.text();
-  if (!text) throw new Error(res.status === 404
-    ? 'The server function ' + path + ' is missing. Upload the api folder to GitHub.'
-    : 'The server sent an empty reply (status ' + res.status + ').');
+  // These land on a pupil's screen, so they say what to do, not how the app is
+  // deployed. The status code goes to the console for whoever is debugging.
+  if (!text){
+    console.warn('empty reply from', path, res.status);
+    throw new Error(res.status === 404
+      ? 'The marking service is not available right now. Please try again in a moment.'
+      : 'The server did not reply. Please try again.');
+  }
 
   let d;
   try { d = JSON.parse(text); }
   catch(e){
+    console.warn('non-JSON reply from', path, res.status);
     if (/<!DOCTYPE|<html/i.test(text)) throw new Error(
-      'The server function ' + path + ' was not found. Check the api folder is uploaded and the Vercel preset is Other.');
-    throw new Error('The server reply could not be read.');
+      'The marking service is not available right now. Please try again in a moment.');
+    throw new Error('The server reply could not be read. Please try again.');
   }
-  if (!res.ok) throw new Error(d.error || 'Request failed (status ' + res.status + ').');
+  if (!res.ok){
+    console.warn('error reply from', path, res.status, d.error);
+    throw new Error(d.error || 'Something went wrong on the server. Please try again.');
+  }
   return d;
 }
 
@@ -1435,8 +1447,7 @@ function selected(){
     $('q-err').innerHTML = '<div class="card flag" style="margin-top:12px">' +
       '<span class="eyebrow">The ready-made list did not load</span>' +
       '<div style="margin-top:8px">I could not reach the question list just now. You can still add ' +
-      'your own questions below, and anything you have saved is still here. If this keeps happening, ' +
-      'the app needs to be opened from its web address rather than a file.</div></div>';
+      'your own questions below, and anything you have saved is still here. Please try again in a moment.</div></div>';
   }
 })();
 
@@ -1525,7 +1536,8 @@ function renderDone(r2, first, peeked, a2){
     $('mc-fix').textContent = 'Corrected by: ' + r2.misconception.fix;
   } else $('mc-box').classList.add('hide');
   $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
-  $('tutornote').textContent = r2.tutorNote || '';
+  // The note is written to the tutor. With a code set and locked, the pupil does not see it.
+  $('tutornote').textContent = isAdmin() ? (r2.tutorNote || '') : '';
   $('early').textContent = r2.answerRequestedEarly ? 'The answer was opened before a second attempt.' : '';
   sheetData = { kind:'oe', sel: selected(), r2, a1: a1txt, a2: a2 || '' };
 
@@ -3450,11 +3462,16 @@ async function makeTwin(id){
       kept.push(t);
     });
     const rejected = (d.twins||[]).length - kept.length;
-    $('tw-head').textContent = kept.length + ' new question' + (kept.length===1?'':'s') + ' to check.';
+    // Why a question was rejected, the answers it carries, and what to do with the
+    // survivors are for the adult who releases them. A pupil only needs to know
+    // that new practice exists and that someone checks it first.
+    const adm = isAdmin();
+    $('tw-head').textContent = kept.length + ' new question' + (kept.length===1?'':'s') + (adm ? ' to check.' : '.');
     if (!kept.length){
-      $('tw-head').textContent = 'Nothing passed the checks.';
+      $('tw-head').textContent = adm ? 'Nothing passed the checks.' : 'I could not write a good one this time.';
       $('tw-body').innerHTML = '<div class="empty">' +
-        (why.length ? why.map(w => '· ' + w).join('<br>') : 'No questions came back.') +
+        (adm ? (why.length ? why.map(w => '· ' + w).join('<br>') : 'No questions came back.')
+             : 'Every new question is checked before it reaches you, and these did not pass. Have another go.') +
         '</div><button class="primary" id="tw-retry" style="text-align:left">Try again</button>';
       $('tw-retry').onclick = () => makeTwin(id);
       return;
@@ -3470,14 +3487,17 @@ async function makeTwin(id){
       '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.45">' + t.stem + '</div>' +
       '<div class="muted" style="margin-top:8px;font-size:14px">' + (t.object||'') + ' · ' + (t.marks||'') + ' marks</div>' +
       svgFor(t.diagram) +
-      '<div style="margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">' +
+      (adm ? '<div style="margin-top:14px;border-top:1px solid var(--rule);padding-top:12px">' +
         ['choice','evidence','concept','link'].map((k,i) =>
           '<div style="display:flex;gap:12px;margin-top:8px"><div style="font-family:var(--round);font-weight:700;width:18px">' +
           'CECL'[i] + '</div><div style="flex:1;font-size:15px;line-height:1.5">' + ((t.cecl||{})[k]||'') + '</div></div>').join('') +
-      '</div></div>').join('') +
-      (rejected ? '<div class="muted" style="margin-top:16px;font-size:14px">' + rejected +
+      '</div>' : '') +
+      '</div>').join('') +
+      (adm && rejected ? '<div class="muted" style="margin-top:16px;font-size:14px">' + rejected +
         ' rejected before reaching you — ' + why.join('; ') + '.</div>' : '') +
-      '<div class="muted" style="margin-top:16px;font-size:14px">Saved under “AI practice”. Mark them ready when you are happy with them.</div>';
+      (adm
+        ? '<div class="muted" style="margin-top:16px;font-size:14px">Saved under “AI practice”. Mark them ready when you are happy with them.</div>'
+        : '<div class="muted" style="margin-top:16px;font-size:14px">Saved under “AI practice”. A parent or guardian checks each one before you can answer it.</div>');
   } catch(e){
     $('tw-err').textContent = e.message; $('tw-err').classList.remove('hide');
     $('tw-body').innerHTML = '';
