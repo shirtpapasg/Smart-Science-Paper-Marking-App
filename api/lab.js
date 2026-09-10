@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       if (!ch) { ch = { n: chapters.length + 1, title: r.chapter, activities: [] }; chapters.push(ch); }
       ch.activities.push({ id: r.id, code: r.code, title: r.title, minutes: r.minutes || null,
         kind: r.kind || 'lab3d', status: r.status || (r.parts ? 'ready' : 'soon'), sim: !!r.sim,
-        cc21: r.cc21 || [], skills: r.skills || [] });
+        cc21: r.cc21 || [], skills: r.skills || [], badge: r.badge || null });
     });
     return res.status(200).json({ level: 'P4', chapters });
   }

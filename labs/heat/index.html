@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+      nextLabel: NEXT_LABELS[exp] || 'Next →',
+      lockMsg: s.lockMsg || '',<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -71,6 +72,7 @@
         <button onClick="{{ s.go }}" style="{{ s.pill }}">{{ s.label }}</button>
       </sc-for>
     </nav>
+    <div style="font-size:13px;font-weight:800;color:#ffb627;min-height:18px;padding:2px 12px">{{ lockMsg }}</div>
   </header>
 
   <div style="flex: 1; display: flex; min-height: 0;">
@@ -364,6 +366,17 @@
 
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 900}, &quot;creditsPerCorrect&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 3, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 1, &quot;max&quot;: 10, &quot;section&quot;: &quot;Lesson&quot;}, &quot;showCredits&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;defaultView&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;apparatus&quot;, &quot;particles&quot;, &quot;both&quot;], &quot;default&quot;: &quot;apparatus&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;3D view&quot;}}">
+// Which steps are open. The lab page opens this page with ?unlock=solid,liquid,…
+// as the pupil earns them, and unlock=all once the whole activity is finished.
+// Opened with no list, only the intro and the first experiment are available.
+const UNLOCK = (() => {
+  const u = new URL(location.href).searchParams.get('unlock');
+  const s = new Set(u ? u.split(',').map(x => x.trim()).filter(Boolean) : ['solid']);
+  s.add('intro');
+  return s.has('all') ? null : s;
+})();
+const stepOpen = id => !UNLOCK || UNLOCK.has(id);
+
 const STEPS = [
   { id: 'intro', label: 'Intro' },
   { id: 'solid', label: '🔩 Solid' },
@@ -436,6 +449,7 @@ const TOOL_LABELS = { hand: '✋ Your hand', thermometer: '🌡️ Thermometer',
 class Component extends DCLogic {
   state = {
     step: 0,
+    lockMsg: '',
     target: 30,
     view: null,
     tool: 'thermometer',
@@ -515,6 +529,11 @@ class Component extends DCLogic {
   }
 
   goStep(n) {
+    if (!stepOpen(STEPS[n].id)) {
+      this.setState({ lockMsg: 'That part is locked. Finish the steps for it first, then come back.' });
+      clearTimeout(this._lockT); this._lockT = setTimeout(() => this.setState({ lockMsg: '' }), 3200);
+      return;
+    }
     this.setState({
       step: n,
       target: 30,
@@ -580,9 +599,9 @@ class Component extends DCLogic {
 
     const pillBase = 'padding:8px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:all 120ms ease-out;';
     const steps = STEPS.map((st, i) => ({
-      label: st.label,
+      label: stepOpen(st.id) ? st.label : '🔒 ' + st.label,
       go: () => this.goStep(i),
-      pill: pillBase + (i === s.step
+      pill: pillBase + (!stepOpen(st.id) ? 'opacity:.38;cursor:not-allowed;' : '') + (i === s.step
         ? 'background:#2f6fd6;color:#fff;border:2px solid #6aa9f0;box-shadow:0 0 16px rgba(74,144,226,.5);'
         : 'background:#2b3340;color:#d6dee6;border:1px solid rgba(255,255,255,.14);')
     }));

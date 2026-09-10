@@ -102,6 +102,15 @@
   #labwin .bar button{width:auto;margin:0;min-height:38px;font-size:14px;padding:6px 14px;background:#1f8a4c;color:#fff}
   #labwin .bar a{margin-left:auto;color:#66ccff;font-size:13px}
   #labwin iframe{flex:1;border:0;width:100%;background:#08131f}
+  /* the celebration and the badges */
+  #confetti{position:fixed;inset:0;z-index:80;pointer-events:none;display:none}
+  .ach{margin-top:14px;padding:16px 18px;border-radius:14px;border:2px solid var(--hl);background:var(--hl-soft);display:flex;gap:14px;align-items:center}
+  .ach .ico{font-size:34px;line-height:1}
+  .ach b{font-family:var(--round);font-weight:700;font-size:18px;display:block}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .bdg{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--hl-soft);color:var(--hl-ink);font-family:var(--round);font-weight:600;font-size:14px}
+  html[data-theme="dark"] .bdg{color:var(--hl)}
+  .lockhint{font-size:13px;color:var(--mid);margin-top:6px}
   /* parts fold up, so the steps do not sprawl */
   .part-hd{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
   .part-hd h2{flex:1}
@@ -135,6 +144,7 @@
   </div>
 </div>
 
+<canvas id="confetti"></canvas>
 <div id="labwin"><div class="bar"><button id="labwin-back" type="button">← Back to the steps</button><span id="labwin-title"></span><a id="labwin-tab" href="#" target="_blank" rel="noopener">Open in its own tab</a></div><iframe id="labwin-frame" title="3D lab" allow="fullscreen"></iframe></div>
 
 <div class="wrap">
@@ -218,8 +228,10 @@ function route(){
 
 /* ── the list: every activity in the book ── */
 const KIND = { lab3d:'Experiment', observe:'Observation', make:'Make it' };
-// Same rule as the app: no parent code set, or unlocked with it, counts as the adult.
-const adminDevice = () => { try { return !localStorage.getItem('sm-adm-v1') || sessionStorage.getItem('sm-adm-open') === '1'; } catch(e){ return false; } };
+// The adult, for the lab: a parent code has been set on this device AND unlocked
+// in this session. (No code at all does not count here — a family that never set
+// one must not see activities still in review, nor skip the locks.)
+const adminDevice = () => { try { return !!localStorage.getItem('sm-adm-v1') && sessionStorage.getItem('sm-adm-open') === '1'; } catch(e){ return false; } };
 const tags = a => (a.cc21 || []).map(t => '<span class="badge kind">' + esc(t) + '</span>').join('') +
                   (a.skills || []).map(t => '<span class="badge soon">' + esc(t) + '</span>').join('');
 async function renderList(){
@@ -228,14 +240,17 @@ async function renderList(){
   try {
     const d = await api('/api/lab', { action:'list' });
     const p = prog();
+    const earned = d.chapters.flatMap(ch => ch.activities).filter(a => a.badge && (p[a.id] || {}).badge);
     $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p>' +
+      (earned.length ? '<div class="card idea" style="margin-top:18px"><span class="eyebrow" style="color:var(--accent)">Your badges</span><div class="badges">' +
+        earned.map(a => '<span class="bdg">' + a.badge.icon + ' ' + esc(a.badge.name) + '</span>').join('') + '</div></div>' : '') +
       d.chapters.map(ch => '<div style="margin-top:28px"><span class="eyebrow">Chapter ' + ch.n + '</span><h2 style="margin-top:6px">' + esc(ch.title) + '</h2>' +
         ch.activities.filter(a => a.status !== 'review' || adminDevice()).map(a => {
-          const done = (p[a.id] || {}).done, open = a.status === 'ready' || a.status === 'review';
+          const got = (p[a.id] || {}).badge, open = a.status === 'ready' || a.status === 'review';
           return '<div class="item' + (open ? ' link' : '') + '"' + (open ? ' data-open="' + a.id + '"' : '') + '>' +
             '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="eyebrow">' + esc(a.code) + '</span>' +
             '<h3 style="flex:1">' + esc(a.title) + '</h3>' +
-            (a.status === 'ready' ? '<span class="badge">' + (done ? 'Done' : 'Ready') + '</span>' :
+            (a.status === 'ready' ? '<span class="badge">' + (got ? (a.badge ? a.badge.icon + ' Badge earned' : 'Done') : 'Ready') + '</span>' :
              a.status === 'review' ? '<span class="badge" style="background:var(--warn-bg);color:var(--warn)">In review</span>' : '<span class="badge soon">Coming soon</span>') + '</div>' +
             '<div class="muted" style="margin-top:6px">' + KIND[a.kind] + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + (a.sim ? ' · runs in 3D' : '') + '</div>' +
             '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 0">' + tags(a).replace(/margin-left:8px/g, '') + '</div></div>';
@@ -263,14 +278,15 @@ function renderActivity(a){
     '<div class="card idea"><span class="eyebrow" style="color:var(--accent)">The big idea</span><div style="margin-top:6px;font-family:var(--round);font-weight:600;font-size:18px">' + esc(a.bigIdea) + '</div></div>' +
     '<p style="margin-top:16px"><b>What we are finding out.</b> ' + esc(a.aim) + '</p>';
   if (a.safety && a.safety.length) h += '<div class="card warn"><span class="eyebrow" style="color:var(--warn)">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>';
+  h += '<div id="ach"></div>';
   if (a.sim && a.sim.page) h += '<div class="item" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><h3>Try it on the 3D bench</h3>' +
-    '<div class="muted">Heat it, cool it, watch what happens — then come back and answer the steps.</div></div>' +
-    '<button class="primary" data-lab style="width:auto;margin:0">' + esc(a.sim.label || "Let's test it now!") + '</button></div>';
+    '<div class="muted">Make your predictions first. Then heat it, cool it, watch what happens — and come back to answer the steps.</div><div class="lockhint" data-lockhint></div></div>' +
+    '<button class="primary" data-lab data-top style="width:auto;margin:0">' + esc(a.sim.label || "Let's test it now!") + '</button></div>';
   (a.parts || []).forEach((p, pi) => {
     const covered = a.sim && a.sim.page && (a.sim.covers || []).indexOf(p.id) >= 0;
     h += '<div class="part' + (pi === 0 ? ' open' : '') + '" data-part="' + p.id + '" style="margin-top:28px">' +
       '<div class="part-hd"><span class="chev">▶</span><div style="flex:1"><span class="eyebrow">Part ' + p.id.toUpperCase() + ' · ' + esc(p.who) + '</span><h2 style="margin-top:4px">' + esc(p.title) + '</h2></div>' +
-      (covered ? '<button class="secondary" data-lab type="button">' + esc(a.sim.label || "Let's test it now!") + '</button>' : '') + '</div><div class="part-body">';
+      (covered ? '<button class="secondary" data-lab data-part="' + p.id + '" type="button">' + esc(a.sim.label || "Let's test it now!") + '</button>' : '') + '</div><div class="part-body">';
     if (p.need) h += '<div class="card"><span class="eyebrow">What you need</span><ul class="need">' + p.need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>';
     if (p.diagram) h += svgFor(p.diagram);
     let n = 0;
@@ -285,7 +301,7 @@ function renderActivity(a){
         h += '<span class="eyebrow" style="display:block;margin-bottom:4px">' + (s.predict ? 'Predict' : 'What did you see?') + '</span>' + esc(t.q) +
           '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-pick="' + key + '" data-i="' + i + '" data-kind="' + kind + '">' + esc(o) + '</button>').join('') + '</div><div class="verdict" id="v-' + cssKey(key) + '"></div>';
       }
-      if (s.explain) h += explainHtml(key, s.explain.q, s.explain.marks, { part: p.id, step: si });
+      if (s.explain) h += explainHtml(key, s.explain.q, s.explain.marks, { part: p.id, step: si }, getProg(a.id, key) === 'done');
       h += '</div>';
     });
     h += '</div></div>';
@@ -300,22 +316,91 @@ function renderActivity(a){
   }
   if (a.check && a.check.length){
     h += '<div style="margin-top:32px"><span class="eyebrow">Now use it</span><h2 style="margin-top:6px">Two questions from real life.</h2>';
-    a.check.forEach((c, ci) => { h += '<div class="step" data-key="check:' + ci + '"><span class="n">' + (ci + 1) + '</span>' + explainHtml('check:' + ci, c.q, c.marks, { check: ci }) + '</div>'; });
+    a.check.forEach((c, ci) => { h += '<div class="step" data-key="check:' + ci + '"><span class="n">' + (ci + 1) + '</span>' + explainHtml('check:' + ci, c.q, c.marks, { check: ci }, getProg(a.id, 'check:' + ci) === 'done') + '</div>'; });
     h += '</div>';
   }
-  h += '<button class="secondary" id="done-btn" style="margin-top:32px">' + (getProg(a.id, 'done') ? 'Done — back to the list' : 'I have finished this one') + '</button>';
+  h += '<button class="secondary" id="done-btn" style="margin-top:32px">Back to the list</button>';
   $('act').innerHTML = h;
   wireActivity(a);
+  refreshGates(a);
   window.scrollTo(0, 0);
 }
 const cssKey = k => k.replace(/[^a-z0-9]/gi, '_');
 
-function explainHtml(key, q, marks, where){
+function explainHtml(key, q, marks, where, done){
   const id = cssKey(key);
   return '<span class="eyebrow" style="display:block;margin-bottom:4px">Explain · ' + marks + (marks === 1 ? ' mark' : ' marks') + '</span>' + esc(q) +
+    (done ? '<div class="verdict">✓ Marked. Your explanation has been checked.</div>' :
     '<div id="x-' + id + '" data-where=\'' + esc(JSON.stringify(where)) + '\'>' +
     '<textarea id="t-' + id + '" maxlength="800" placeholder="Write your explanation in full sentences…"></textarea>' +
-    '<button class="primary" data-mark="' + key + '">Check my answer</button><div id="o-' + id + '"></div></div>';
+    '<button class="primary" data-mark="' + key + '">Check my answer</button><div id="o-' + id + '"></div></div>');
+}
+
+/* ── locks, completion and the badge ───────────────────────
+   Predict before you test: a part's bench opens only once every prediction in
+   it is made. Finish every step, the conclusion and the checks, and the whole
+   lab unlocks with a badge — that is the achievement. */
+const predsDone = (a, p) => (p.steps || []).every((s, i) => !s.predict || getProg(a.id, p.id + ':' + i) != null);
+const partDone = (a, p) => (p.steps || []).every((s, i) => { const k = p.id + ':' + i;
+  if (s.predict || s.observe) return getProg(a.id, k) != null; if (s.explain) return getProg(a.id, k) === 'done'; return true; });
+const allDone = a => (a.parts || []).every(p => partDone(a, p)) && (!(a.conclude || []).length || !!getProg(a.id, 'cdone')) &&
+  (a.check || []).every((c, i) => getProg(a.id, 'check:' + i) === 'done');
+function unlockList(a){
+  if (getProg(a.id, 'badge') || adminDevice()) return 'all';
+  const ids = ['intro'];
+  (a.sim.covers || []).forEach(pid => { const p = (a.parts || []).find(x => x.id === pid); if (p && predsDone(a, p) && a.sim.map && a.sim.map[pid]) ids.push(a.sim.map[pid]); });
+  return ids.join(',');
+}
+function refreshGates(a){
+  if (!a.sim || !a.sim.page) return;
+  const got = !!getProg(a.id, 'badge'), adm = adminDevice();
+  let anyOpen = got || adm;
+  $('act').querySelectorAll('[data-lab][data-part]').forEach(b => {
+    const p = a.parts.find(x => x.id === b.dataset.part), ok = got || adm || (p && predsDone(a, p));
+    b.disabled = !ok; b.title = ok ? '' : 'Make your predictions for this part first.'; if (ok) anyOpen = true;
+  });
+  const top = $('act').querySelector('[data-lab][data-top]'); if (top) top.disabled = !anyOpen;
+  const hint = $('act').querySelector('[data-lockhint]');
+  if (hint) hint.textContent = got ? a.badge ? a.badge.icon + ' Badge earned — the whole lab is open, including the challenge.' : 'The whole lab is open.'
+    : anyOpen ? 'Open so far: ' + unlockList(a).split(',').filter(x => x !== 'intro').join(', ') + '. The rest unlocks as you predict; everything unlocks with the badge.'
+    : 'Locked until you make the predictions in Part A.';
+  if (got && $('ach') && !$('ach').innerHTML && a.badge) $('ach').innerHTML = achHtml(a);
+}
+const achHtml = a => '<div class="ach"><div class="ico">' + a.badge.icon + '</div><div><span class="eyebrow" style="color:var(--hl-ink)">Achievement unlocked</span><b>' + esc(a.badge.name) + '</b>' +
+  '<div style="font-size:15px">' + esc(a.badge.line) + ' The whole 3D lab is now open — challenge included.</div></div></div>';
+function checkAchievement(a){
+  if (getProg(a.id, 'badge') || !allDone(a)) return;
+  setProg(a.id, 'badge', { ts: Date.now() }); setProg(a.id, 'done', true);
+  if ($('ach') && a.badge) $('ach').innerHTML = achHtml(a);
+  refreshGates(a); celebrate();
+  $('ach') && $('ach').scrollIntoView({ behavior:'smooth', block:'center' });
+  LOG.event('lab', { code: a.code, what: 'achievement unlocked', badge: a.badge ? a.badge.name : a.title });
+}
+
+/* ── rainbow confetti and a success sound ── */
+function celebrate(){
+  try { successSound(); } catch(e){}
+  const c = $('confetti'), g = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight; c.style.display = 'block';
+  const cols = ['#ff5252','#ff9800','#ffd600','#4caf50','#00bcd4','#7c4dff'];
+  const P = Array.from({ length: 180 }, () => ({ x: Math.random() * c.width, y: -20 - Math.random() * c.height * .5, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 3,
+    r: 5 + Math.random() * 6, a: Math.random() * Math.PI, va: (Math.random() - .5) * .3, col: cols[Math.floor(Math.random() * cols.length)] }));
+  const t0 = performance.now();
+  (function tick(now){
+    const t = (now - t0) / 1000; g.clearRect(0, 0, c.width, c.height);
+    P.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .04; p.a += p.va;
+      g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.fillStyle = p.col; g.globalAlpha = Math.max(0, Math.min(1, 4 - t)); g.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); g.restore(); });
+    if (t < 4) requestAnimationFrame(tick); else { g.clearRect(0, 0, c.width, c.height); c.style.display = 'none'; }
+  })(t0);
+}
+let actx = null;
+function successSound(){
+  actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
+  const t0 = actx.currentTime + .02;
+  [[523.25, 0], [659.25, .13], [783.99, .26], [1046.5, .39]].forEach(([f, dt]) => {
+    const o = actx.createOscillator(), gn = actx.createGain(); o.type = 'triangle'; o.frequency.value = f;
+    gn.gain.setValueAtTime(0, t0 + dt); gn.gain.linearRampToValueAtTime(.09, t0 + dt + .02); gn.gain.exponentialRampToValueAtTime(.0001, t0 + dt + (dt > .3 ? .7 : .22));
+    o.connect(gn).connect(actx.destination); o.start(t0 + dt); o.stop(t0 + dt + .8);
+  });
 }
 
 /* ── the 3D lab, full-screen over the steps ───────────────
@@ -323,7 +408,8 @@ function explainHtml(key, q, marks, where){
    "Let's test it now!" opens it over the steps; "Back to the steps" closes it
    and everything the pupil had ticked is still there. */
 function openLab(a){
-  $('labwin-frame').src = a.sim.page; $('labwin-title').textContent = a.title; $('labwin-tab').href = a.sim.page;
+  const url = a.sim.page + '?unlock=' + encodeURIComponent(unlockList(a));
+  $('labwin-frame').src = url; $('labwin-title').textContent = a.title; $('labwin-tab').href = url;
   $('labwin').classList.add('on'); document.body.style.overflow = 'hidden';
   LOG.event('lab', { code: a.code, what: 'opened the 3D lab' });
 }
@@ -334,7 +420,7 @@ function closeLab(){
 $('labwin-back').onclick = closeLab;
 
 function wireActivity(a){
-  $('act').querySelectorAll('[data-lab]').forEach(b => b.onclick = e => { e.stopPropagation(); openLab(a); });
+  $('act').querySelectorAll('[data-lab]').forEach(b => b.onclick = e => { e.stopPropagation(); if (!b.disabled) openLab(a); });
   // parts fold: tap a heading to open it and fold the others
   $('act').querySelectorAll('.part-hd').forEach(hd => hd.onclick = () => {
     const part = hd.parentElement, wasOpen = part.classList.contains('open');
@@ -365,8 +451,9 @@ function wireActivity(a){
     });
     $('c-out').innerHTML = '<div class="verdict">' + (right === total ? 'All ' + total + ' right.' : right + ' of ' + total + ' right.' + (tries >= 2 ? ' The missing words are filled in for you.' : ' Try the amber ones again.')) + '</div>';
     LOG.event('lab', { code: a.code, what: 'conclusion', words: filled.join(' | '), right, total });
+    if (right === total || tries >= 2) { setProg(a.id, 'cdone', true); checkAchievement(a); }
   };
-  $('done-btn').onclick = () => { setProg(a.id, 'done', true); LOG.event('lab', { code: a.code, what: 'finished' }); location.hash = ''; };
+  $('done-btn').onclick = () => { location.hash = ''; };
 }
 
 function stepOf(a, key){
@@ -382,7 +469,10 @@ function showPick(a, key, i, fresh){
   const v = $('v-' + cssKey(key));
   if (s.predict) v.textContent = 'Prediction noted. Now test it and see.';
   else v.textContent = i === right ? 'That is what happens.' : 'Look again — ' + t.options[right].toLowerCase() + '.';
-  if (fresh) LOG.event('lab', { code: a.code, what: s.predict ? 'predicted' : 'observed', q: t.q, chose: t.options[i], correct: s.observe ? i === right : null });
+  if (fresh){
+    LOG.event('lab', { code: a.code, what: s.predict ? 'predicted' : 'observed', q: t.q, chose: t.options[i], correct: s.observe ? i === right : null });
+    refreshGates(a); checkAchievement(a);
+  }
 }
 
 async function markExplain(a, key){
@@ -410,6 +500,7 @@ async function markExplain(a, key){
       if (r.misconception) h += '<div class="card warn"><span class="eyebrow">Lots of people mix this up</span><div style="margin-top:6px">' + esc(r.misconception.belief) + '</div><div class="muted" style="margin-top:6px">Corrected by: ' + esc(r.misconception.fix) + '</div></div>';
       ta.disabled = true; btn.remove();
       setProg(a.id, key, 'done');
+      refreshGates(a); checkAchievement(a);
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: state.first, a2: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: r.modelAnswer || '' });
     }
     out.innerHTML = h;

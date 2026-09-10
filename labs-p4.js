@@ -41,7 +41,10 @@ export const LABS = [
   ],
   // The 3D lab: the Heat Lab page, served from inside the app. The lab page
   // opens it full-screen from "Let's test it now!" and comes back to the steps.
-  sim: { page: 'labs/heat/index.html', label: "Let's test it now!", covers: ['a', 'b', 'c'] },
+  // covers: which parts the lab serves; map: which tab in the lab each part
+  // unlocks once its predictions are made. Everything unlocks with the badge.
+  sim: { page: 'labs/heat/index.html', label: "Let's test it now!", covers: ['a', 'b', 'c'], map: { a: 'solid', b: 'liquid', c: 'gas' } },
+  badge: { icon: '🔥', name: 'Heat Explorer', line: 'You watched a solid, a liquid and a gas expand and contract, and explained every one.' },
   parts: [
     {
       id: 'a', title: 'A metal ball and a ring', who: 'adult demonstration',
