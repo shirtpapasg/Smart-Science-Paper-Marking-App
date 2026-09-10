@@ -37,7 +37,7 @@ THE ANSWER IS NEVER GIVEN ON REQUEST — asking for it gets a friendly refusal.
 `;
 
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   const { question } = req.body || {};
   if (!String(question || '').trim()) return res.status(400).json({ error: 'No question supplied' });
 

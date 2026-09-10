@@ -215,6 +215,16 @@
   #tour{position:fixed;inset:0;z-index:60;background:var(--bg);display:none;
     flex-direction:column;padding:28px 22px calc(env(safe-area-inset-bottom,0px) + 22px);overflow:auto}
   #tour.on{display:flex}
+  /* Members only. Sits above everything until the server confirms a session. */
+  #gate{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;align-items:center;justify-content:center;
+    padding:28px 22px;overflow:auto}
+  #gate.on{display:flex}
+  #gate .g-box{max-width:420px;width:100%}
+  #gate input{width:100%;font-family:var(--body);font-size:17px;padding:14px 16px;border:1.5px solid var(--rule);
+    border-radius:10px;background:var(--card,#fff);color:var(--ink);margin-top:18px}
+  #gate input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+  #gate .g-msg{margin-top:14px;font-size:15px;line-height:1.55;color:var(--mid)}
+  #gate .g-msg.err{color:var(--warn,#c9741b)}
   .t-dots{display:flex;gap:7px;justify-content:center;margin-bottom:26px}
   .t-dots i{width:8px;height:8px;border-radius:50%;background:var(--rule);transition:all .3s}
   .t-dots i.on{width:26px;border-radius:5px;
@@ -950,6 +960,23 @@
   <button class="m-fab" id="m-fab" aria-label="Study music" style="position:relative">♪</button>
 </div>
 
+<!-- ══ MEMBERS ONLY ══ shown until the server confirms this browser holds a session. -->
+<div id="gate">
+  <div class="g-box">
+    <span class="eyebrow">Science Marking</span>
+    <h1 style="margin-top:10px" id="g-h">Members sign in here.</h1>
+    <p class="muted" id="g-sub" style="margin-top:12px">Enter the email you signed up with and I will send you a sign-in link. It works once and lasts a day.</p>
+    <form id="g-form" autocomplete="on">
+      <input id="g-email" type="email" name="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required>
+      <button class="primary" id="g-go" type="submit">Send me a sign-in link</button>
+    </form>
+    <div class="g-msg" id="g-msg"></div>
+    <p class="muted" style="margin-top:26px;font-size:14px">Not a member yet? Membership is at
+      <a href="https://smart-science-marking-site.vercel.app" target="_blank" rel="noopener">Smart Science Marking</a>.
+      Your sign-in link arrives by email once the payment goes through.</p>
+  </div>
+</div>
+
 <div id="tour">
   <div class="t-dots" id="t-dots"></div>
 
@@ -1347,13 +1374,67 @@ async function callApi(path, body){
   finally { pipBusy(false); }
 }
 
+/* ── members only ─────────────────────────────────────────
+   The server decides whether the lock is on. Until it says this browser holds
+   a valid session, the gate covers the app. A sign-in link (?k=…) is redeemed
+   once and becomes a session kept on this device only — it is not part of the
+   profile file, so it never travels to another device. */
+const SESS = 'sm-session-v1';
+const sessionToken = () => { try { return localStorage.getItem(SESS) || ''; } catch(e){ return ''; } };
+let gateResolve; const gateReady = new Promise(r => gateResolve = r);
+
+function gateMsg(t, err){ const m = $('g-msg'); if (m){ m.textContent = t || ''; m.classList.toggle('err', !!err); } }
+function gateOpen(){
+  try { localStorage.removeItem(SESS); } catch(e){}
+  $('gate').classList.add('on');
+}
+function gateClose(){ $('gate').classList.remove('on'); gateResolve(); }
+
+async function gateBoot(){
+  const url = new URL(location.href);
+  const k = url.searchParams.get('k');
+  if (k){
+    history.replaceState(null, '', url.pathname);   // the token must not linger in the address bar
+    $('gate').classList.add('on');
+    gateMsg('Signing you in…');
+    try {
+      const d = await callApiOnce('/api/access', { action:'login', token:k });
+      if (d.session) localStorage.setItem(SESS, d.session);
+      gateMsg('');
+    } catch(e){ gateMsg(e.message, true); }
+  }
+  try {
+    const d = await callApiOnce('/api/access', { action:'session' });
+    if (!d.locked || d.ok) return gateClose();
+  } catch(e){
+    // The server could not be reached. Leave the app usable; every call it
+    // makes will report the problem in its own words.
+    if (!sessionToken()) return gateClose();
+  }
+  gateOpen();
+}
+
+$('g-form').onsubmit = async e => {
+  e.preventDefault();
+  const email = $('g-email').value.trim();
+  if (!email) return;
+  $('g-go').disabled = true; $('g-go').textContent = 'Sending…';
+  try {
+    const d = await callApiOnce('/api/access', { action:'link', email });
+    gateMsg(d.message || 'If that address is registered, a sign-in link is on its way.');
+  } catch(err){ gateMsg(err.message, true); }
+  $('g-go').disabled = false; $('g-go').textContent = 'Send me a sign-in link';
+};
+gateBoot();
+
 async function callApiOnce(path, body){
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 55000);
   let res;
   try {
-    res = await fetch(path, { method:'POST', signal: ctl.signal,
-      headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
+    const headers = {'content-type':'application/json'};
+    if (sessionToken()) headers.authorization = 'Bearer ' + sessionToken();
+    res = await fetch(path, { method:'POST', signal: ctl.signal, headers, body:JSON.stringify(body) });
   } catch(e){
     if (ctl.signal.aborted) throw new Error('That took too long. Tap to try again.');
     throw new Error('No connection to the server.');
@@ -1379,6 +1460,8 @@ async function callApiOnce(path, body){
   }
   if (!res.ok){
     console.warn('error reply from', path, res.status, d.error);
+    // A session that has expired or been revoked: back to the sign-in screen.
+    if (res.status === 401 && d.signIn) { gateOpen(); }
     throw new Error(d.error || 'Something went wrong on the server. Please try again.');
   }
   return d;
@@ -1431,10 +1514,9 @@ function selected(){
   // questions live on the device and do not need the server at all.
   let failed = false;
   try {
-    const res = await fetch('/api/questions');
-    const text = await res.text();
-    if (!res.ok || !text || /<!DOCTYPE|<html/i.test(text)) throw new Error('not deployed');
-    QS = (JSON.parse(text).questions) || [];
+    await gateReady;                       // the list is for members
+    const d = await callApiOnce('/api/questions', {});
+    QS = d.questions || [];
   } catch(e){
     QS = [];
     failed = true;
@@ -2672,7 +2754,8 @@ $('t-next').onclick = () => {
 
 $('t-skip').onclick = e => { e.preventDefault(); tourClose(); };
 
-if (!DB.raw(SEEN)) tourOpen();
+// The welcome tour waits for the gate, so a signed-out visitor is not toured through an app they cannot use.
+gateReady.then(() => { if (!DB.raw(SEEN)) tourOpen(); });
 
 /* ── admin: twins must be released by an adult ──────────── */
 // Students can generate practice but never approve it, so nothing reaches them

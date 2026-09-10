@@ -5,7 +5,7 @@ import { contextsFor } from '../context-library.js';
 // Generates extra practice from an approved scheme. Same concept, new situation,
 // no wording from the source. The tutor still approves every one.
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   const { scheme, avoid = [], count = 1 } = req.body || {};
   if (!scheme || !scheme.concept) return res.status(400).json({ error: 'No scheme supplied' });
 

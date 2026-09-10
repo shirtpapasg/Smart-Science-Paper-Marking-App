@@ -3,7 +3,7 @@ import { callModel, guard } from './_shared.js';
 // Reads the PRINTED question off a photograph. Never handwriting.
 // The image is passed straight through and never written to storage.
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   const body = req.body || {};
   const mediaType = body.mediaType || 'image/jpeg';
   // One question can run over two or three pages. They are read in ONE call so

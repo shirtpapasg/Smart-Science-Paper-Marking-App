@@ -12,7 +12,7 @@ function flat() {
 }
 
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
 
   const { questionIndex, scheme, answer, attempt = 1, firstAnswer = '', revealAnswer = false } = req.body || {};
   if (!String(answer || '').trim()) return res.status(400).json({ error: 'No answer supplied' });

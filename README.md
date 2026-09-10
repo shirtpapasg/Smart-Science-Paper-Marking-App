@@ -36,3 +36,38 @@ endpoint fails at import time — practice generation stops working.
 
 The design files, specs and source documents live separately and are not
 needed to run the app.
+
+## Members only
+
+Access is for people whose Stripe payment has completed, or whom the admin lets
+in for free. A member signs in with a one-time link sent to their registered
+email; the browser then holds a signed session and sends it with every call.
+The lock is **off** until both `ACCESS_LOCK=on` and `SESSION_SECRET` are set,
+so the app keeps working while the pieces are configured.
+
+    api/access.js          session check · redeem a link · request a new link
+    api/stripe-webhook.js  Stripe → grant on paid checkout, revoke on refund or
+                           cancelled subscription. Signature verified.
+    api/admin.js           grant · revoke · resend · list, behind ADMIN_KEY
+    admin.html             a small page for the admin to do the above
+
+Environment variables, in Vercel:
+
+    ACCESS_LOCK            on   (anything else leaves the app open)
+    SESSION_SECRET         long random string, e.g. `openssl rand -base64 48`
+    ADMIN_KEY              long random string, at least 16 characters
+    STRIPE_WEBHOOK_SECRET  from the webhook endpoint in the Stripe dashboard
+    RESEND_API_KEY         from resend.com; MAIL_FROM must be on a verified domain
+    MAIL_FROM              e.g. Science Marking <hello@yourdomain.com>
+    APP_URL                https://smart-science-paper-marking-app.vercel.app
+    KV_REST_API_URL        set by the Upstash for Redis integration
+    KV_REST_API_TOKEN      set by the Upstash for Redis integration
+
+Stripe: add a webhook endpoint pointing at `/api/stripe-webhook` and send it
+`checkout.session.completed`, `customer.subscription.deleted` and
+`charge.refunded`. The Payment Link on the website must collect an email
+address, which it does by default.
+
+Testing before turning the lock on: leave `ACCESS_LOCK` unset, open
+`/admin.html`, grant yourself access and check the email arrives. Then set
+`ACCESS_LOCK=on` and redeploy.
