@@ -5,17 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Science Marking</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400..800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1a1a1a; --bg:#faf9f7; --surface:#f0eeea; --rule:#d8d4cd;
-    --mid:#6b6660; --accent:#b3402b; --accent-bg:#f7e8e4;
-    --round:'Comic Neue','Comic Sans MS',ui-rounded,system-ui,sans-serif;
-    --body:'Nunito',ui-rounded,system-ui,sans-serif;
+    /* Lifted from the marketing site so the app and the site read as one thing:
+       exercise-book paper, a red margin rule, green marking pen, yellow
+       highlighter. Every colour below is the site's own value. */
+    --ink:#1d2a44; --bg:#fbfaf3; --surface:#f1f5fb; --rule:#d5dbe7;
+    --mid:#4d5b76; --accent:#1f8a4c; --accent-bg:rgba(31,138,76,.12);
+    --faint:#8a95ab; --card:#ffffff; --grid:rgba(96,140,196,.15);
+    --margin:#e2646a; --pen-dark:#166b3b;
+    --hl:#ffd84d; --hl-soft:rgba(255,216,77,.35); --hl-ink:#5a4600;
+    --warn:#c9741b; --warn-bg:rgba(201,116,27,.12);
+    --round:'Fredoka','Nunito',ui-rounded,system-ui,sans-serif;
+    --body:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+    --hand:'Caveat','Segoe Script',cursive;
   }
   html[data-theme="dark"]{
-    --ink:#f0ece6; --bg:#141312; --surface:#211f1d; --rule:#3a3632;
-    --mid:#a39c93; --accent:#ff8a6a; --accent-bg:#2e211d;
+    --ink:#eef1f7; --bg:#141a27; --surface:#222c3f; --rule:#2c3549;
+    --mid:#b6bfd1; --accent:#4fc47f; --accent-bg:rgba(79,196,127,.14);
+    --faint:#7c879d; --card:#1c2434; --grid:rgba(120,160,220,.10);
+    --margin:#d8686e; --pen-dark:#0f5c31;
+    --hl:#f3c93a; --hl-soft:rgba(243,201,58,.20); --hl-ink:#f8e7a0;
+    --warn:#e9a35a; --warn-bg:rgba(233,163,90,.14);
   }
   html[data-theme="dark"] textarea,html[data-theme="dark"] select,
   html[data-theme="dark"] .item:not(.flag),html[data-theme="dark"] .stat,
@@ -26,10 +38,11 @@
   /* The :not()s above matter. A selected state is two classes (.chip.on,
      .opt.picked), which loses to [data-theme] plus one class — so without them
      dark mode silently erases every selection highlight in the app. */
-  html[data-theme="dark"] .opt.right{background:#16301f;border-color:#4caf82}
-  html[data-theme="dark"] .opt.right b{color:#7fd6a6}
-  html[data-theme="dark"] .dark{background:#2a2724}
-  html[data-theme="dark"] .nav{background:rgba(20,19,18,.96)}
+  html[data-theme="dark"] .opt.right{background:var(--accent-bg);border-color:var(--accent)}
+  html[data-theme="dark"] .opt.right b{color:var(--accent)}
+  html[data-theme="dark"] .dark{background:var(--card);color:var(--ink)}
+  html[data-theme="dark"] .dark .eyebrow{color:var(--accent)}
+  html[data-theme="dark"] .nav{background:rgba(20,26,39,.96)}
   html[data-theme="dark"] .m-fab{background:var(--ink);color:var(--bg)}
   html[data-theme="dark"] .m-fab.playing{background:var(--surface);color:var(--ink)}
   html[data-theme="dark"] .dgm svg{filter:invert(.92) hue-rotate(180deg)}
@@ -101,64 +114,6 @@
   .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
   .hide{display:none !important}
-
-  /* ── answer sheet ─────────────────────────────────────────
-     A normal view: it scrolls in the wrap and the tabs, buddy and tools stay
-     put. Only @media print strips the chrome. Body font for the sheet, the
-     rounded font for the CECL box — that contrast is deliberate. */
-  #sheet{--teal:#1c5b56;--teal-bg:#e9f2f1;--teal-rule:#a9cbc7;font-family:var(--body);color:var(--ink)}
-  #sheet .sh-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-  #sheet .sh-actions button{margin:0;width:auto}
-  #sheet .sh-page{display:flex;flex-direction:column;gap:12px;min-height:60vh}
-  #sheet .rnd{font-family:var(--round);font-weight:700}
-  #sheet .lbl{font-family:var(--round);font-weight:700;font-size:12px;letter-spacing:.11em;text-transform:uppercase;color:var(--mid)}
-  #sheet .sh-hd{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:9px}
-  #sheet .sh-band{background:var(--accent-bg);border:2px solid var(--accent);padding:16px 18px}
-  #sheet .sh-pills{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-  #sheet .sh-pill{font-family:var(--round);font-weight:700;font-size:16px;background:var(--accent);color:#fff;padding:5px 12px}
-  #sheet .sh-pill.line{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}
-  #sheet .sh-box{border:1.5px solid var(--rule);background:var(--surface);padding:13px 15px;margin-top:5px;font-size:16px;line-height:1.55}
-  #sheet .sh-items{margin-top:5px;border-top:1.5px solid var(--rule)}
-  #sheet .sh-item{display:grid;grid-template-columns:minmax(0,168px) minmax(0,1fr);gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
-  #sheet .sh-item:last-child{border-bottom:1.5px solid var(--rule)}
-  #sheet .sh-item .rnd{font-size:16.5px}
-  #sheet .sh-item .p{font-size:16px;line-height:1.5}
-  #sheet .sh-why{font-size:16.5px;line-height:1.6;margin-top:5px}
-  #sheet .sh-lose{font-size:16px;line-height:1.5;padding-left:13px;border-left:3px solid var(--rule)}
-  #sheet .sh-mine{display:inline-block;border:2px dotted var(--accent);border-radius:999px;padding:1px 11px;color:var(--accent)}
-  #sheet .sh-try{display:grid;grid-template-columns:minmax(0,96px) minmax(0,1fr);gap:12px;font-size:16px;line-height:1.5}
-  #sheet .sh-try .lbl{padding-top:2px}
-  #sheet .sh-try .t{padding-left:12px;border-left:3px solid var(--rule)}
-  #sheet .sh-try.second .t{border-left-color:var(--accent)}
-  #sheet .sh-cecl{background:var(--teal-bg);border:2px solid var(--teal);padding:15px 17px;margin-top:2px;font-family:var(--round);font-weight:700;color:var(--teal)}
-  #sheet .sh-cecl .lbl{color:var(--teal)}
-  #sheet .sh-cecl .intro{font-size:16px;line-height:1.45;margin-top:4px}
-  #sheet .sh-cecl-rows{margin-top:11px;display:flex;flex-direction:column;gap:9px}
-  #sheet .sh-cecl-row{display:grid;grid-template-columns:minmax(0,22px) minmax(0,1fr);gap:11px}
-  #sheet .sh-cecl-row b{font-size:19px;line-height:1}
-  #sheet .sh-cecl-row .k{font-size:16px}
-  #sheet .sh-cecl-row .v{font-size:16px;line-height:1.5;color:#1a1a1a;margin-top:2px}
-  #sheet .sh-cecl-foot{margin-top:12px;padding-top:10px;border-top:1.5px solid var(--teal-rule);font-size:16px;line-height:1.55}
-  #sheet .sh-tail{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:12px}
-  #sheet .sh-scan{padding-top:12px;border-top:2px solid var(--ink)}
-  #sheet .sh-scan p{font-size:16px;line-height:1.5;margin:5px 0 0}
-  #sheet .sh-scanbox{margin-top:9px;border:1.5px solid var(--rule);background:var(--surface);padding:6px}
-  #sheet .sh-scanbox img{display:block;width:100%;height:150px;object-fit:contain}
-  #sheet .sh-foot{border-top:1.5px solid var(--rule);padding-top:9px;display:flex;gap:10px;align-items:baseline}
-  #sheet .sh-foot .note{font-size:16px;color:var(--mid);line-height:1.5}
-  @media print{
-    body.sheet-open .nav,body.sheet-open #pip,body.sheet-open #pip-menu,body.sheet-open #tools,
-    body.sheet-open #music,body.sheet-open #nudge,body.sheet-open #deflect,
-    body.sheet-open #sheet .sh-actions{display:none !important}
-    body.sheet-open{background:#fff;color:#1a1a1a}
-    body.sheet-open .wrap{max-width:none;margin:0;padding:0}
-    body.sheet-open .wrap>section{display:none !important}
-    body.sheet-open #sheet{display:block !important;
-      --ink:#1a1a1a;--bg:#fff;--surface:#f0eeea;--rule:#d8d4cd;--mid:#6b6660;--accent:#b3402b;--accent-bg:#f7e8e4}
-    body.sheet-open #sheet .sh-page{min-height:0}
-    @page{size:A4;margin:20mm}
-    body.sheet-open #sheet,body.sheet-open #sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  }
   .opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-top:12px;
     padding:16px 18px;background:#fff;border:1.5px solid var(--rule);border-radius:14px;
     font-family:var(--body);font-weight:400;font-size:17px;line-height:1.45;min-height:auto;
@@ -486,6 +441,82 @@
   .dgm svg{width:100%;height:auto;display:block}
   .dgm-cap{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);
     font-size:13px;color:var(--mid);line-height:1.5}
+
+  /* ═══ exercise-book skin ═══════════════════════════════════════
+     Appended last so it wins at equal specificity without touching the
+     rules above. Layout and behaviour are untouched — this is paint. */
+
+  body{background-color:var(--bg);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:28px 28px;background-attachment:fixed}
+
+  /* The red margin rule, as on the site. Content clears it. */
+  .wrap{position:relative;padding-left:44px;padding-right:22px}
+  .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;
+    background:var(--margin);opacity:.55;pointer-events:none}
+  @media (max-width:400px){ .wrap{padding-left:34px} .wrap::before{left:15px} }
+
+  h1,h2{font-family:var(--round);font-weight:600;letter-spacing:-.01em}
+  .eyebrow{color:var(--mid);letter-spacing:.12em;font-size:12px}
+  .dark .eyebrow{color:var(--hl)}
+  .hd{border-bottom:1px dashed var(--rule)}
+  .muted{color:var(--mid)}
+
+  /* Pill buttons that press down, like the site's. */
+  button{border-radius:999px;text-align:center;font-weight:600;border-width:0;
+    transition:transform .08s ease,box-shadow .16s,background .16s}
+  .primary{background:var(--accent);color:#fff;box-shadow:0 3px 0 var(--pen-dark)}
+  .primary:hover{box-shadow:0 4px 0 var(--pen-dark);transform:translateY(-1px)}
+  .primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--pen-dark)}
+  .secondary{background:var(--card);color:var(--ink);border:1.5px solid var(--rule);box-shadow:none}
+  .secondary:hover{background:var(--surface)}
+  .ghost{background:transparent;color:var(--accent);border:0;box-shadow:none}
+  .cam label{border-radius:999px;border-width:1.5px;text-align:center;justify-content:center}
+  .cam label:first-child{background:var(--accent);border-color:var(--accent);color:#fff;
+    box-shadow:0 3px 0 var(--pen-dark)}
+
+  /* A quoted question, highlighter down its edge. */
+  .card{background:var(--surface);border-left:4px solid var(--hl);
+    border-radius:0 12px 12px 0;box-shadow:0 6px 18px rgba(29,42,68,.06)}
+  .card.flag{border-left-color:var(--warn);background:var(--warn-bg)}
+  .err{border-left-color:var(--warn);background:var(--warn-bg)}
+  .hint{background:var(--surface);border-left-color:var(--hl);border-radius:0 10px 10px 0}
+  .hint b{color:var(--hl-ink)}
+  html[data-theme="dark"] .hint b{color:var(--hl)}
+
+  .item,.stat,.opt,.dgm,.m-panel{background:var(--card);border-color:var(--rule);
+    border-radius:14px;box-shadow:0 6px 18px rgba(29,42,68,.06)}
+  .stat div{border-left-color:var(--rule)}
+  .shot{background:var(--card);border:1.5px dashed var(--rule);border-radius:12px}
+  .chip{border-radius:999px;border-color:var(--rule);background:var(--card)}
+  .nav{background:rgba(255,255,255,.96);box-shadow:0 -3px 18px rgba(29,42,68,.07)}
+  html[data-theme="dark"] .nav{background:rgba(20,26,39,.96)}
+
+  /* Green pen ticks, red pen crosses — how a marked book actually looks. */
+  .tick{background:var(--accent)}
+  html[data-theme="dark"] .tick:not(.open):not(.info){background:var(--accent)}
+  .tick.open::before,.tick.open::after{background:var(--margin)}
+  .tick.info{border-color:var(--rule)}
+  .row{border-top:1px dashed var(--rule)}
+
+  /* The mark, written in pen. */
+  #marks{font-family:var(--hand);font-weight:700;color:var(--accent);font-size:40px}
+
+  .m-fab{background:var(--accent);border-color:var(--accent);color:#fff}
+  html[data-theme="dark"] .m-fab{background:var(--accent);color:#10231a}
+  .m-row{border-radius:12px}
+  .m-svc a{border-radius:999px;border-color:var(--rule)}
+  #pip.plain{background:var(--accent)}
+  #pip.plain::before{color:#fff}
+
+  textarea,select,.pin input,#n-title{background:var(--card);border-color:var(--rule)}
+  textarea:focus,select:focus,#n-title:focus,#n-text:focus{border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-bg)}
+  #n-text{background:#fff;color:#1d2a44}
+  #n-title{background:#fff;color:#1d2a44}
+  html[data-theme="dark"] textarea,html[data-theme="dark"] select,
+  html[data-theme="dark"] .pin input{background:var(--surface);color:var(--ink)}
 </style>
 </head><body>
 <div class="wrap">
@@ -499,7 +530,6 @@
     <h1>Let's have a go.</h1>
     <p class="muted">Pick a question. Write your answer like you would on paper. I will show you the good bits and what to add.</p>
     <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-tag" class="muted" style="margin-top:9px;font-size:14px"></div><div id="q-err"></div></div>
-    <div id="mk-stem"></div>
     <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
       <textarea id="a1" maxlength="800" placeholder="Type your answer here…"></textarea></div>
@@ -557,7 +587,6 @@
         <div style="font-family:var(--round);font-weight:700;font-size:32px;line-height:1;font-variant-numeric:tabular-nums" id="marks"></div>
         <div class="muted" id="tutornote" style="margin-top:12px"></div>
         <div class="muted" id="early" style="margin-top:10px"></div></div></div>
-    <button class="secondary" id="export-oe">Export this answer</button>
     <button class="secondary" id="restart">Answer another question</button>
   </div>
   <div id="deflect" class="hide"><span class="d-ico">✦</span><div class="d-txt"></div></div>
@@ -603,10 +632,6 @@
       </div>
       <div class="muted" id="fmt-note" style="margin-top:9px;font-size:14px"></div>
     </div>
-    <div id="nq-group" class="card hide" style="margin-top:16px"><span class="eyebrow" style="color:var(--mid)">Adding another part</span>
-      <div id="nq-group-stem" style="margin-top:8px;font-size:15px;line-height:1.5"></div>
-      <div class="muted" style="margin-top:8px;font-size:14px">Photograph or type just the next part. The set-up above is carried across.
-        <a href="#" id="nq-group-off">Start a different question instead</a></div></div>
     <div id="nq-pair">
       <div class="nq-col"><label for="nq">The question</label>
         <textarea id="nq" maxlength="1500" placeholder="e.g. Explain why the metal spoon in the hot soup becomes too hot to hold."></textarea></div>
@@ -621,11 +646,6 @@
     <span class="eyebrow">Here's what I worked out</span>
     <h2 id="rv-q" style="margin-top:10px"></h2>
     <div id="rv-flag" class="card flag hide"></div>
-    <div id="rv-stem-dgm"></div>
-    <!-- A question with parts: the stem sits above in #rv-q, and this holds one
-         body per part. The single-question body below is hidden meanwhile. -->
-    <div id="rv-parts" class="hide"></div>
-    <div id="rv-single">
     <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
       <div id="rv-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
     <div id="rv-dgm"></div>
@@ -647,21 +667,11 @@
     <div id="rv-dna-box" style="margin-top:24px"><span class="eyebrow">Close, but no mark</span>
       <div id="rv-dna"></div>
       <div class="muted" style="margin-top:10px;font-size:14px">These sound right and use the right words, but the science underneath is wrong.</div></div>
-    </div>
-    <div id="rv-actions">
     <button class="primary" id="rv-save">That looks right · save it</button>
     <div style="display:flex;gap:10px;margin-top:12px">
       <button class="secondary" id="rv-retry" style="margin:0;text-align:center">Have another go</button>
       <button class="ghost" id="rv-cancel" style="margin:0;text-align:center;border:2px solid var(--rule)">Discard</button>
     </div>
-    </div>
-    <!-- After saving: a question whose parts were photographed separately continues here. -->
-    <div id="rv-more" class="card hide" style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Saved</span>
-      <div style="margin-top:8px;font-size:17px">Is there another part of this question on a later page?</div>
-      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-        <button class="primary" id="rv-more-yes" style="margin:0;min-height:48px;font-size:15px">Yes, add the next page</button>
-        <button class="ghost" id="rv-more-no" style="margin:0;min-height:48px;font-size:15px;border:2px solid var(--rule)">No, that's all</button>
-      </div></div>
   </div>
 
 
@@ -728,7 +738,6 @@
       <h2 id="mq-head" style="margin-top:10px"></h2>
       <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">Why that one is right</span>
         <div id="mq-why-right" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:17px"></div></div>
-      <button class="secondary" id="export-mcq">Export this answer</button>
       <button class="secondary" id="mq-next">Back to my questions</button>
     </div>
     <div id="mq-err" class="err hide"></div>
@@ -852,9 +861,6 @@
     <div id="st-topic"></div>
   </div>
 </section>
-
-<!-- ══ ANSWER SHEET ══ a printable page for a parent. Filled by buildSheet(). -->
-<div id="sheet" class="hide"></div>
 
 </div>
 
@@ -1181,15 +1187,6 @@ function showMarkDiagram(){
     const bits = [m.level, m.topic || m.chapter].filter(Boolean);
     tag.textContent = bits.length ? bits.join(' · ') : '';
   }
-  const st = $('mk-stem');
-  if (st){
-    const s = sel && sel.scheme;
-    st.innerHTML = (s && s.stem)
-      ? '<div class="card" style="margin-top:16px"><span class="eyebrow" style="color:var(--mid)">The set-up this part belongs to</span>' +
-        '<div style="margin-top:8px;font-size:16px;line-height:1.55">' + shEsc(s.stem) + '</div>' +
-        '<div class="muted" style="margin-top:8px;font-size:14px">Answer part ' + shEsc(s.label || '') + ' only.</div></div>'
-      : '';
-  }
   const el = $('mk-dgm');
   if (!el) return;
   // A picture attached by an adult wins over the one I draw.
@@ -1231,7 +1228,6 @@ addEventListener('orientationchange', () => setTimeout(syncNavHeight, 250));
 // Progress is reached through the pet rather than the nav, so the switch has to
 // work from either place.
 function goView(v){
-  $('sheet').classList.add('hide'); document.body.classList.remove('sheet-open');
   document.querySelectorAll('.nav button').forEach(x =>
     x.classList.toggle('on', x.dataset.v === v));
   ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
@@ -1325,7 +1321,7 @@ function fillQuestionPicker(){
   const cut = (t, n) => { t = String(t||''); return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t; };
   const opt = q => '<option value="bank:'+q.i+'">' + cut(q.q, 96) + '</option>';
   const mine = load(SRC).map(r => '<option value="src:'+r.id+'">' +
-    cut((r.scheme.label ? r.scheme.label + ' ' : '') + r.scheme.q, 96) + '</option>').join('');
+    cut(r.scheme.q, 96) + '</option>').join('');
   const prac = load(TWN).filter(t => t.approved).map(r => '<option value="twin:'+r.id+'">' +
     cut(r.stem, 96) + '</option>').join('');
   const prev = $('q').value;
@@ -1463,15 +1459,13 @@ function renderDone(r2, first, peeked, a2){
   $('marks').textContent = (r2.marks ?? '—') + '/' + (r2.maxMarks ?? '—');
   $('tutornote').textContent = r2.tutorNote || '';
   $('early').textContent = r2.answerRequestedEarly ? 'The answer was opened before a second attempt.' : '';
-  sheetData = { kind:'oe', sel: selected(), r2, a1: a1txt, a2: a2 || '' };
 
   // ── save to the mistake book ──
   const qm = (selected() || {}).meta || {};
   const missedNow = (r2.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase);
   const all = subs();
   all.unshift({
-    ts: Date.now(), qi: $('q').value, level: qm.level || '', chapter: qm.chapter || qm.topic || '',
-    q: (qm.label ? qm.label + ' ' : '') + (qm.q || ''),
+    ts: Date.now(), qi: $('q').value, level: qm.level || '', chapter: qm.chapter || qm.topic || '', q: qm.q || '',
     a1: a1txt, a2: a2 || '', peeked: !!peeked,
     marks1: first?.marks ?? null, marks2: r2.marks ?? null, maxMarks: r2.maxMarks ?? null,
     missed1: (first?.keywords||[]).filter(k=>!k.hit).map(k=>k.phrase),
@@ -1775,7 +1769,6 @@ async function handlePhoto(files){
       return;
     }
     $('nq').value = d.question + (d.diagramNote ? '\n\n[Picture: ' + d.diagramNote + ']' : '');
-    readParts = Array.isArray(d.parts) ? d.parts : [];
     box.innerHTML = '<div class="card"><span class="eyebrow" style="color:var(--mid)">Is this right?</span>' +
       '<div class="muted" style="margin-top:8px">I have put what I read into the box below. Have a quick look and fix anything I got wrong. I only read the printed question, never handwriting.' +
       (d.moreOnPage ? ' There was more than one question on that page, so I took the clearest one.' : '') +
@@ -3057,9 +3050,6 @@ function qsResume(){
   return true;
 }
 let newFormat = 'written', mcqItem = null, mcqPick = null;
-// Sub-part labels the photo reader found, and the question being continued
-// across pages: { groupId, stem, level, topic } while a later page is added.
-let readParts = [], groupCtx = null;
 
 document.querySelectorAll('#v-qs .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-qs .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -3083,15 +3073,10 @@ function renderQs(){
       : 'Nothing here yet. Open one of your own questions and I will build fresh practice from it.') + '</div>';
     return;
   }
-  let lastGroup = null;
   $('qs-list').innerHTML = rows.map(r => {
-    const s = r.scheme;
-    const q = s ? ((s.label ? s.label + ' ' : '') + s.q) : r.stem;
-    const head = (s && s.stem && r.groupId && r.groupId !== lastGroup)
-      ? '<div class="muted" style="margin:18px 0 4px;font-size:14px;line-height:1.5"><b style="font-family:var(--round)">Shared set-up</b> · ' + shEsc(s.stem) + '</div>' : '';
-    if (r.groupId) lastGroup = r.groupId;
+    const q = r.scheme ? r.scheme.q : r.stem;
     const meta = (r.scheme ? (r.scheme.level + ' · ' + r.scheme.topic) : (r.level + ' · ' + r.topic));
-    return head + '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + q + '</div>' +
+    return '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + q + '</div>' +
       '<div class="muted" style="margin-top:6px;font-size:14px">' + meta + ' · ' + typeLabel(r.scheme ? r.scheme.questionType : r.questionType) +
       (folder === 'source' ? ' · ' + ((r.scheme.markingPoints||[]).length) + ' marking points' : '') +
       (folder === 'twin' && !r.approved ? ' · <span style="color:var(--accent)">have a look</span>' : '') + '</div>' +
@@ -3117,7 +3102,7 @@ function renderQs(){
 function camReset(){
   ['cam-out','cam-check'].forEach(id => { const n = $(id); if (n) n.innerHTML = ''; });
   const pair = $('nq-pair'); if (pair) pair.classList.remove('paired');
-  pendingScan = null; readParts = [];
+  pendingScan = null;
 }
 // Both kinds arrive the same way — off a photo — so there is one door in and the
 // format is worked out rather than chosen up front. The chips let you correct it.
@@ -3140,13 +3125,12 @@ document.querySelectorAll('#fmt-chips .chip').forEach(c => c.onclick = () =>
   setFormat(c.dataset.fmt, 'You set this yourself.'));
 
 $('qs-add').onclick = () => {
-  groupCtx = null; showGroupBanner();
   $('nq').value = ''; camReset(); $('nq-err').classList.add('hide');
   setFormat('written', 'I will work this out from the page. Change it if I get it wrong.');
   qsShow('new');
 };
-$('nq-cancel').onclick = () => { groupCtx = null; renderQs(); };
-$('rv-cancel').onclick = () => { groupCtx = null; renderQs(); };
+$('nq-cancel').onclick = renderQs;
+$('rv-cancel').onclick = renderQs;
 $('tw-back').onclick = renderQs;
 $('rv-retry').onclick = () => deriveScheme($('nq').value.trim());
 
@@ -3161,8 +3145,7 @@ async function deriveScheme(text){
   $('nq-go').disabled = true; $('nq-go').textContent = 'Writing the scheme…';
   try { audioCtx(); } catch(e){}
   try {
-    derived = await callApi('/api/derive', { questionText: text, format: newFormat,
-      parts: readParts, stem: groupCtx ? groupCtx.stem : undefined });
+    derived = await callApi('/api/derive', { questionText: text, format: newFormat });
     chime();
     if (newFormat === 'mcq'){ startMcq(derived); }
     else showReview(derived);
@@ -3180,53 +3163,7 @@ const TYPE_LABEL = {
 const typeLabel = t => TYPE_LABEL[String(t||'').toLowerCase()]
   || (t ? String(t).charAt(0).toUpperCase() + String(t).slice(1) : '—');
 
-// One part's body on the review screen — the same sections as a single question.
-function partReviewHtml(p, d){
-  const rows = (arr, cls, empty) => (arr||[]).filter(Boolean).map(x =>
-    '<div class="row"><span class="tick' + (cls ? ' ' + cls : '') + '"></span><div style="flex:1">' + shEsc(x) + '</div></div>').join('')
-    || '<div class="muted">' + empty + '</div>';
-  return '<div class="rv-part" style="margin-top:28px;padding-top:20px;border-top:2px solid var(--ink)">' +
-    '<span class="eyebrow">Part ' + shEsc(p.label || '') + '</span>' +
-    '<h2 style="margin-top:8px">' + shEsc(p.q || '') + '</h2>' +
-    (p.outOfSyllabus ? '<div class="card flag"><span class="eyebrow">Worth knowing</span><div style="margin-top:8px">' + shEsc(p.outOfSyllabus) + '</div></div>' : '') +
-    '<div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>' +
-      '<div style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px">' + shEsc(p.modelAnswer || '') + '</div></div>' +
-    svgFor(p.diagram) +
-    '<div class="stat"><div><b>' + shEsc(p.level || d.level || '—') + '</b><span>Level</span></div>' +
-      '<div><b>' + shEsc(typeLabel(p.questionType)) + '</b><span>Type</span></div>' +
-      '<div><b>' + shEsc(p.marks || '—') + '</b><span>Marks</span></div></div>' +
-    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">The unchanging concept</span>' +
-      '<div style="margin-top:8px;font-size:17px;line-height:1.55">' + shEsc(p.concept || '') + '</div></div>' +
-    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What this part supplies</span>' +
-      '<div style="margin-top:8px">' + rows(p.evidence, 'info', 'None listed.') + '</div></div>' +
-    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">What earns the marks</span><div>' +
-      (p.markingPoints||[]).map((m,i) =>
-        '<div class="row"><div style="flex:none;width:20px;font-family:var(--round);font-weight:700;color:var(--mid);font-variant-numeric:tabular-nums">' + (i+1) + '</div>' +
-        '<div style="flex:1">' + shEsc(m.point) + '</div>' +
-        '<div style="flex:none;font-family:var(--round);font-weight:700;font-variant-numeric:tabular-nums">' + shEsc(m.marks) + '</div></div>').join('') + '</div></div>' +
-    '<div style="margin-top:24px"><span class="eyebrow" style="color:var(--mid)">Also accept</span>' +
-      '<div>' + rows(p.alsoAccept, '', 'Nothing beyond the marking points above.') + '</div></div>' +
-    '<div style="margin-top:24px"><span class="eyebrow">Close, but no mark</span>' +
-      '<div>' + rows(p.doNotAccept, 'open', 'None listed.') + '</div></div>' +
-    '</div>';
-}
-
 function showReview(d){
-  $('rv-actions').classList.remove('hide'); $('rv-more').classList.add('hide');
-  const multi = Array.isArray(d.parts) && d.parts.length > 0;
-  $('rv-single').classList.toggle('hide', multi);
-  $('rv-parts').classList.toggle('hide', !multi);
-  $('rv-stem-dgm').innerHTML = '';
-  if (multi){
-    // The stem is lifted out and shown once; every part repeats the body below it.
-    $('rv-q').textContent = d.stem || '';
-    $('rv-flag').classList.add('hide');
-    $('rv-stem-dgm').innerHTML = svgFor(d.diagram) +
-      '<div class="muted" style="margin-top:10px;font-size:14px">This set-up is shared. Each part below is marked on its own, with the set-up carried along.</div>';
-    $('rv-parts').innerHTML = d.parts.map(p => partReviewHtml(p, d)).join('');
-    qsShow('review'); window.scrollTo(0,0);
-    return;
-  }
   $('rv-q').textContent = d.q || '';
   $('rv-level').textContent = d.level || '—';
   $('rv-type').textContent = typeLabel(d.questionType);
@@ -3256,58 +3193,17 @@ function showReview(d){
 }
 
 $('rv-save').onclick = async () => {
-  const d = derived; if (!d) return;
   const all = load(SRC);
-  const ts = Date.now();
-  const multi = Array.isArray(d.parts) && d.parts.length > 0;
-  let scanId, first;
-  if (multi){
-    // One row per part. They share a groupId and the stem, so a pupil answering
-    // part (b) sees the set-up and part (b) only, and the marker sees both.
-    const groupId = (groupCtx && groupCtx.groupId) || ('g' + ts);
-    const stem = d.stem || (groupCtx && groupCtx.stem) || '';
-    const rows = d.parts.map((p, i) => ({
-      id: 's' + ts + '-' + i, ts: ts + i, groupId, scanId: 's' + ts + '-0',
-      scheme: { ...p, q: p.q || '', label: p.label || '', stem,
-        level: p.level || d.level || (groupCtx && groupCtx.level) || '',
-        topic: p.topic || d.topic || (groupCtx && groupCtx.topic) || '',
-        outcome: p.outcome || d.outcome || '', diagram: p.diagram || d.diagram || null, format: 'written' },
-    }));
-    rows.slice().reverse().forEach(r => all.unshift(r));   // (a) ends up above (b)
-    first = rows[0]; scanId = first.id;
-    groupCtx = { groupId, stem, level: first.scheme.level, topic: first.scheme.topic };
-  } else {
-    const groupId = (groupCtx && groupCtx.groupId) || ('g' + ts);
-    first = { id: 's' + ts, ts, groupId, scanId: 's' + ts, scheme: d };
-    all.unshift(first); scanId = first.id;
-    // A single scheme may still be page one of a longer question: its whole
-    // text serves as the stem if the tutor adds a later page.
-    groupCtx = { groupId, stem: (groupCtx && groupCtx.stem) || d.q || '', level: d.level || '', topic: d.topic || '' };
-  }
+  const id = 's' + Date.now();
+  all.unshift({ id, ts: Date.now(), scheme: derived });
   save(SRC, all.slice(0,200));
-  // File the photographed page(s) against this batch, for checking later.
+  // File the photographed page against this question, for checking later.
   if (pendingScan){
-    try { await SCANS.put({ id: scanId, ...pendingScan }); } catch(e){}
+    try { await SCANS.put({ id, ...pendingScan }); } catch(e){}
     pendingScan = null;
   }
-  derived = null; fillQuestionPicker();
-  $('rv-actions').classList.add('hide'); $('rv-more').classList.remove('hide');
-  $('rv-more').scrollIntoView({ block: 'center' });
+  derived = null; renderQs(); fillQuestionPicker();
 };
-
-// Continue the same question on the next page, stem and groupId retained.
-function showGroupBanner(){
-  const b = $('nq-group'); if (!b) return;
-  b.classList.toggle('hide', !groupCtx);
-  if (groupCtx) $('nq-group-stem').textContent = groupCtx.stem.length > 220 ? groupCtx.stem.slice(0, 219).trimEnd() + '…' : groupCtx.stem;
-}
-$('rv-more-yes').onclick = () => {
-  $('nq').value = ''; camReset(); $('nq-err').classList.add('hide');
-  setFormat('written', 'The next part of the same question.');
-  showGroupBanner(); qsShow('new'); window.scrollTo(0,0);
-};
-$('rv-more-no').onclick = () => { groupCtx = null; renderQs(); };
-$('nq-group-off').onclick = e => { e.preventDefault(); groupCtx = null; showGroupBanner(); };
 
 
 /* ── admin: the scanned page behind a question ──────────── */
@@ -3336,7 +3232,7 @@ async function renderScanList(){
       'style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex:none;border:1.5px solid var(--rule)">' +
       '<div style="flex:1;min-width:0">' +
       '<div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' +
-      ((x.q.scheme.stem ? x.q.scheme.stem + ' ' : '') + (x.q.scheme.label ? x.q.scheme.label + ' ' : '') + (x.q.scheme.q || '')).slice(0,90) + '</div>' +
+      (x.q.scheme.q || '').slice(0,90) + '</div>' +
       '<div class="muted" style="margin-top:6px;font-size:14px">' +
       new Date(x.rec.ts).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) +
       ' · ' + (x.q.scheme.level || '') + ' ' + (x.q.scheme.topic || '') +
@@ -3476,9 +3372,7 @@ async function makeTwin(id){
   $('tw-body').innerHTML = '<div class="empty">Holding the concept, changing the situation. This takes a moment.</div>';
   const used = load(TWN).map(t => t.object).filter(Boolean);
   try {
-    const s = row.scheme;
-    const forTwin = s.stem ? { ...s, q: s.stem + '\n' + (s.label ? s.label + ' ' : '') + s.q } : s;
-    const d = await callApi('/api/twin', { scheme: forTwin, avoid: used, count: 2 });
+    const d = await callApi('/api/twin', { scheme: row.scheme, avoid: used, count: 2 });
     const kept = [], why = [];
     (d.twins||[]).forEach(t => {
       const g = t.gate || {};
@@ -3591,7 +3485,6 @@ $('mq-submit').onclick = async () => {
       renderMcqOpts(true);
       $('mq-fb').classList.add('hide'); $('mq-done').classList.remove('hide');
       $('mq-step').textContent = 'Done';
-      sheetData = { kind:'mcq', item: mcqItem, pick: mcqPick, r };
 
       const all = subs();
       all.unshift({ ts: Date.now(), qi: 'mcq', level: mcqItem.level || '', chapter: mcqItem.topic || '',
@@ -3613,169 +3506,6 @@ $('mq-submit').onclick = async () => {
 };
 
 $('mq-next').onclick = () => { mcqItem = null; mcqPick = null; renderQs(); };
-
-/* ── answer sheet export ─────────────────────────────────
-   One printable page for a parent or tutor: the answer, the question, what the
-   child wrote, and how a full-mark answer is built. Everything on it comes from
-   the scheme and the marking result. A field that is missing means its section
-   is left out — nothing is ever filled with placeholder text. */
-let sheetData = null, sheetFrom = null;
-const shEsc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const shLbl = (t, style) => '<div class="lbl"' + (style ? ' style="' + style + '"' : '') + '>' + shEsc(t) + '</div>';
-const shPill = (t, line) => '<div class="sh-pill' + (line ? ' line' : '') + '">' + shEsc(t) + '</div>';
-const shMarks = n => n + (n === 1 ? ' mark' : ' marks');
-
-function shHeader(kind, level, topic){
-  return '<div class="sh-hd"><div class="rnd" style="font-size:14px">Science Marking</div>' +
-    '<div class="lbl" style="margin-left:auto;color:var(--ink)">' +
-    shEsc([kind, level, topic].filter(Boolean).join(' · ')) + '</div></div>';
-}
-
-// The block above the footer. Omitted entirely when there is no scan.
-function shScan(jpeg){
-  if (!jpeg) return '';
-  return '<div class="sh-scan">' + shLbl('The page your child photographed', 'color:var(--ink)') +
-    '<p>Only the question above was read by the camera, so compare it against this photo. ' +
-    'Your child typed their own answer — no handwriting was read, so the words quoted above are exactly what they wrote.</p>' +
-    '<div class="sh-scanbox"><img src="data:image/jpeg;base64,' + jpeg + '" alt="The page that was photographed"></div></div>';
-}
-
-function shFoot(){
-  const when = new Date().toLocaleDateString('en-SG', { day:'numeric', month:'short', year:'numeric' });
-  return '<div class="sh-foot"><div class="note">Check anything unfamiliar with your child\'s school teacher — ' +
-    'schools word things slightly differently.</div>' +
-    '<div class="lbl" style="margin-left:auto;white-space:nowrap">' + shEsc(when) + '</div></div>';
-}
-
-function mcqSheet(d, scan){
-  const it = d.item || {}, pick = d.pick || {}, opts = it.options || [];
-  const right = opts.find(o => o.correct);
-  const label = o => '(' + o.n + ') ' + (o.text || '');
-  let h = shHeader('Multiple choice', it.level, it.topic);
-
-  h += '<div class="sh-band">' + shLbl('The answer', 'color:var(--accent)');
-  if (right) h += '<div class="rnd" style="font-size:31px;line-height:1.15;margin-top:5px">' + shEsc(label(right)) + '</div>';
-  if (it.plainWhy) h += '<div style="font-size:16.5px;line-height:1.5;margin-top:7px">' + shEsc(it.plainWhy) + '</div>';
-  const pills = [];
-  if (it.marks) pills.push(shPill(shMarks(it.marks)));
-  if (pick.n) pills.push(shPill('Your child chose (' + pick.n + ')', true));
-  if (pills.length) h += '<div class="sh-pills">' + pills.join('') + '</div>';
-  h += '</div>';
-
-  if (it.q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' + shEsc(it.q) +
-    (opts.length ? '<br><span style="color:var(--mid)">' + opts.map(o => shEsc(label(o))).join(' &nbsp; ') + '</span>' : '') +
-    '</div></div>';
-
-  const items = (it.items || []).filter(x => x && (x.name || x.plain));
-  if (items.length) h += '<div>' + shLbl('What each item is for') + '<div class="sh-items">' +
-    items.map(x => '<div class="sh-item"><div class="rnd">' + shEsc((x.tag ? '(' + x.tag + ') ' : '') + (x.name || '')) +
-      '</div><div class="p">' + shEsc(x.plain || '') + '</div></div>').join('') + '</div></div>';
-
-  if (it.plainWhy) h += '<div>' + shLbl('Why that is the answer') + '<div class="sh-why">' + shEsc(it.plainWhy) + '</div></div>';
-
-  const wrong = opts.filter(o => !o.correct && o.says);
-  if (wrong.length) h += '<div>' + shLbl('Why the other choices lose the mark') +
-    '<div style="margin-top:5px;display:flex;flex-direction:column;gap:6px">' +
-    wrong.map(o => '<div class="sh-lose"><strong' + (pick.n === o.n ? ' class="sh-mine"' : '') + '>' +
-      shEsc(label(o)) + '</strong> — ' + shEsc(o.says) + '</div>').join('') + '</div></div>';
-
-  return h + '<div class="sh-tail">' + shScan(scan) + shFoot() + '</div>';
-}
-
-function oeSheet(d, scan){
-  const sel = d.sel || {}, s = sel.scheme || {}, m = sel.meta || {}, r = d.r2 || {};
-  const level = s.level || m.level, topic = s.topic || m.topic || m.chapter;
-  const model = s.modelAnswer || r.modelAnswer;
-  const max = r.maxMarks ?? s.marks;
-  let h = shHeader('Open-ended', level, topic);
-
-  h += '<div class="sh-band">' + shLbl('The answer', 'color:var(--accent)');
-  if (model) h += '<div class="rnd" style="font-size:20px;line-height:1.35;margin-top:5px">' + shEsc(model) + '</div>';
-  const pills = [];
-  if (max) pills.push(shPill(shMarks(max)));
-  if (max && r.marks != null) pills.push(shPill('Your child scored ' + r.marks + ' of ' + max, true));
-  if (pills.length) h += '<div class="sh-pills">' + pills.join('') + '</div>';
-  h += '</div>';
-
-  const q = s.q || m.q;
-  if (q) h += '<div>' + shLbl('The question') + '<div class="sh-box">' +
-    (s.stem ? shEsc(s.stem) + '<br><br><strong>' + shEsc(s.label || '') + '</strong> ' : '') + shEsc(q) + '</div></div>';
-
-  const tries = [];
-  if (d.a1) tries.push('<div class="sh-try"><div class="lbl">First try</div><div class="t">“' + shEsc(d.a1) + '”</div></div>');
-  if (d.a2) tries.push('<div class="sh-try second"><div class="lbl">Second try</div><div class="t">“' + shEsc(d.a2) + '”</div></div>');
-  if (tries.length) h += '<div>' + shLbl('What your child wrote') +
-    '<div style="margin-top:5px;display:flex;flex-direction:column;gap:7px">' + tries.join('') + '</div></div>';
-
-  const c = s.cecl || {};
-  const parts = [
-    ['C', 'choice',   'Choice — what you say happens'],
-    ['E', 'evidence', 'Evidence — what the question tells you'],
-    ['C', 'concept',  'Concept — the science fact, always true'],
-    ['L', 'link',     'Link — joining the fact to this question'],
-  ].filter(p => c[p[1]]);
-  if (parts.length) h += '<div class="sh-cecl">' + shLbl('How a full-mark answer is built · C E C L') +
-    '<div class="intro">Four parts, in this order. Every good explanation answer has all four.</div>' +
-    '<div class="sh-cecl-rows">' + parts.map(p => '<div class="sh-cecl-row"><b>' + p[0] + '</b><div>' +
-      '<div class="k">' + shEsc(p[2]) + '</div><div class="v">' + shEsc(c[p[1]]) + '</div></div></div>').join('') + '</div>' +
-    '<div class="sh-cecl-foot"><strong>If you help with one thing, help with L.</strong> Most children can say the fact. ' +
-    'Far fewer join it to the thing in front of them.</div></div>';
-
-  return h + '<div class="sh-tail">' + shScan(scan) + shFoot() + '</div>';
-}
-
-// The scan already held for this question — the same one the admin
-// "Check scanned pages" screen shows. A typed-in question has none.
-async function sheetScan(d){
-  try {
-    if (d.kind === 'mcq') return pendingScan ? pendingScan.jpeg : null;
-    const v = $('q').value || '';
-    let id = null;
-    if (v.startsWith('src:')){ const r = load(SRC).find(x => x.id === v.slice(4)); id = (r && r.scanId) || v.slice(4); }
-    else if (v.startsWith('twin:')){
-      const t = load(TWN).find(x => x.id === v.slice(5));
-      const r = t && load(SRC).find(x => x.id === t.sourceId);
-      id = (r && r.scanId) || (t && t.sourceId) || null;
-    }
-    if (!id) return null;
-    const rec = await SCANS.get(id);
-    return rec && rec.jpeg ? rec.jpeg : null;
-  } catch(e){ return null; }
-}
-
-function openSheet(){
-  sheetFrom = curView;
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.add('hide'));
-  $('sheet').classList.remove('hide');
-  document.body.classList.add('sheet-open');
-  window.scrollTo(0,0);
-}
-
-// Back to exactly the screen the sheet came from, without re-rendering it —
-// the result the pupil was looking at must still be there.
-function closeSheet(){
-  $('sheet').classList.add('hide');
-  document.body.classList.remove('sheet-open');
-  const v = sheetFrom || 'mark';
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
-  window.scrollTo(0,0);
-}
-
-async function buildSheet(){
-  if (!sheetData) return;
-  const d = sheetData;
-  const scan = await sheetScan(d);
-  $('sheet').innerHTML =
-    '<div class="sh-actions"><button class="primary" id="sh-pdf">Save as PDF</button>' +
-    '<button class="ghost" id="sh-back">Back to the answer</button></div>' +
-    '<div class="sh-page">' + (d.kind === 'mcq' ? mcqSheet(d, scan) : oeSheet(d, scan)) + '</div>';
-  $('sh-pdf').onclick = () => window.print();
-  $('sh-back').onclick = closeSheet;
-  openSheet();
-  window.print();
-}
-$('export-oe').onclick = buildSheet;
-$('export-mcq').onclick = buildSheet;
 
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
