@@ -168,8 +168,76 @@ export const LABS = [
       points: [ { point: 'the cables gained heat from the sun', marks: 1 }, { point: 'the cables expanded and became longer', marks: 1 } ] },
   ],
 },
+{
+  id: 'p4-7-1', level: 'P4', chapter: 'Effects of Heat', code: '7.1', minutes: 35, kind: 'lab3d', status: 'review',
+  title: 'Heat on the move',
+  cc21: ['Critical Thinking', 'Communication'],
+  skills: ['Analysing Data', 'Using Models', 'Communicating with Evidence'],
+  bigIdea: 'Heat flows from the hotter thing to the colder thing, and keeps flowing until both are the same temperature. A source of heat is anything hotter than its surroundings.',
+  aim: 'Watch heat move from hot water to cold water with two thermometers, then work out when a warm pie counts as a source of heat and when it does not.',
+  safety: [
+    'Water at 50 °C is hot enough to scald. An adult pours it and moves the cup.',
+    'Keep the data logger and its wires away from the water.',
+  ],
+  sim: { page: 'labs/heat-flow/index.html', label: "Let's test it now!", covers: ['a', 'b'], map: { a: 'flow', b: 'source' } },
+  badge: { icon: '🌡️', name: 'Heat Tracker', line: 'You followed heat from hot to cold until it stopped, and worked out what makes something a source of heat.' },
+  parts: [
+    {
+      id: 'a', title: 'Hot cup, cool water', who: 'adult demonstration',
+      need: ['a plastic tub of cool water (about 20 °C)', 'a small cup of hot water (about 50 °C) standing in the tub', 'two probe thermometers on a data logger, one in the cup and one in the tub', 'a clock'],
+      steps: [
+        { do: 'Stand the cup of hot water in the tub of cool water. Put one probe in the cup and one in the tub. Read both.' },
+        { predict: { q: 'Twenty minutes from now, what will the two thermometers show?',
+          options: ['Cup cooler, tub warmer, both about the same', 'Cup the same, tub warmer', 'Both exactly as they started'], answer: 0 } },
+        { do: 'Read both thermometers every five minutes for thirty minutes. Watch which way each one moves.' },
+        { observe: { q: 'From 0 to 20 minutes, what happened to the water in the cup?', options: ['Its temperature fell', 'Its temperature rose', 'It stayed the same'], answer: 0 } },
+        { observe: { q: 'From 0 to 20 minutes, what happened to the water in the tub?', options: ['Its temperature fell', 'Its temperature rose', 'It stayed the same'], answer: 1 } },
+        { observe: { q: 'From 20 to 30 minutes, what did the two readings do?', options: ['Kept moving apart', 'Stayed about the same, close together', 'Swapped over'], answer: 1 } },
+        { explain: { q: 'Explain how heat moved between the water in the cup and the water in the tub, and why it stopped.',
+          concept: 'Heat flows from a hotter object to a colder one until both reach the same temperature.',
+          model: 'The water in the cup was hotter than the water in the tub, so heat flowed from the cup water to the tub water. The cup water lost heat and its temperature fell; the tub water gained heat and its temperature rose. Heat kept flowing until both were at the same temperature, and then it stopped.',
+          points: [ { point: 'heat flowed from the hotter cup water to the colder tub water', marks: 1 }, { point: 'the cup lost heat and cooled while the tub gained heat and warmed', marks: 1 }, { point: 'the flow stopped when both reached the same temperature', marks: 1 } ],
+          doNotAccept: ['cold flowed from the tub into the cup', 'the cup and tub shared their temperature'] } },
+        { note: 'Heat only ever moves one way: from hotter to colder. When there is no difference left, there is nothing to move.' },
+      ],
+    },
+    {
+      id: 'b', title: 'Is a warm pie a source of heat?', who: 'think it through, then test on the bench',
+      need: ['a warm pie, or any warm object', 'three places to imagine it: a table, a fridge, a hot oven'],
+      steps: [
+        { do: 'Two friends disagree. One says a warm pie is always a source of heat. The other says it depends on what is around it.' },
+        { predict: { q: 'Who is right?', options: ['A warm pie is always a source of heat', 'It depends on what is around the pie'], answer: 1 } },
+        { do: 'On the bench, move the pie from the table to the fridge to the hot oven and watch which way the heat goes each time.' },
+        { observe: { q: 'On the table (about 25 °C), which way does heat go?', options: ['Out of the pie into the room', 'From the room into the pie', 'Nowhere'], answer: 0 } },
+        { observe: { q: 'In a hot oven (about 180 °C), which way does heat go?', options: ['Out of the pie into the oven', 'From the oven into the pie', 'Nowhere'], answer: 1 } },
+        { explain: { q: 'Is the warm pie a source of heat on the table? Is it a source of heat in the hot oven? Explain both.',
+          concept: 'A source of heat is an object with a higher temperature than its surroundings.',
+          model: 'On the table the pie is hotter than the air around it, so heat flows out of the pie into the surroundings and the pie is a source of heat. In the hot oven the oven is hotter than the pie, so heat flows from the oven into the pie and the pie is not a source of heat there.',
+          points: [ { point: 'on the table the pie is hotter than its surroundings, so heat flows out of it: a source of heat', marks: 1 }, { point: 'in the oven the surroundings are hotter, so heat flows into the pie: not a source of heat', marks: 1 } ] } },
+        { note: 'Being a source of heat is not about being warm. It is about being warmer than whatever is around you.' },
+      ],
+    },
+  ],
+  conclude: [
+    { text: 'Heat flows between two touching objects when there is a ___ in their temperatures.', answers: ['difference'] },
+    { text: 'Heat flows from the ___ object to the ___ object until both reach the ___ temperature.', answers: ['hotter', 'colder', 'same'] },
+    { text: 'A source of heat has a temperature ___ than its surroundings.', answers: ['higher'] },
+    { text: 'Two everyday sources of heat are the ___ and a ___.', answers: ['sun', 'stove'] },
+  ],
+  check: [
+    { q: 'Meili leaves a metal spoon in a bowl of hot soup. After a minute the handle feels hot. Explain how the handle became hot.',
+      marks: 2, concept: 'Heat flows from a hotter object to a colder one.',
+      model: 'The soup was hotter than the spoon, so heat flowed from the hot soup into the spoon and along it to the handle. The handle gained heat and its temperature rose.',
+      points: [ { point: 'heat flowed from the hotter soup into the spoon', marks: 1 }, { point: 'the handle gained heat, so its temperature rose', marks: 1 } ],
+      doNotAccept: ['the cold from the spoon went into the soup'] },
+    { q: 'An ice pack is placed on a bruised knee. Explain why the knee feels cold.',
+      marks: 2, concept: 'Heat flows from a hotter object to a colder one.',
+      model: 'The knee is hotter than the ice pack, so heat flows from the knee into the ice pack. The knee loses heat and its temperature falls, which is what we feel as cold.',
+      points: [ { point: 'heat flows from the warmer knee into the colder ice pack', marks: 1 }, { point: 'the knee loses heat and its temperature falls', marks: 1 } ],
+      doNotAccept: ['coldness flows from the ice pack into the knee'] },
+  ],
+},
 ];
-
 // The rest of the book, mapped and waiting. kind says what each will become:
 //   lab3d   an apparatus experiment with a 3D scene, like the Heat Lab
 //   observe an observation or sorting activity, with animated 2D diagrams
@@ -209,7 +277,6 @@ const SOON = [
   ['6.1', 'Heat', 'Reading a thermometer', 'lab3d', ['Information Skills'], ['Analysing Data']],
   ['6.2', 'Heat', 'Why temperature changes', 'lab3d', ['Critical Thinking'], ['Designing Investigations', 'Analysing Data']],
   ['6.3', 'Heat', 'Heat is not temperature', 'lab3d', ['Critical Thinking', 'Adaptive Thinking'], ['Communicating with Evidence']],
-  ['7.1', 'Effects of Heat', 'Heat on the move', 'lab3d', ['Critical Thinking'], ['Using Models', 'Communicating with Evidence']],
   ['7.2', 'Effects of Heat', 'Good and poor conductors', 'lab3d', ['Critical Thinking'], ['Designing Investigations', 'Analysing Data']],
   ['7.4', 'Effects of Heat', 'Keeping things cold', 'lab3d', ['Inventive Thinking', 'Critical Thinking'], ['Designing Investigations', 'Informed Decisions']],
 ];
