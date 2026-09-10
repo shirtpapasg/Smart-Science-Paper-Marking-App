@@ -370,8 +370,11 @@
 // as the pupil earns them, and unlock=all once the whole activity is finished.
 // Opened with no list, only the intro and the first experiment are available.
 const UNLOCK = (() => {
+  // No list means the page was opened on its own, to preview it: everything is
+  // open. A pupil always arrives through the lab page, which sends the list.
   const u = new URL(location.href).searchParams.get('unlock');
-  const s = new Set(u ? u.split(',').map(x => x.trim()).filter(Boolean) : ['solid']);
+  if (!u) return null;
+  const s = new Set(u.split(',').map(x => x.trim()).filter(Boolean));
   s.add('intro');
   return s.has('all') ? null : s;
 })();

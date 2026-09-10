@@ -243,7 +243,7 @@ export const LABS = [
 //   observe an observation or sorting activity, with animated 2D diagrams
 //   make    something the pupil builds or performs, with a photo of the result
 // status runs soon → review → ready. "review" is visible only on a device
-// unlocked with the parent code, so every animation is looked over before a
+// unlocked with the parent code (set a code in the app, then unlock it), so every animation is looked over before a
 // family can see it. A record without parts shows as coming soon.
 //
 // Tags use the same vocabulary as the science skillset map:

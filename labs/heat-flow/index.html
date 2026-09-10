@@ -446,7 +446,9 @@ function unlockedIds() {
   let raw = '';
   try { raw = new URLSearchParams(location.search).get('unlock') || ''; } catch (e) { raw = ''; }
   raw = raw.trim();
-  if (!raw) return ['intro', 'flow'];
+  // No list means the page was opened on its own, to preview it: everything is
+  // open. A pupil always arrives through the lab page, which sends the list.
+  if (!raw) return STEPS.map(s => s.id);
   if (raw.toLowerCase() === 'all') return STEPS.map(s => s.id);
   return raw.split(',').map(x => x.trim()).filter(Boolean);
 }
