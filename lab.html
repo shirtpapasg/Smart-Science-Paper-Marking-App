@@ -286,7 +286,7 @@ function renderActivity(a){
     const covered = a.sim && a.sim.page && (a.sim.covers || []).indexOf(p.id) >= 0;
     h += '<div class="part' + (pi === 0 ? ' open' : '') + '" data-part="' + p.id + '" style="margin-top:28px">' +
       '<div class="part-hd"><span class="chev">▶</span><div style="flex:1"><span class="eyebrow">Part ' + p.id.toUpperCase() + ' · ' + esc(p.who) + '</span><h2 style="margin-top:4px">' + esc(p.title) + '</h2></div>' +
-      (covered ? '<button class="secondary" data-lab data-part="' + p.id + '" type="button">' + esc(a.sim.label || "Let's test it now!") + '</button>' : '') + '</div><div class="part-body">';
+      '</div><div class="part-body">';
     if (p.need) h += '<div class="card"><span class="eyebrow">What you need</span><ul class="need">' + p.need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>';
     if (p.diagram) h += svgFor(p.diagram);
     let n = 0;
@@ -298,8 +298,11 @@ function renderActivity(a){
       if (s.do) h += esc(s.do);
       if (s.predict || s.observe){
         const t = s.predict || s.observe, kind = s.predict ? 'predict' : 'observe';
+        const benchHere = s.predict && covered;   // a prediction made is a prediction to test
         h += '<span class="eyebrow" style="display:block;margin-bottom:4px">' + (s.predict ? 'Predict' : 'What did you see?') + '</span>' + esc(t.q) +
-          '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-pick="' + key + '" data-i="' + i + '" data-kind="' + kind + '">' + esc(o) + '</button>').join('') + '</div><div class="verdict" id="v-' + cssKey(key) + '"></div>';
+          '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-pick="' + key + '" data-i="' + i + '" data-kind="' + kind + '">' + esc(o) + '</button>').join('') + '</div>' +
+          '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div class="verdict" id="v-' + cssKey(key) + '" style="flex:1"></div>' +
+          (benchHere ? '<button class="primary" data-lab data-step="' + key + '" type="button" style="width:auto;margin-top:10px" hidden>' + esc(a.sim.label || "Let's test it now!") + '</button>' : '') + '</div>';
       }
       if (s.explain) h += explainHtml(key, s.explain.q, s.explain.marks, { part: p.id, step: si }, getProg(a.id, key) === 'done');
       h += '</div>';
@@ -340,7 +343,8 @@ function explainHtml(key, q, marks, where, done){
    Predict before you test: a part's bench opens only once every prediction in
    it is made. Finish every step, the conclusion and the checks, and the whole
    lab unlocks with a badge — that is the achievement. */
-const predsDone = (a, p) => (p.steps || []).every((s, i) => !s.predict || getProg(a.id, p.id + ':' + i) != null);
+// A part's bench opens with its first prediction: predict, then test, then the next prediction.
+const predsDone = (a, p) => (p.steps || []).some((s, i) => s.predict && getProg(a.id, p.id + ':' + i) != null);
 const partDone = (a, p) => (p.steps || []).every((s, i) => { const k = p.id + ':' + i;
   if (s.predict || s.observe) return getProg(a.id, k) != null; if (s.explain) return getProg(a.id, k) === 'done'; return true; });
 const allDone = a => (a.parts || []).every(p => partDone(a, p)) && (!(a.conclude || []).length || !!getProg(a.id, 'cdone')) &&
@@ -355,15 +359,17 @@ function refreshGates(a){
   if (!a.sim || !a.sim.page) return;
   const got = !!getProg(a.id, 'badge'), adm = adminDevice();
   let anyOpen = got || adm;
-  $('act').querySelectorAll('[data-lab][data-part]').forEach(b => {
-    const p = a.parts.find(x => x.id === b.dataset.part), ok = got || adm || (p && predsDone(a, p));
-    b.disabled = !ok; b.title = ok ? '' : 'Make your predictions for this part first.'; if (ok) anyOpen = true;
+  // The button beside each prediction appears the moment that prediction is made.
+  $('act').querySelectorAll('[data-lab][data-step]').forEach(b => {
+    const made = getProg(a.id, b.dataset.step) != null;
+    b.hidden = !(made || got || adm); if (made) anyOpen = true;
   });
+  (a.parts || []).forEach(p => { if (predsDone(a, p)) anyOpen = true; });
   const top = $('act').querySelector('[data-lab][data-top]'); if (top) top.disabled = !anyOpen;
   const hint = $('act').querySelector('[data-lockhint]');
   if (hint) hint.textContent = got ? a.badge ? a.badge.icon + ' Badge earned — the whole lab is open, including the challenge.' : 'The whole lab is open.'
-    : anyOpen ? 'Open so far: ' + unlockList(a).split(',').filter(x => x !== 'intro').join(', ') + '. The rest unlocks as you predict; everything unlocks with the badge.'
-    : 'Locked until you make the predictions in Part A.';
+    : anyOpen ? 'Open so far: ' + unlockList(a).split(',').filter(x => x !== 'intro').join(', ') + '. Each part opens with its first prediction; everything opens with the badge.'
+    : 'Make your first prediction below and the bench opens for it.';
   if (got && $('ach') && !$('ach').innerHTML && a.badge) $('ach').innerHTML = achHtml(a);
 }
 const achHtml = a => '<div class="ach"><div class="ico">' + a.badge.icon + '</div><div><span class="eyebrow" style="color:var(--hl-ink)">Achievement unlocked</span><b>' + esc(a.badge.name) + '</b>' +
