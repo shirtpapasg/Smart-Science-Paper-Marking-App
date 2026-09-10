@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Science Marking · Lab</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  /* Same exercise-book palette as the app. Every colour is a variable, set once
+     for light and once for dark. */
+  :root{
+    --ink:#1d2a44; --bg:#fbfaf3; --surface:#f1f5fb; --rule:#d5dbe7;
+    --mid:#4d5b76; --accent:#1f8a4c; --accent-bg:rgba(31,138,76,.12);
+    --faint:#8a95ab; --card:#ffffff; --grid:rgba(96,140,196,.15);
+    --margin:#e2646a; --pen-dark:#166b3b;
+    --hl:#ffd84d; --hl-soft:rgba(255,216,77,.35); --hl-ink:#5a4600;
+    --warn:#c9741b; --warn-bg:rgba(201,116,27,.12);
+    --round:'Fredoka','Nunito',ui-rounded,system-ui,sans-serif;
+    --body:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+    --hand:'Caveat','Segoe Script',cursive;
+  }
+  html[data-theme="dark"]{
+    --ink:#eef1f7; --bg:#141a27; --surface:#222c3f; --rule:#2c3549;
+    --mid:#b6bfd1; --accent:#4fc47f; --accent-bg:rgba(79,196,127,.14);
+    --faint:#7c879d; --card:#1c2434; --grid:rgba(120,160,220,.10);
+    --margin:#d8686e; --pen-dark:#0f5c31;
+    --hl:#f3c93a; --hl-soft:rgba(243,201,58,.20); --hl-ink:#f8e7a0;
+    --warn:#e9a35a; --warn-bg:rgba(233,163,90,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+    background-color:var(--bg);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:28px 28px;background-attachment:fixed}
+  .wrap{max-width:720px;margin:0 auto;padding:22px 22px 80px 44px;position:relative}
+  .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;background:var(--margin);opacity:.55}
+  @media (max-width:400px){ .wrap{padding-left:34px} .wrap::before{left:15px} }
+  h1,h2,h3{font-family:var(--round);font-weight:600;letter-spacing:-.01em;margin:0;line-height:1.2}
+  h1{font-size:28px} h2{font-size:22px} h3{font-size:18px}
+  .eyebrow{font-family:var(--round);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mid)}
+  .muted{color:var(--mid);font-size:15px}
+  a{color:var(--accent)}
+  .top{display:flex;align-items:baseline;gap:14px;border-bottom:1px dashed var(--rule);padding-bottom:12px;margin-bottom:22px}
+  .top a{margin-left:auto;font-size:14px;text-decoration:none;font-family:var(--round);font-weight:600}
+  button{font-family:var(--round);font-weight:600;font-size:17px;padding:14px 20px;min-height:52px;border-radius:999px;border:0;
+    cursor:pointer;margin-top:12px;width:100%;text-align:center;transition:transform .08s ease,box-shadow .16s}
+  .primary{background:var(--accent);color:#fff;box-shadow:0 3px 0 var(--pen-dark)}
+  .primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--pen-dark)}
+  .secondary{background:var(--card);color:var(--ink);border:1.5px solid var(--rule)}
+  .ghost{background:transparent;color:var(--accent);min-height:44px;font-size:15px}
+  button:disabled{opacity:.5;cursor:default}
+  .card{background:var(--surface);border-left:4px solid var(--hl);border-radius:0 12px 12px 0;padding:14px 18px;margin-top:16px;
+    box-shadow:0 6px 18px rgba(29,42,68,.06)}
+  .card.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+  .card.idea{border-left-color:var(--accent);background:var(--accent-bg)}
+  .item{background:var(--card);border:1.5px solid var(--rule);border-radius:14px;padding:16px 18px;margin-top:12px;
+    box-shadow:0 6px 18px rgba(29,42,68,.06)}
+  .item.link{cursor:pointer}
+  .item.link:hover{border-color:var(--mid)}
+  .badge{display:inline-block;font-family:var(--round);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 10px;border-radius:999px;background:var(--accent-bg);color:var(--accent);margin-left:8px;vertical-align:middle}
+  .badge.soon{background:var(--surface);color:var(--mid)}
+  .badge.kind{background:var(--hl-soft);color:var(--hl-ink)}
+  html[data-theme="dark"] .badge.kind{color:var(--hl)}
+  ul.need{margin:8px 0 0;padding-left:22px} ul.need li{margin:3px 0}
+  .dgm{margin-top:16px;border:1.5px solid var(--rule);background:var(--card);padding:14px;border-radius:12px}
+  .dgm svg{width:100%;height:auto;display:block}
+  html[data-theme="dark"] .dgm svg{filter:invert(.92) hue-rotate(180deg)}
+  .step{margin-top:14px;padding:14px 16px;border:1.5px solid var(--rule);border-radius:14px;background:var(--card)}
+  .step .n{font-family:var(--hand);font-weight:700;color:var(--accent);font-size:22px;line-height:1;margin-right:8px}
+  .step.note{background:var(--surface);border-style:dashed}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .opt{width:100%;text-align:left;margin:0;min-height:48px;padding:12px 16px;background:var(--card);color:var(--ink);
+    border:1.5px solid var(--rule);border-radius:12px;font-family:var(--body);font-weight:400;font-size:16px}
+  .opt.picked{border-color:var(--accent);background:var(--accent-bg)}
+  .opt.right{border-color:var(--accent);background:var(--accent-bg);font-weight:700}
+  .opt:disabled{opacity:.85}
+  .verdict{margin-top:10px;font-family:var(--round);font-weight:600;color:var(--accent)}
+  textarea{width:100%;font-family:var(--round);font-weight:600;font-size:17px;line-height:1.6;padding:12px 14px;min-height:110px;margin-top:10px;
+    background:var(--card);color:var(--ink);border:1.5px solid var(--rule);border-radius:10px}
+  textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+  input.blank{font:inherit;font-family:var(--round);font-weight:600;width:130px;padding:4px 8px;margin:0 3px;border:0;border-bottom:2px solid var(--rule);
+    background:transparent;color:var(--ink);text-align:center}
+  input.blank:focus{outline:none;border-bottom-color:var(--accent)}
+  input.blank.ok{border-bottom-color:var(--accent);color:var(--accent)} input.blank.no{border-bottom-color:var(--warn)}
+  .row{display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--rule)}
+  .tick{width:14px;height:14px;flex:none;margin-top:7px;border-radius:50%;background:var(--accent)}
+  .tick.open{background:transparent;position:relative}
+  .tick.open::before,.tick.open::after{content:'';position:absolute;left:50%;top:50%;width:16px;height:3px;background:var(--margin);border-radius:2px;transform:translate(-50%,-50%) rotate(45deg)}
+  .tick.open::after{transform:translate(-50%,-50%) rotate(-45deg)}
+  .dark{background:var(--ink);color:var(--bg);padding:16px 18px;margin-top:14px;border-radius:14px}
+  html[data-theme="dark"] .dark{background:var(--card);color:var(--ink)}
+  .dark .eyebrow{color:var(--hl)}
+  .err{border-left:4px solid var(--warn);background:var(--warn-bg);padding:12px 16px;margin-top:12px;border-radius:0 10px 10px 0}
+  .hide{display:none !important}
+  .simbox{margin-top:12px;border:1.5px solid var(--rule);border-radius:14px;overflow:hidden;background:#08131f}
+  .simbox iframe{width:100%;height:620px;border:0;display:block}
+  button.mic{width:auto;min-height:40px;font-size:14px;padding:8px 14px;margin-top:8px;display:inline-flex;gap:8px;align-items:center}
+  button.mic.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .mic-hint{font-size:13px;line-height:1.5;margin-top:6px;color:var(--mid)}
+  .busy{color:var(--mid);font-size:15px;margin-top:10px}
+  /* members only */
+  #gate{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;align-items:center;justify-content:center;padding:28px 22px;overflow:auto}
+  #gate.on{display:flex} #gate .g-box{max-width:420px;width:100%}
+  #gate input{width:100%;font-family:var(--body);font-size:17px;padding:14px 16px;border:1.5px solid var(--rule);border-radius:10px;background:var(--card);color:var(--ink);margin-top:18px}
+  .g-msg{margin-top:14px;font-size:15px;color:var(--mid)} .g-msg.err{color:var(--warn);border:0;background:none;padding:0}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="g-box">
+    <span class="eyebrow">Science Marking · Lab</span>
+    <h1 style="margin-top:10px">Members sign in here.</h1>
+    <p class="muted" style="margin-top:12px">Enter the email you signed up with and I will send you a sign-in link. It works once and lasts a day.</p>
+    <form id="g-form"><input id="g-email" type="email" autocomplete="email" placeholder="name@example.com" required>
+      <button class="primary" id="g-go" type="submit">Send me a sign-in link</button></form>
+    <div class="g-msg" id="g-msg"></div>
+    <p class="muted" style="margin-top:26px;font-size:14px">Not a member yet? Membership is at
+      <a href="https://smart-science-marking-site.vercel.app" target="_blank" rel="noopener">Smart Science Marking</a>.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="top"><span class="eyebrow">Science Marking · Lab</span><a href="./">← Back to marking</a></div>
+  <div id="list"></div>
+  <div id="act" class="hide"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+try { const t = localStorage.getItem('sm-theme-v1'); if (t === 'dark') document.documentElement.dataset.theme = 'dark'; } catch(e){}
+
+/* ── the same session as the app ── */
+const SESS = 'sm-session-v1';
+const sessionToken = () => { try { return localStorage.getItem(SESS) || ''; } catch(e){ return ''; } };
+let gateLocked = false;
+async function api(path, body){
+  const headers = {'content-type':'application/json'};
+  if (sessionToken()) headers.authorization = 'Bearer ' + sessionToken();
+  const r = await fetch(path, { method:'POST', headers, body: JSON.stringify(body || {}) });
+  const text = await r.text(); let d = {};
+  try { d = JSON.parse(text); } catch(e){ throw new Error('The server did not reply. Please try again.'); }
+  if (!r.ok){ if (r.status === 401 && d.signIn) gateOpen(); throw new Error(d.error || 'Something went wrong. Please try again.'); }
+  return d;
+}
+function gateMsg(t, err){ const m = $('g-msg'); m.textContent = t || ''; m.classList.toggle('err', !!err); }
+function gateOpen(){ try { localStorage.removeItem(SESS); } catch(e){} $('gate').classList.add('on'); }
+async function boot(){
+  const url = new URL(location.href), k = url.searchParams.get('k');
+  if (k){ history.replaceState(null, '', url.pathname + url.hash); $('gate').classList.add('on'); gateMsg('Signing you in…');
+    try { const d = await api('/api/access', { action:'login', token:k }); if (d.session) localStorage.setItem(SESS, d.session); gateMsg(''); }
+    catch(e){ gateMsg(e.message, true); } }
+  try {
+    const d = await api('/api/access', { action:'session' });
+    gateLocked = !!d.locked;
+    if (d.locked && !d.ok) return gateOpen();
+  } catch(e){ if (!sessionToken()) { /* server unreachable: let the list call say so */ } }
+  $('gate').classList.remove('on');
+  route();
+}
+$('g-form').onsubmit = async e => {
+  e.preventDefault(); const email = $('g-email').value.trim(); if (!email) return;
+  $('g-go').disabled = true;
+  try { const d = await api('/api/access', { action:'link', email }); gateMsg(d.message || 'If that address is registered, a sign-in link is on its way.'); }
+  catch(err){ gateMsg(err.message, true); }
+  $('g-go').disabled = false;
+};
+
+/* ── the session record, same shape as the app's ── */
+const LOG = {
+  sid: null, q: Promise.resolve(), idleT: null, ended: false,
+  on(){ return gateLocked && !!sessionToken(); },
+  id(){ if (!this.sid){ try { this.sid = sessionStorage.getItem('sm-sid') || ''; } catch(e){}
+    if (!this.sid){ this.sid = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2,'0')).join(''); try { sessionStorage.setItem('sm-sid', this.sid); } catch(e){} } } return this.sid; },
+  event(type, data){ if (!this.on()) return; this.ended = false; this.touch();
+    this.q = this.q.then(() => api('/api/log', { action:'event', sid: this.id(), ev:{ type, ...(data||{}) } })).catch(() => {}); },
+  end(beacon){ if (!this.on() || this.ended || !this.sid) return; this.ended = true; clearTimeout(this.idleT);
+    const body = JSON.stringify({ action:'end', sid: this.id(), session: sessionToken() });
+    if (beacon && navigator.sendBeacon) navigator.sendBeacon('/api/log', new Blob([body], { type:'application/json' }));
+    else this.q = this.q.then(() => api('/api/log', { action:'end', sid: this.id(), session: sessionToken() })).catch(() => {});
+    this.sid = null; try { sessionStorage.removeItem('sm-sid'); } catch(e){} },
+  touch(){ clearTimeout(this.idleT); this.idleT = setTimeout(() => this.end(false), 60*60*1000); },
+};
+['pointerdown','keydown'].forEach(ev => addEventListener(ev, () => { if (LOG.on() && !LOG.ended && LOG.sid) LOG.touch(); }, { passive:true }));
+addEventListener('pagehide', () => LOG.end(true));
+
+/* ── progress on this device ── */
+const PK = 'sm-lab-progress-v1';
+const prog = () => { try { return JSON.parse(localStorage.getItem(PK) || '{}'); } catch(e){ return {}; } };
+const setProg = (id, key, val) => { const p = prog(); p[id] = p[id] || {}; p[id][key] = val; try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){} };
+const getProg = (id, key) => ((prog()[id] || {})[key]);
+
+/* ── router ── */
+addEventListener('hashchange', route);
+function route(){
+  const m = location.hash.match(/^#a\/([a-z0-9-]+)$/);
+  if (m) openActivity(m[1]); else renderList();
+}
+
+/* ── the list: every activity in the book ── */
+const KIND = { lab3d:'Experiment', observe:'Observation', make:'Make it' };
+async function renderList(){
+  $('act').classList.add('hide'); $('list').classList.remove('hide');
+  $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p><div class="busy">Loading…</div>';
+  try {
+    const d = await api('/api/lab', { action:'list' });
+    const p = prog();
+    $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p>' +
+      d.chapters.map(ch => '<div style="margin-top:28px"><span class="eyebrow">Chapter ' + ch.n + '</span><h2 style="margin-top:6px">' + esc(ch.title) + '</h2>' +
+        ch.activities.map(a => {
+          const done = (p[a.id] || {}).done;
+          return '<div class="item' + (a.status === 'ready' ? ' link' : '') + '"' + (a.status === 'ready' ? ' data-open="' + a.id + '"' : '') + '>' +
+            '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="eyebrow">' + esc(a.code) + '</span>' +
+            '<h3 style="flex:1">' + esc(a.title) + '</h3>' +
+            (a.status === 'ready' ? '<span class="badge">' + (done ? 'Done' : 'Ready') + '</span>' : '<span class="badge soon">Coming soon</span>') + '</div>' +
+            '<div class="muted" style="margin-top:6px">' + KIND[a.kind] + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + (a.sim ? ' · runs in 3D' : '') + '</div></div>';
+        }).join('') + '</div>').join('');
+    $('list').querySelectorAll('[data-open]').forEach(el => el.onclick = () => { location.hash = '#a/' + el.dataset.open; });
+  } catch(e){ $('list').innerHTML += '<div class="err">' + esc(e.message) + '</div>'; }
+}
+
+/* ── one activity ── */
+let A = null;
+async function openActivity(id){
+  $('list').classList.add('hide'); $('act').classList.remove('hide');
+  $('act').innerHTML = '<div class="busy">Loading…</div>';
+  try {
+    const d = await api('/api/lab', { action:'get', id });
+    A = d.activity; renderActivity(A); LOG.event('lab', { code: A.code, title: A.title, what: 'opened' });
+  } catch(e){ $('act').innerHTML = '<button class="ghost" onclick="location.hash=\'\'">← All experiments</button><div class="err">' + esc(e.message) + '</div>'; }
+}
+
+function renderActivity(a){
+  let h = '<button class="ghost" style="width:auto;padding-left:0" onclick="location.hash=\'\'">← All experiments</button>' +
+    '<span class="eyebrow">' + esc(a.chapter) + ' · ' + esc(a.code) + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + '</span>' +
+    '<h1 style="margin-top:8px">' + esc(a.title) + '</h1>' +
+    '<div class="card idea"><span class="eyebrow" style="color:var(--accent)">The big idea</span><div style="margin-top:6px;font-family:var(--round);font-weight:600;font-size:18px">' + esc(a.bigIdea) + '</div></div>' +
+    '<p style="margin-top:16px"><b>What we are finding out.</b> ' + esc(a.aim) + '</p>';
+  if (a.safety && a.safety.length) h += '<div class="card warn"><span class="eyebrow" style="color:var(--warn)">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>';
+  if (a.sim) h += '<div class="item"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><h3>' + esc(a.sim.label || 'Run it on screen') + '</h3>' +
+    '<div class="muted">Try each experiment on the 3D bench first, then work through the steps below.</div></div>' +
+    '<button class="primary" id="sim-btn" style="width:auto;margin:0">Open the 3D lab</button></div><div id="sim-box"></div></div>';
+  (a.parts || []).forEach((p, pi) => {
+    h += '<div style="margin-top:32px"><span class="eyebrow">Part ' + p.id.toUpperCase() + ' · ' + esc(p.who) + '</span><h2 style="margin-top:6px">' + esc(p.title) + '</h2>';
+    if (p.need) h += '<div class="card"><span class="eyebrow">What you need</span><ul class="need">' + p.need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>';
+    if (p.diagram) h += svgFor(p.diagram);
+    let n = 0;
+    (p.steps || []).forEach((s, si) => {
+      const key = p.id + ':' + si;
+      if (s.note){ h += '<div class="step note"><span class="eyebrow">Worth knowing</span><div style="margin-top:4px">' + esc(s.note) + '</div></div>'; return; }
+      n++;
+      h += '<div class="step" data-key="' + key + '"><span class="n">' + n + '</span>';
+      if (s.do) h += esc(s.do);
+      if (s.predict || s.observe){
+        const t = s.predict || s.observe, kind = s.predict ? 'predict' : 'observe';
+        h += '<span class="eyebrow" style="display:block;margin-bottom:4px">' + (s.predict ? 'Predict' : 'What did you see?') + '</span>' + esc(t.q) +
+          '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-pick="' + key + '" data-i="' + i + '" data-kind="' + kind + '">' + esc(o) + '</button>').join('') + '</div><div class="verdict" id="v-' + cssKey(key) + '"></div>';
+      }
+      if (s.explain) h += explainHtml(key, s.explain.q, s.explain.marks, { part: p.id, step: si });
+      h += '</div>';
+    });
+    h += '</div>';
+  });
+  if (a.conclude && a.conclude.length){
+    h += '<div style="margin-top:32px"><span class="eyebrow">Let\'s conclude</span><h2 style="margin-top:6px">Fill in the missing words.</h2>';
+    a.conclude.forEach((c, ci) => {
+      let k = 0;
+      h += '<div class="step" style="font-size:17px">' + c.text.split('___').map((seg, i, arr) => esc(seg) + (i < arr.length - 1 ? '<input class="blank" data-c="' + ci + '" data-k="' + (k++) + '" autocomplete="off" autocapitalize="off">' : '')).join('') + '</div>';
+    });
+    h += '<button class="primary" id="c-check">Check my words</button><div id="c-out"></div></div>';
+  }
+  if (a.check && a.check.length){
+    h += '<div style="margin-top:32px"><span class="eyebrow">Now use it</span><h2 style="margin-top:6px">Two questions from real life.</h2>';
+    a.check.forEach((c, ci) => { h += '<div class="step" data-key="check:' + ci + '"><span class="n">' + (ci + 1) + '</span>' + explainHtml('check:' + ci, c.q, c.marks, { check: ci }) + '</div>'; });
+    h += '</div>';
+  }
+  h += '<button class="secondary" id="done-btn" style="margin-top:32px">' + (getProg(a.id, 'done') ? 'Done — back to the list' : 'I have finished this one') + '</button>';
+  $('act').innerHTML = h;
+  wireActivity(a);
+  window.scrollTo(0, 0);
+}
+const cssKey = k => k.replace(/[^a-z0-9]/gi, '_');
+
+function explainHtml(key, q, marks, where){
+  const id = cssKey(key);
+  return '<span class="eyebrow" style="display:block;margin-bottom:4px">Explain · ' + marks + (marks === 1 ? ' mark' : ' marks') + '</span>' + esc(q) +
+    '<div id="x-' + id + '" data-where=\'' + esc(JSON.stringify(where)) + '\'>' +
+    '<textarea id="t-' + id + '" maxlength="800" placeholder="Write your explanation in full sentences…"></textarea>' +
+    '<button class="primary" data-mark="' + key + '">Check my answer</button><div id="o-' + id + '"></div></div>';
+}
+
+function wireActivity(a){
+  const sb = $('sim-btn');
+  if (sb) sb.onclick = () => {
+    $('sim-box').innerHTML = '<div class="simbox"><iframe src="' + esc(a.sim.url) + '" allow="fullscreen" title="' + esc(a.sim.label || '3D lab') + '"></iframe></div>' +
+      '<div class="muted" style="margin-top:8px">Cramped? <a href="' + esc(a.sim.url) + '" target="_blank" rel="noopener">Open it in its own tab</a>.</div>';
+    sb.disabled = true; LOG.event('lab', { code: a.code, what: 'opened the 3D lab' });
+  };
+  // predictions and observations
+  $('act').querySelectorAll('[data-pick]').forEach(b => {
+    const key = b.dataset.pick, saved = getProg(a.id, key);
+    if (saved != null) showPick(a, key, +saved, false);
+    b.onclick = () => { setProg(a.id, key, +b.dataset.i); showPick(a, key, +b.dataset.i, true); };
+  });
+  // written explanations
+  $('act').querySelectorAll('[data-mark]').forEach(b => b.onclick = () => markExplain(a, b.dataset.mark));
+  $('act').querySelectorAll('textarea').forEach(t => attachMic(t));
+  // conclude
+  const cc = $('c-check');
+  if (cc) cc.onclick = () => {
+    let right = 0, total = 0, tries = (getProg(a.id, 'ctries') || 0) + 1; setProg(a.id, 'ctries', tries);
+    const filled = [];
+    $('act').querySelectorAll('input.blank').forEach(inp => {
+      const want = a.conclude[+inp.dataset.c].answers[+inp.dataset.k]; total++;
+      const got = inp.value.trim().toLowerCase();
+      const ok = got && (got === want || got.startsWith(want.slice(0, Math.min(5, want.length))));
+      inp.classList.toggle('ok', !!ok); inp.classList.toggle('no', !ok);
+      if (ok) right++; else if (tries >= 2) inp.value = want, inp.classList.add('ok');
+      filled.push(inp.value);
+    });
+    $('c-out').innerHTML = '<div class="verdict">' + (right === total ? 'All ' + total + ' right.' : right + ' of ' + total + ' right.' + (tries >= 2 ? ' The missing words are filled in for you.' : ' Try the amber ones again.')) + '</div>';
+    LOG.event('lab', { code: a.code, what: 'conclusion', words: filled.join(' | '), right, total });
+  };
+  $('done-btn').onclick = () => { setProg(a.id, 'done', true); LOG.event('lab', { code: a.code, what: 'finished' }); location.hash = ''; };
+}
+
+function stepOf(a, key){
+  const [pid, si] = key.split(':'); const p = a.parts.find(x => x.id === pid); return p && p.steps[+si];
+}
+function showPick(a, key, i, fresh){
+  const s = stepOf(a, key); const t = s.predict || s.observe; const right = t.answer;
+  $('act').querySelectorAll('[data-pick="' + key + '"]').forEach(b => {
+    const bi = +b.dataset.i; b.disabled = true;
+    b.classList.toggle('picked', bi === i);
+    if (s.observe) b.classList.toggle('right', bi === right);
+  });
+  const v = $('v-' + cssKey(key));
+  if (s.predict) v.textContent = 'Prediction noted. Now test it and see.';
+  else v.textContent = i === right ? 'That is what happens.' : 'Look again — ' + t.options[right].toLowerCase() + '.';
+  if (fresh) LOG.event('lab', { code: a.code, what: s.predict ? 'predicted' : 'observed', q: t.q, chose: t.options[i], correct: s.observe ? i === right : null });
+}
+
+async function markExplain(a, key){
+  const id = cssKey(key), box = $('x-' + id), ta = $('t-' + id), out = $('o-' + id), btn = box.querySelector('[data-mark]');
+  const where = JSON.parse(box.dataset.where);
+  const answer = ta.value.trim(); if (!answer) return;
+  const state = box._state || { attempt: 1, first: '' };
+  btn.disabled = true; btn.textContent = 'Checking…';
+  try {
+    const r = await api('/api/lab-mark', { id: a.id, ...where, answer, attempt: state.attempt, firstAnswer: state.first });
+    if (r.deflect){ out.innerHTML = '<div class="card">' + esc(r.deflect) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; return; }
+    const hits = (r.keywords || []).filter(k => k.hit).map(k => k.phrase), gaps = r.gaps || [];
+    let h = '<div class="verdict">' + esc(r.verdict || 'Checked') + '</div><div>' + esc(r.headline || '') + '</div>';
+    if (hits.length) h += '<div style="margin-top:8px"><span class="eyebrow">Keep all of this</span>' + hits.map(x => '<div class="row"><span class="tick"></span><div>' + esc(x) + '</div></div>').join('') + '</div>';
+    if (state.attempt === 1){
+      if (gaps.length) h += '<div style="margin-top:8px"><span class="eyebrow">Worth adding</span>' + gaps.map(x => '<div class="row"><span class="tick open"></span><div>' + esc(x) + '</div></div>').join('') + '</div>';
+      if (r.ponder) h += '<div class="dark"><span class="eyebrow">Something to think about</span><div style="margin-top:6px">' + esc(r.ponder) + '</div></div>';
+      h += '<div class="muted" style="margin-top:10px">Now write the whole answer again, all of it, in the box above.</div>';
+      box._state = { attempt: 2, first: answer }; ta.value = ''; ta.placeholder = 'Write the whole answer again…';
+      btn.disabled = false; btn.textContent = "That's my answer";
+      LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: '' });
+    } else {
+      if (r.modelAnswer) h += '<div class="card" style="margin-top:12px"><span class="eyebrow">A full answer</span><div style="margin-top:6px;font-family:var(--round);font-weight:600">' + esc(r.modelAnswer) + '</div>' +
+        '<div class="muted" style="margin-top:8px;font-size:14px">This is how I would write it. Your teacher might say it differently. That is fine.</div></div>';
+      if (r.misconception) h += '<div class="card warn"><span class="eyebrow">Lots of people mix this up</span><div style="margin-top:6px">' + esc(r.misconception.belief) + '</div><div class="muted" style="margin-top:6px">Corrected by: ' + esc(r.misconception.fix) + '</div></div>';
+      ta.disabled = true; btn.remove();
+      setProg(a.id, key, 'done');
+      LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: state.first, a2: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: r.modelAnswer || '' });
+    }
+    out.innerHTML = h;
+  } catch(e){ out.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; }
+}
+
+/* ── say it instead of typing it (same as the app) ── */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const MICS = new Set();
+function tidySpeech(t){ return String(t||'').replace(/\s*\b(full stop|period)\b/gi,'.').replace(/\s*\bcomma\b/gi,',').replace(/\s*\bquestion mark\b/gi,'?')
+  .replace(/\s+([.,?])/g,'$1').replace(/([.?]\s+|^\s*)([a-z])/g,(m,a,b)=>a+b.toUpperCase()).trim(); }
+function attachMic(ta){
+  const b = document.createElement('button'); b.type='button'; b.className='mic secondary'; b.innerHTML='<span>🎤</span>Say it instead';
+  const hint = document.createElement('div'); hint.className='mic-hint';
+  ta.insertAdjacentElement('afterend', b); b.insertAdjacentElement('afterend', hint);
+  if (!SR){ b.disabled = true; hint.textContent = 'Speaking works in Chrome, Edge and Safari. You can still type here.'; return; }
+  let rec=null, base='', finals='', active=false;
+  const idle = () => { b.classList.remove('on'); b.innerHTML='<span>🎤</span>Say it instead'; };
+  const stop = () => { if (!active && !rec) return; active=false; if (rec){ try{ rec.onend=null; rec.stop(); }catch(e){} rec=null; } ta.value=(base+finals).trimEnd().slice(0,800); idle(); };
+  const start = () => { base = ta.value.trim() ? ta.value.replace(/\s*$/,' ') : ''; finals='';
+    rec = new SR(); rec.lang='en-SG'; rec.continuous=true; rec.interimResults=true;
+    rec.onresult = e => { let interim=''; for (let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if (r.isFinal) finals += tidySpeech(r[0].transcript)+' '; else interim += r[0].transcript; } ta.value = base+finals+interim; };
+    rec.onerror = e => { hint.textContent = e.error==='not-allowed' ? 'The microphone is blocked. Allow it for this site, then tap again.' : e.error==='no-speech' ? 'I did not hear anything. Tap and speak in English.' : e.error==='aborted' ? '' : 'Speaking did not work just now. You can still type.'; stop(); };
+    rec.onend = () => { if (active){ try{ rec.start(); }catch(err){ stop(); } } };
+    try { rec.start(); active=true; b.classList.add('on'); b.innerHTML='<span>●</span>Listening… tap to stop'; hint.textContent='Speak in English. Say “full stop” to end a sentence.'; } catch(err){ hint.textContent='Speaking did not start. You can still type.'; idle(); } };
+  MICS.add(stop); b.onclick = () => active ? stop() : start();
+}
+document.addEventListener('click', e => { const btn = e.target.closest('button'); if (btn && !btn.classList.contains('mic')) MICS.forEach(s => s()); }, true);
+
+/* ── diagrams: the app's shape vocabulary, drawn here the same way ── */
+function svgFor(d){
+  if (!d || !Array.isArray(d.shapes) || !d.shapes.length) return '';
+  const vb = d.viewBox || '0 0 320 200', ink = 'var(--ink)', mid = 'var(--mid)';
+  const fillOf = f => f === 'dark' ? 'var(--rule)' : f === 'light' ? 'var(--surface)' : 'none';
+  let out = '', defs = '', usedArrow = false, usedHatch = false;
+  d.shapes.forEach(s => {
+    const dash = s.dashed ? ' stroke-dasharray="6 4"' : '';
+    switch (s.type) {
+      case 'rect': out += '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" fill="'+fillOf(s.fill)+'" stroke="'+ink+'" stroke-width="2"'+dash+'/>'; break;
+      case 'circle': out += '<circle cx="'+s.cx+'" cy="'+s.cy+'" r="'+s.r+'" fill="'+fillOf(s.fill)+'" stroke="'+ink+'" stroke-width="2"'+dash+'/>'; break;
+      case 'line': if (s.arrow) usedArrow = true;
+        out += '<line x1="'+s.x1+'" y1="'+s.y1+'" x2="'+s.x2+'" y2="'+s.y2+'" stroke="'+ink+'" stroke-width="2"'+dash+(s.arrow?' marker-end="url(#ar)"':'')+'/>'; break;
+      case 'arc': { const mx=(s.x1+s.x2)/2, my=(s.y1+s.y2)/2, b=s.bulge||20;
+        out += '<path d="M'+s.x1+' '+s.y1+' Q'+(mx)+' '+(my+b)+' '+s.x2+' '+s.y2+'" fill="none" stroke="'+ink+'" stroke-width="2"'+dash+'/>'; break; }
+      case 'water': { const y=s.y, w=s.w, x=s.x, step=w/4; let p='M'+x+' '+y;
+        for (let i=0;i<4;i++){ p += ' q'+(step/4)+' -5 '+(step/2)+' 0 q'+(step/4)+' 5 '+(step/2)+' 0'; }
+        out += '<path d="'+p+'" fill="none" stroke="'+ink+'" stroke-width="2"/><rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+(s.h||20)+'" fill="var(--surface)" opacity=".7"/>'; break; }
+      case 'hatch': usedHatch = true; out += '<rect x="'+s.x+'" y="'+s.y+'" width="'+s.w+'" height="'+s.h+'" fill="url(#ht)" stroke="'+ink+'" stroke-width="2"/>'; break;
+    }
+  });
+  const vbW = parseFloat(String(vb).split(/\s+/)[2]) || 320, vbH = parseFloat(String(vb).split(/\s+/)[3]) || 200, LH = 13;
+  const boxes = (d.labels||[]).map(l => { const txt = String(l.text||'').replace(/[<>&]/g,''); if (!txt) return null;
+    const w = txt.length*5.6, tgt = (l.leaderTo && l.leaderTo.length===2) ? l.leaderTo : null, leftward = tgt ? tgt[0] < l.x : false;
+    let x = l.x; if (leftward) x = Math.min(x, vbW-2); else x = Math.max(2, Math.min(x, vbW-w-2));
+    return { txt, w, tgt, leftward, x, y: Math.max(LH, Math.min(+l.y||LH, vbH-3)) }; }).filter(Boolean);
+  const span = bx => bx.leftward ? { l: bx.x-bx.w, r: bx.x } : { l: bx.x, r: bx.x+bx.w };
+  const hits = (A,B) => { const a1=span(A), b1=span(B); return a1.l < b1.r+3 && b1.l < a1.r+3 && Math.abs(A.y-B.y) < LH; };
+  boxes.sort((A,B) => A.y-B.y || span(A).l-span(B).l);
+  boxes.forEach((bx,i) => { for (let j=0;j<i;j++){ if (!hits(bx, boxes[j])) continue; const down = boxes[j].y+LH; if (down <= vbH-3) bx.y = down; else { const up = boxes[j].y-LH; if (up >= LH) bx.y = up; } } });
+  boxes.forEach(bx => { const { txt, w, tgt, leftward, x, y } = bx;
+    if (tgt){ const tl = leftward ? x-w : x, tr = leftward ? x : x+w; let fx, fy = y-4;
+      if (tgt[0] < tl) fx = tl-4; else if (tgt[0] > tr) fx = tr+4; else { fx = tgt[0]; fy = (tgt[1] > y) ? y+3 : y-13; }
+      out += '<line x1="'+fx.toFixed(1)+'" y1="'+fy.toFixed(1)+'" x2="'+tgt[0]+'" y2="'+tgt[1]+'" stroke="'+mid+'" stroke-width="1"/>'; }
+    out += '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" font-size="11" fill="'+mid+'" font-family="var(--body)"'+(leftward?' text-anchor="end"':'')+'>'+txt+'</text>'; });
+  if (usedArrow) defs += '<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="'+ink+'"/></marker>';
+  if (usedHatch) defs += '<pattern id="ht" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="'+mid+'" stroke-width="2"/></pattern>';
+  return '<div class="dgm"><svg viewBox="'+vb+'" role="img" aria-label="Diagram">'+(defs?'<defs>'+defs+'</defs>':'')+out+'</svg></div>';
+}
+
+boot();
+</script>
+</body>
+</html>

@@ -1127,6 +1127,7 @@
   <button id="pm-music"><span>♪</span>Study music</button>
   <button id="pm-notes"><span>✎</span>My notes</button>
   <button id="pm-theme"><span>◐</span>Dark mode</button>
+  <button id="pm-lab"><span>⚗</span>Members' lab</button>
   <button id="pm-help"><span>?</span>Help me</button>
 </div>
 
@@ -2211,6 +2212,7 @@ $('pm-music').onclick = e => { e.stopPropagation(); pmTap('m-fab'); };
 $('pm-notes').onclick = e => { e.stopPropagation(); pmTap('n-fab'); };
 $('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
 $('pm-help').onclick  = e => { e.stopPropagation(); pmTap('h-fab'); };
+$('pm-lab').onclick   = e => { e.stopPropagation(); location.href = 'lab.html'; };
 
 document.addEventListener('click', () => { if (pmIsOpen()) pmOpen(false); });
 

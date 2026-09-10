@@ -96,3 +96,12 @@ Every box a pupil types into has a "Say it instead" button. It uses the
 browser's own speech recognition (Chrome, Edge, Safari), pinned to English, and
 appends the spoken words to the box. No audio reaches the server; whatever is
 submitted is ordinary text, so marking and the session record are unchanged.
+
+## The lab (members only)
+
+`lab.html` is the experiment library: every activity in the Primary 4 book,
+rewritten in our own words, with predict, test and explain steps. Records live
+in `labs-p4.js`; `api/lab.js` serves them without model answers and
+`api/lab-mark.js` marks the written steps. Both sit behind the same member
+session as everything else. `labs/observation-a` and `labs/observation-b` are
+reserved for the observation-skills work.
