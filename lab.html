@@ -322,7 +322,9 @@ function renderActivity(a){
     a.check.forEach((c, ci) => { h += '<div class="step" data-key="check:' + ci + '"><span class="n">' + (ci + 1) + '</span>' + explainHtml('check:' + ci, c.q, c.marks, { check: ci }, getProg(a.id, 'check:' + ci) === 'done') + '</div>'; });
     h += '</div>';
   }
-  h += '<button class="secondary" id="done-btn" style="margin-top:32px">Back to the list</button>';
+  h += '<button class="secondary" id="done-btn" style="margin-top:32px">Back to the list</button>' +
+    '<button class="ghost" id="reset-btn" type="button">↺ Start this experiment again</button>' +
+    '<div class="muted" style="font-size:13.5px;margin-top:2px">Clears every prediction, observation and answer here so you can redo it. A badge you have earned stays yours.</div>';
   $('act').innerHTML = h;
   wireActivity(a);
   refreshGates(a);
@@ -460,6 +462,15 @@ function wireActivity(a){
     if (right === total || tries >= 2) { setProg(a.id, 'cdone', true); checkAchievement(a); }
   };
   $('done-btn').onclick = () => { location.hash = ''; };
+  // Redo from the top. Progress for this activity is cleared; an earned badge is kept.
+  $('reset-btn').onclick = () => {
+    if (!confirm('Start "' + a.title + '" again from the beginning? Your predictions, observations and answers here will be cleared.')) return;
+    const p = prog(); const badge = (p[a.id] || {}).badge;
+    p[a.id] = badge ? { badge } : {};
+    try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){}
+    LOG.event('lab', { code: a.code, what: 'started again' });
+    renderActivity(a);
+  };
 }
 
 function stepOf(a, key){
