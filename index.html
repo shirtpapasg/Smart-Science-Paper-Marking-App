@@ -18,11 +18,16 @@
     --mid:#a39c93; --accent:#ff8a6a; --accent-bg:#2e211d;
   }
   html[data-theme="dark"] textarea,html[data-theme="dark"] select,
-  html[data-theme="dark"] .item,html[data-theme="dark"] .stat,
-  html[data-theme="dark"] .chip,html[data-theme="dark"] .opt,
+  html[data-theme="dark"] .item:not(.flag),html[data-theme="dark"] .stat,
+  html[data-theme="dark"] .chip:not(.on),html[data-theme="dark"] .opt:not(.picked):not(.right),
   html[data-theme="dark"] .dgm,html[data-theme="dark"] .m-panel,
   html[data-theme="dark"] .pin input,html[data-theme="dark"] .secondary{
     background:var(--surface);color:var(--ink)}
+  /* The :not()s above matter. A selected state is two classes (.chip.on,
+     .opt.picked), which loses to [data-theme] plus one class — so without them
+     dark mode silently erases every selection highlight in the app. */
+  html[data-theme="dark"] .opt.right{background:#16301f;border-color:#4caf82}
+  html[data-theme="dark"] .opt.right b{color:#7fd6a6}
   html[data-theme="dark"] .dark{background:#2a2724}
   html[data-theme="dark"] .nav{background:rgba(20,19,18,.96)}
   html[data-theme="dark"] .m-fab{background:var(--ink);color:var(--bg)}
@@ -43,6 +48,10 @@
     .nav button.on,.chip.on,.steps i.on,.hd::after{animation:none;background-position:20% 50%}
   }
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+  /* Without these, links fall back to browser blue — 1.97:1 on the dark
+     background, and off-palette in light. Both themes redefine --accent. */
+  a{color:var(--accent)}
+  a:hover{color:var(--ink)}
   .wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
   h1{font-family:var(--round);font-weight:700;font-size:26px;line-height:1.2;margin:0}
   h2{font-family:var(--round);font-weight:700;font-size:22px;line-height:1.25;margin:0}
@@ -81,7 +90,7 @@
     animation:rbSlide 4s linear infinite}
   .rainbow{background-image:linear-gradient(90deg,#ff5252,#ff9800,#ffd600,#4caf50,#00bcd4,#7c4dff,#ff5252);
     background-size:200% 3px;background-position:0 100%;background-repeat:repeat-x;padding-bottom:3px}
-  .hide{display:none}
+  .hide{display:none !important}
   .opt{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;margin-top:12px;
     padding:16px 18px;background:#fff;border:1.5px solid var(--rule);border-radius:14px;
     font-family:var(--body);font-weight:400;font-size:17px;line-height:1.45;min-height:auto;
