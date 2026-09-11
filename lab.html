@@ -720,6 +720,19 @@ function ttsBrowser(el, words, text, done){
   u.onend = u.onerror = () => { if (TTS.el === el) done(); };
   speechSynthesis.speak(u);
 }
+function ttsStop(){
+  if (!TTS.on) return;
+  TTS.seq++;
+  TTS.queue = [];
+  if (TTS.audio){ const au = TTS.audio; TTS.audio = null; try { au.pause(); au.src = ''; } catch(e){} }
+  try { speechSynthesis.cancel(); } catch(e){}
+  ttsClear();
+}
+function ttsClear(){
+  if (TTS.el){ ttsMark(TTS.el, null); TTS.el.classList.remove('reading'); const b = TTS.el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } }
+  TTS.el = null;
+  $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this part'; });
+}
 function ttsNext(){
   const el = TTS.queue.shift();
   if (!el) { ttsClear(); return; }
