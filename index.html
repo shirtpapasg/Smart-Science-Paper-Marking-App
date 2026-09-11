@@ -2230,6 +2230,11 @@ $('pm-help').onclick  = e => { e.stopPropagation(); pmTap('h-fab'); };
 $('pm-lab').onclick   = e => { e.stopPropagation(); location.href = 'lab.html'; };
 
 /* ── admin login, for testing ───────────────────────────── */
+// Admin mode: the site owner, logged in from the buddy menu to test the app.
+// The page keeps only a fingerprint of the password, never the word itself.
+const ADMIN_ON = 'sm-admin-v1';
+const ADMIN_FP = '6a93db1e49bd29e2f2c8e4c5a5a79c4ede9723cc0c5a296e2bd221e77aa8886d';
+const isSiteAdmin = () => { try { return localStorage.getItem(ADMIN_ON) === '1'; } catch(e){ return false; } };
 function renderAdminItem(){
   const m = $('pm-admin'); if (!m) return;
   m.innerHTML = isSiteAdmin() ? '<span>⚙</span>Admin logout' : '<span>⚙</span>Admin login';
@@ -2903,11 +2908,6 @@ gateReady.then(() => { if (!DB.raw(SEEN)) tourOpen(); });
 const ADM = 'sm-adm-v1';
 // No code set means nothing to unlock — you own this device. A code is something
 // you add on purpose, for when a student is using it.
-// Admin mode: the site owner, logged in from the buddy menu to test the app.
-// The page keeps only a fingerprint of the password, never the word itself.
-const ADMIN_ON = 'sm-admin-v1';
-const ADMIN_FP = '6a93db1e49bd29e2f2c8e4c5a5a79c4ede9723cc0c5a296e2bd221e77aa8886d';
-const isSiteAdmin = () => { try { return localStorage.getItem(ADMIN_ON) === '1'; } catch(e){ return false; } };
 const isAdmin = () => isSiteAdmin() || !DB.raw(ADM) || DB.flag('sm-adm-open');
 const admSet = () => !!DB.raw(ADM);
 
