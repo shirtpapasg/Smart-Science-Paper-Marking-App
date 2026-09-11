@@ -320,9 +320,9 @@ function renderActivity(a){
     '<p style="margin-top:16px"><b>What we are finding out.</b> ' + esc(a.aim) + '</p>';
   if (a.safety && a.safety.length) h += '<div class="card warn"><span class="eyebrow" style="color:var(--warn)">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>';
   h += '<div id="ach"></div>';
-  if (a.sim && a.sim.page) h += '<div class="item" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><h3>Try it on the 3D bench</h3>' +
-    '<div class="muted">Make your predictions first. Then heat it, cool it, watch what happens — and come back to answer the steps.</div><div class="lockhint" data-lockhint></div></div>' +
-    '<button class="primary" data-lab data-top style="width:auto;margin:0">' + esc(a.sim.label || "Let's test it now!") + '</button></div>';
+  if (a.sim && a.sim.page) h += '<div class="item" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><h3>How to unlock the 3D bench</h3>' +
+    '<div class="muted">Predict first. The moment you make a prediction, a <b>' + esc(a.sim.label || "Let's test it now!") + '</b> button appears beside it. Press it to open the bench for that part, watch what happens, then come back and answer the steps. Each part unlocks with its own first prediction.</div><div class="lockhint" data-lockhint></div></div>' +
+    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><button class="ghost" data-reset id="reset-top" type="button" disabled style="width:auto;margin:0">↺ Start this experiment again</button><span class="muted" data-resethint style="font-size:12.5px;text-align:right"></span></div></div>';
   (a.parts || []).forEach((p, pi) => {
     const covered = a.sim && a.sim.page && (a.sim.covers || []).indexOf(p.id) >= 0;
     h += '<div class="part' + (pi === 0 ? ' open' : '') + '" data-part="' + p.id + '" style="margin-top:28px">' +
@@ -364,7 +364,7 @@ function renderActivity(a){
     h += '</div>';
   }
   h += '<button class="secondary" id="done-btn" style="margin-top:32px">Back to the list</button>' +
-    '<button class="ghost" id="reset-btn" type="button">↺ Start this experiment again</button>' +
+    '<button class="ghost" id="reset-btn" data-reset type="button">↺ Start this experiment again</button>' +
     '<div class="muted" style="font-size:13.5px;margin-top:2px">Clears every prediction, observation and answer here so you can redo it. A badge you have earned stays yours.</div>';
   $('act').innerHTML = h;
   wireActivity(a);
@@ -408,11 +408,14 @@ function refreshGates(a){
     b.hidden = !(made || got || adm); if (made) anyOpen = true;
   });
   (a.parts || []).forEach(p => { if (predsDone(a, p)) anyOpen = true; });
-  const top = $('act').querySelector('[data-lab][data-top]'); if (top) top.disabled = !anyOpen;
+  const tested = !!getProg(a.id, 'tested');
+  const rt = $('reset-top'); if (rt) rt.disabled = !(tested || adm);
+  const rh = $('act').querySelector('[data-resethint]'); if (rh) rh.textContent = (tested || adm) ? 'Clears your answers here. A badge you earned stays.' : 'Available after you test your first prediction.';
   const hint = $('act').querySelector('[data-lockhint]');
   if (hint) hint.textContent = got ? a.badge ? a.badge.icon + ' Badge earned — the whole lab is open, including the challenge.' : 'The whole lab is open.'
-    : anyOpen ? 'Open so far: ' + unlockList(a).split(',').filter(x => x !== 'intro').join(', ') + '. Each part opens with its first prediction; everything opens with the badge.'
-    : 'Make your first prediction below and the bench opens for it.';
+    : adm ? 'Admin mode: the whole bench is open.'
+    : anyOpen ? 'Open so far: ' + unlockList(a).split(',').filter(x => x !== 'intro').join(', ') + '. Everything opens with the badge.'
+    : 'Nothing is open yet. Make your first prediction below.';
   if (got && $('ach') && !$('ach').innerHTML && a.badge) $('ach').innerHTML = achHtml(a);
 }
 const achHtml = a => '<div class="ach"><div class="ico">' + a.badge.icon + '</div><div><span class="eyebrow" style="color:var(--hl-ink)">Achievement unlocked</span><b>' + esc(a.badge.name) + '</b>' +
@@ -460,6 +463,7 @@ function openLab(a){
   const url = a.sim.page + '?unlock=' + encodeURIComponent(unlockList(a));
   $('labwin-frame').src = url; $('labwin-title').textContent = a.title; $('labwin-tab').href = url;
   $('labwin').classList.add('on'); document.body.style.overflow = 'hidden';
+  if (!getProg(a.id, 'tested')){ setProg(a.id, 'tested', true); refreshGates(a); }
   LOG.event('lab', { code: a.code, what: 'opened the 3D lab' });
 }
 function closeLab(){
@@ -504,14 +508,15 @@ function wireActivity(a){
   };
   $('done-btn').onclick = () => { location.hash = ''; };
   // Redo from the top. Progress for this activity is cleared; an earned badge is kept.
-  $('reset-btn').onclick = () => {
+  $('act').querySelectorAll('[data-reset]').forEach(b => b.onclick = () => {
+    if (b.disabled) return;
     if (!confirm('Start "' + a.title + '" again from the beginning? Your predictions, observations and answers here will be cleared.')) return;
     const p = prog(); const badge = (p[a.id] || {}).badge;
     p[a.id] = badge ? { badge } : {};
     try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){}
     LOG.event('lab', { code: a.code, what: 'started again' });
     renderActivity(a);
-  };
+  });
 }
 
 function stepOf(a, key){
