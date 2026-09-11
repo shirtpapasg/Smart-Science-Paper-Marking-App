@@ -392,10 +392,14 @@ const partDone = (a, p) => (p.steps || []).every((s, i) => { const k = p.id + ':
   if (s.predict || s.observe) return getProg(a.id, k) != null; if (s.explain) return getProg(a.id, k) === 'done'; return true; });
 const allDone = a => (a.parts || []).every(p => partDone(a, p)) && (!(a.conclude || []).length || !!getProg(a.id, 'cdone')) &&
   (a.check || []).every((c, i) => getProg(a.id, 'check:' + i) === 'done');
-function unlockList(a){
+// Where a part's bench is: usually a step in the activity's own lab page, but a
+// part may borrow a station from another lab (map: { c: { page, step } }).
+const simFor = (a, pid) => { const m = a.sim && a.sim.map && a.sim.map[pid]; if (!m) return null; return typeof m === 'string' ? { page: a.sim.page, step: m } : m; };
+function unlockList(a, page){
   if (getProg(a.id, 'badge') || adminDevice()) return 'all';
+  page = page || a.sim.page;
   const ids = ['intro'];
-  (a.sim.covers || []).forEach(pid => { const p = (a.parts || []).find(x => x.id === pid); if (p && predsDone(a, p) && a.sim.map && a.sim.map[pid]) ids.push(a.sim.map[pid]); });
+  (a.sim.covers || []).forEach(pid => { const p = (a.parts || []).find(x => x.id === pid), m = simFor(a, pid); if (p && m && m.page === page && predsDone(a, p)) ids.push(m.step); });
   return ids.join(',');
 }
 function refreshGates(a){
@@ -414,7 +418,7 @@ function refreshGates(a){
   const hint = $('act').querySelector('[data-lockhint]');
   if (hint) hint.textContent = got ? a.badge ? a.badge.icon + ' Badge earned — the whole lab is open, including the challenge.' : 'The whole lab is open.'
     : adm ? 'Admin mode: the whole bench is open.'
-    : anyOpen ? 'Open so far: ' + unlockList(a).split(',').filter(x => x !== 'intro').join(', ') + '. Everything opens with the badge.'
+    : anyOpen ? 'Open so far: ' + (a.sim.covers || []).filter(pid => { const p = (a.parts || []).find(x => x.id === pid); return p && predsDone(a, p); }).map(pid => 'Part ' + pid.toUpperCase()).join(', ') + '. Everything opens with the badge.'
     : 'Nothing is open yet. Make your first prediction below.';
   if (got && $('ach') && !$('ach').innerHTML && a.badge) $('ach').innerHTML = achHtml(a);
 }
@@ -459,8 +463,9 @@ function successSound(){
    Each 3D lab is its own page under labs/<name>/, laid out like the Heat Lab.
    "Let's test it now!" opens it over the steps; "Back to the steps" closes it
    and everything the pupil had ticked is still there. */
-function openLab(a){
-  const url = a.sim.page + '?unlock=' + encodeURIComponent(unlockList(a));
+function openLab(a, pid){
+  const m = pid ? simFor(a, pid) : null, page = (m && m.page) || a.sim.page;
+  const url = page + '?unlock=' + encodeURIComponent(unlockList(a, page));
   $('labwin-frame').src = url; $('labwin-title').textContent = a.title; $('labwin-tab').href = url;
   $('labwin').classList.add('on'); document.body.style.overflow = 'hidden';
   if (!getProg(a.id, 'tested')){ setProg(a.id, 'tested', true); refreshGates(a); }
@@ -473,7 +478,7 @@ function closeLab(){
 $('labwin-back').onclick = closeLab;
 
 function wireActivity(a){
-  $('act').querySelectorAll('[data-lab]').forEach(b => b.onclick = e => { e.stopPropagation(); if (!b.disabled) openLab(a); });
+  $('act').querySelectorAll('[data-lab]').forEach(b => b.onclick = e => { e.stopPropagation(); if (!b.disabled) openLab(a, (b.dataset.step || '').split(':')[0]); });
   // parts fold: tap a heading to open it and fold the others
   $('act').querySelectorAll('.part-hd').forEach(hd => hd.onclick = () => {
     const part = hd.parentElement, wasOpen = part.classList.contains('open');

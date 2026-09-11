@@ -237,14 +237,117 @@ export const LABS = [
       doNotAccept: ['coldness flows from the ice pack into the knee'] },
   ],
 },
+{
+  id: 'p4-7-2', level: 'P4', chapter: 'Effects of Heat', code: '7.2', minutes: 45, kind: 'lab3d', status: 'review',
+  title: 'Good and poor conductors',
+  cc21: ['Critical Thinking', 'Adaptive Thinking'],
+  skills: ['Designing Investigations', 'Analysing Data', 'Informed Decisions'],
+  bigIdea: 'A good conductor lets heat pass through it quickly, so it gains and loses heat quickly. A poor conductor lets heat through slowly. Metal is a good conductor; foam, plastic and wood are poor conductors.',
+  aim: 'Race a metal cup against a foam cup at keeping water hot, then cold; feel two blocks and measure them; then race two ice cubes. Work out what a good conductor does.',
+  safety: [
+    'Water at 60 °C can scald. An adult pours it and moves the cups.',
+    'Keep the data logger and its wires away from the water.',
+    'Ice is slippery on a bench. Wipe up puddles as they form.',
+  ],
+  sim: { page: 'labs/conductor/index.html', label: "Let's test it now!", covers: ['a', 'b', 'c', 'd'],
+         map: { a: 'hot', b: 'cold', c: { page: 'labs/heat/index.html', step: 'feel' }, d: 'ice' } },
+  badge: { icon: '🥄', name: 'Conductor Detective', line: 'You found out which materials let heat through quickly, which slow it down, and why your hand is not a thermometer.' },
+  parts: [
+    {
+      id: 'a', title: 'Keep it hot', who: 'adult demonstration',
+      need: ['a tub of room-temperature water (about 25 °C)', 'a metal cup and a foam cup of the same size, each with a lid', 'hot water (about 60 °C) to fill both cups', 'two probe thermometers on a data logger, one through each lid', 'a clock'],
+      steps: [
+        { do: 'Fill both cups with the same hot water. Stand them side by side in the tub. Put a probe through each lid and read both.' },
+        { predict: { q: 'Which cup will keep the water hot for longer?', options: ['The metal cup', 'The foam cup', 'Both the same'], answer: 1 } },
+        { do: 'Read both thermometers every five minutes for fifteen minutes. Watch the graph as it draws.' },
+        { observe: { q: 'After fifteen minutes, which cup held the hotter water?', options: ['The metal cup', 'The foam cup', 'Both the same'], answer: 1 } },
+        { observe: { q: 'Which reading dropped fastest in the first five minutes?', options: ['The metal cup', 'The foam cup', 'They dropped at the same speed'], answer: 0 } },
+        { explain: { q: 'Explain why the water in the foam cup stayed hot for longer than the water in the metal cup.',
+          concept: 'A good conductor lets heat pass through it quickly; a poor conductor lets heat pass through slowly.',
+          model: 'The hot water in both cups lost heat to the cooler water in the tub. Metal is a good conductor, so heat passed through the metal wall quickly and that water cooled fast. Foam is a poor conductor, so heat passed through the foam wall slowly and that water stayed hot for longer.',
+          points: [ { point: 'heat flowed from the hot water in the cups to the cooler tub water', marks: 1 }, { point: 'metal is a good conductor, so heat passed through it quickly and the water cooled fast', marks: 1 }, { point: 'foam is a poor conductor, so heat passed through it slowly and the water stayed hot longer', marks: 1 } ],
+          doNotAccept: ['the foam cup made heat', 'the foam kept the cold out', 'the metal cup was colder to begin with'] } },
+        { note: 'A cup does not make heat or hold it like a bucket. It only controls how fast heat gets through its wall.' },
+      ],
+    },
+    {
+      id: 'b', title: 'Keep it cold', who: 'adult demonstration',
+      need: ['the same tub of room-temperature water', 'the same two cups, now filled with iced water (about 6 °C)', 'the two probes and the data logger', 'a clock'],
+      steps: [
+        { do: 'Empty and refill both cups with iced water. Stand them in the tub again and read both.' },
+        { predict: { q: 'Which cup will keep the water cold for longer?', options: ['The metal cup', 'The foam cup', 'Both the same'], answer: 1 } },
+        { do: 'Read both thermometers every five minutes for fifteen minutes. Notice which way the glowing motes move on the bench this time.' },
+        { observe: { q: 'After fifteen minutes, which cup held the warmer water?', options: ['The metal cup', 'The foam cup', 'Both the same'], answer: 0 } },
+        { observe: { q: 'Which way did heat flow this time?', options: ['From the tub water into the cups', 'From the cups into the tub water', 'Heat did not flow'], answer: 0 } },
+        { explain: { q: 'A foam cup keeps a drink hot and also keeps a drink cold. Explain how one material can do both.',
+          concept: 'A poor conductor slows the flow of heat in both directions.',
+          model: 'Foam is a poor conductor, so heat passes through it slowly whichever way it is going. With a hot drink, heat leaves the drink slowly, so it stays hot. With a cold drink, heat from the warmer surroundings enters slowly, so it stays cold.',
+          points: [ { point: 'foam is a poor conductor, so heat passes through it slowly in either direction', marks: 1 }, { point: 'a hot drink loses heat slowly; a cold drink gains heat from outside slowly', marks: 1 } ],
+          doNotAccept: ['foam makes cold', 'foam keeps the cold in', 'foam stores heat'] } },
+        { note: 'Nothing makes cold. Something feels cold or stays cold when heat is slow to reach it.' },
+      ],
+    },
+    {
+      id: 'c', title: 'Feel it, then measure it', who: 'hands on',
+      need: ['a metal block and a wooden block left in the same room for an hour', 'a thermometer or a thermo gun', 'your hand'],
+      steps: [
+        { do: 'Both blocks have been sitting in the same room all morning. Do not touch them yet.' },
+        { predict: { q: 'Which block will feel colder to your hand?', options: ['The metal block', 'The wooden block', 'They will feel the same'], answer: 0 } },
+        { do: 'On the bench, touch each block with the hand tool. Then measure each one with the thermo gun.' },
+        { observe: { q: 'What did the thermo gun show?', options: ['Both blocks at about the same temperature', 'The metal block much colder', 'The wooden block much colder'], answer: 0 } },
+        { explain: { q: 'The two blocks are at the same temperature, yet the metal one feels colder. Explain why.',
+          concept: 'Your hand senses how quickly heat leaves it, not temperature. A good conductor takes heat from your hand quickly.',
+          model: 'Your hand is warmer than both blocks, so heat flows from your hand into each block. Metal is a good conductor, so it takes heat from your skin quickly and your hand feels cold. Wood is a poor conductor, so heat leaves your hand slowly and it feels warmer. Only a thermometer measures temperature.',
+          points: [ { point: 'the hand is warmer than the blocks, so heat flows from the hand into each block', marks: 1 }, { point: 'metal is a good conductor and takes heat from the skin quickly, which feels cold; wood takes it slowly', marks: 1 } ],
+          doNotAccept: ['the metal block is colder', 'cold flows from the metal into the hand', 'wood makes its own heat'] } },
+        { note: 'Your hand is a heat-flow meter, not a thermometer. It tells you how fast heat is leaving, not how hot something is.' },
+      ],
+    },
+    {
+      id: 'd', title: 'The melting race', who: 'hands on, with an adult',
+      need: ['the metal block and a foam block', 'two rubber rings, one on each block', 'two ice cubes of the same size', 'a stopwatch'],
+      steps: [
+        { do: 'Put a rubber ring on each block. Drop one ice cube inside each ring at the same moment and start the stopwatch.' },
+        { predict: { q: 'Which ice cube will melt first?', options: ['The one on the metal block', 'The one on the foam block', 'Both at the same time'], answer: 0 } },
+        { do: 'On the bench, press Start and watch the two cubes and the two puddles.' },
+        { observe: { q: 'Which cube was gone first?', options: ['The one on the metal block', 'The one on the foam block', 'They finished together'], answer: 0 } },
+        { observe: { q: 'Where did the heat that melted the ice come from?', options: ['From the warm room, through the block, into the ice', 'From inside the ice cube', 'From the rubber ring'], answer: 0 } },
+        { explain: { q: 'Explain why the ice cube on the metal block melted first.',
+          concept: 'A good conductor passes heat quickly; heat flows from the warmer surroundings into the colder ice.',
+          model: 'The room and the blocks were warmer than the ice, so heat flowed from them into the ice. Metal is a good conductor, so it passed heat from the room into its ice cube quickly and that cube melted first. Foam is a poor conductor, so heat reached its ice cube slowly.',
+          points: [ { point: 'heat flowed from the warmer room and block into the colder ice', marks: 1 }, { point: 'metal is a good conductor and passed heat quickly, so its cube melted first; foam passed heat slowly', marks: 1 } ],
+          doNotAccept: ['the metal block was hotter than the foam block', 'the metal block made heat', 'the foam block kept the cold in'] } },
+        { note: 'Both blocks were at the same temperature. Only the speed of the heat flow was different.' },
+      ],
+    },
+  ],
+  conclude: [
+    { text: 'A ___ conductor lets heat pass through it quickly.', answers: ['good'] },
+    { text: 'A poor conductor lets heat pass through it ___.', answers: ['slowly'] },
+    { text: 'Metal is a ___ conductor of heat; foam, plastic and wood are ___ conductors.', answers: ['good', 'poor'] },
+    { text: 'Your hand feels how ___ heat moves, but only a ___ measures temperature.', answers: ['fast', 'thermometer'] },
+  ],
+  check: [
+    { q: 'A saucepan is made of metal, but its handle is made of plastic. Explain both choices.',
+      marks: 2, concept: 'We use good conductors where we want heat to move and poor conductors where we want heat to stay away.',
+      model: 'Metal is a good conductor, so heat from the stove passes quickly through the pan into the food. Plastic is a poor conductor, so heat from the pan passes only slowly into the handle and your hand does not get burnt.',
+      points: [ { point: 'the metal pan is a good conductor, so heat passes quickly into the food', marks: 1 }, { point: 'the plastic handle is a poor conductor, so heat reaches the hand slowly', marks: 1 } ],
+      doNotAccept: ['plastic keeps the heat in', 'plastic makes the handle cold'] },
+    { q: 'Ice cream is carried home in a foam box. Explain why it stays frozen for longer than it would in a metal tin.',
+      marks: 2, concept: 'A poor conductor slows the flow of heat from warmer surroundings into a colder object.',
+      model: 'The air outside is warmer than the ice cream, so heat flows from the air into the ice cream. Foam is a poor conductor, so heat passes through the box slowly and the ice cream gains heat slowly. Metal is a good conductor, so heat would pass through a tin quickly and the ice cream would melt sooner.',
+      points: [ { point: 'heat flows from the warmer air into the colder ice cream', marks: 1 }, { point: 'foam is a poor conductor so heat enters slowly; metal would let it in quickly', marks: 1 } ],
+      doNotAccept: ['the foam keeps the cold in', 'the foam makes cold'] },
+  ],
+},
 ];
 // The rest of the book, mapped and waiting. kind says what each will become:
 //   lab3d   an apparatus experiment with a 3D scene, like the Heat Lab
 //   observe an observation or sorting activity, with animated 2D diagrams
 //   make    something the pupil builds or performs, with a photo of the result
-// status runs soon → review → ready. "review" is visible only on a device
-// unlocked with the parent code (set a code in the app, then unlock it), so every animation is looked over before a
-// family can see it. A record without parts shows as coming soon.
+// status runs soon → review → ready. "review" is visible only in admin mode
+// (Admin login under the buddy) or to an adult who has unlocked the parent
+// code, so every animation is looked over before a family can see it. A record without parts shows as coming soon.
 //
 // Tags use the same vocabulary as the science skillset map:
 //   cc21    21st Century Competencies — Critical Thinking, Adaptive Thinking,
@@ -277,7 +380,6 @@ const SOON = [
   ['6.1', 'Heat', 'Reading a thermometer', 'lab3d', ['Information Skills'], ['Analysing Data']],
   ['6.2', 'Heat', 'Why temperature changes', 'lab3d', ['Critical Thinking'], ['Designing Investigations', 'Analysing Data']],
   ['6.3', 'Heat', 'Heat is not temperature', 'lab3d', ['Critical Thinking', 'Adaptive Thinking'], ['Communicating with Evidence']],
-  ['7.2', 'Effects of Heat', 'Good and poor conductors', 'lab3d', ['Critical Thinking'], ['Designing Investigations', 'Analysing Data']],
   ['7.4', 'Effects of Heat', 'Keeping things cold', 'lab3d', ['Inventive Thinking', 'Critical Thinking'], ['Designing Investigations', 'Informed Decisions']],
 ];
 SOON.forEach(([code, chapter, title, kind, cc21, skills]) => LABS.push({
