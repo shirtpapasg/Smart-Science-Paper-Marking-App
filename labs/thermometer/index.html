@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<meta name="robots" content="noindex">
+<script>
+/* Members only. Same session as the app; anyone without one goes to the lab sign-in. */
+(async () => {
+  try {
+    const tok = localStorage.getItem('sm-session-v1') || '';
+    const r = await fetch('/api/access', { method:'POST', headers: Object.assign({'content-type':'application/json'}, tok ? { authorization: 'Bearer ' + tok } : {}), body: JSON.stringify({ action:'session' }) });
+    const d = await r.json();
+    if (d.locked && !d.ok) location.replace('/lab.html');
+  } catch (e) { /* server unreachable: the page itself holds no answers, let it show */ }
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/styles.css">
+  <script src="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/_ds_bundle.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+  <style>
+    html, body { margin: 0; padding: 0; background: #070d15; }
+    a { color: #66ccff; }
+    a:hover { color: #4a90e2; }
+    @media (max-height: 740px) {
+      aside { gap: 8px !important; padding: 10px !important; }
+      aside p, aside li { font-size: 14px !important; }
+    }
+    #cl-tilt { display: none; }
+    @media (max-width: 820px) and (orientation: portrait) {
+      #cl-tilt { display: flex !important; }
+    }
+    @keyframes clFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes clPop { 0% { transform: scale(.82); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes clTilt { 0%,100% { transform: rotate(-90deg); } 50% { transform: rotate(0deg); } }
+    @keyframes clRainbow { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+    input.cl-range { -webkit-appearance: none; appearance: none; height: 26px; background: transparent; }
+    input.cl-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2f6fd6, #ff6a5e); }
+    input.cl-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -8px; border-radius: 50%; background: #fff; border: 3px solid #0a1320; box-shadow: 0 0 12px rgba(255,255,255,.5); cursor: pointer; }
+    input.cl-range::-moz-range-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2f6fd6, #ff6a5e); }
+    input.cl-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #0a1320; cursor: pointer; }
+  </style>
+</helmet>
+
+<div id="cl-tilt" style="position: fixed; inset: 0; z-index: 99; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 32px; text-align: center; background: #04070c; color: #fff; font-family: Nunito, system-ui, sans-serif;">
+  <div style="font-size: 64px; animation: clTilt 2.4s ease-in-out infinite;">📱</div>
+  <div style="font-size: 24px; font-weight: 900; color: #ffb627;">Turn your phone sideways</div>
+  <p style="margin: 0; max-width: 320px; font-size: 16px; line-height: 1.5; color: #8a98a6;">Thermometer Lab needs <strong style="color: #ff6a5e;">landscape mode</strong> so the bench and your readings fit on screen together.</p>
+</div>
+
+<div style="height: 100vh; display: flex; flex-direction: column; background: #070d15; color: #fff; font-family: Nunito, system-ui, sans-serif; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 20px; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,.14); background: #04070c;">
+    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 228px; flex: none;">
+      <div style="font-size: 21px; font-weight: 900; letter-spacing: .04em; color: #ffb627; white-space: nowrap;">🌡️ THERMOMETER LAB</div>
+      <div style="font-size: 13px; color: #8a98a6; font-weight: 600;">Measuring temperature · P4 Science</div>
+    </div>
+    <nav style="display: flex; gap: 6px; flex-wrap: wrap; flex: 1;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <button onClick="{{ s.go }}" style="{{ s.pill }}">{{ s.label }}</button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <sc-if value="{{ lockMsg }}">
+    <div style="padding: 8px 20px; background: rgba(255,182,39,.14); border-bottom: 1px solid rgba(255,182,39,.45); font-size: 14px; font-weight: 800; color: #ffb627;">🔒 That part is locked. Finish the steps for it first, then come back.</div>
+  </sc-if>
+
+  <div style="flex: 1; display: flex; min-height: 0;">
+
+    <aside style="{{ asideCss }}">
+
+      <sc-if value="{{ isIntro }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Thermometer Lab" accent="yellow" hint-size="100%,470px">
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 14px; color: #fff; text-wrap: pretty;">Five cups of water are on the bench, A to E, and every one of them is a different <strong style="color: #ff6a5e;">temperature</strong>. Can your finger put them in order from least hot to hottest? Can a <strong style="color: #ff6a5e;">thermometer</strong>?</p>
+          <div style="display: grid; gap: 10px; margin-bottom: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">✋</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ff6a5e;">Finger test</strong> — dip, feel, and order the cups</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">🌡️</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ff6a5e;">Thermometer</strong> — measure each cup and order them again</span>
+            </div>
+          </div>
+          <p style="font-size: 14px; line-height: 1.5; margin: 0 0 16px; color: #8a98a6;">Drag the 3D view to walk around the bench, scroll to zoom. Each cup keeps its soft cover on until you tap it, so no warmth gives the answer away. The liquid zoom beside the bench looks inside the thermometer.</p>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="lg" onClick="{{ next }}" hint-size="100%,56px">Start the finger test →</x-import>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showTouchPanel }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="cyan" hint-size="100%,450px">
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">You will dip a finger into all five cups and put them in order, least hot first. <strong style="color: #ffb627;">Predict:</strong> can your <strong style="color: #ff6a5e;">sense of touch</strong> put all five cups in the right order?</p>
+          <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="3">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,52px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <div style="margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: rgba(102,204,255,.1); border: 1px solid rgba(102,204,255,.35);">
+            <div style="font-size: 14px; font-weight: 800; color: #66ccff; margin-bottom: 8px;">Then test it</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.6; color: #d6dee6;">
+              <li>Tap a cup on the bench to lift its cover and dip.</li>
+              <li>Two seconds in, then the cover goes back on.</li>
+              <li>Drag the letter tiles into order, then lock it in.</li>
+            </ol>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; margin: 12px 0 14px; color: #8a98a6;">Two other groups are doing the same five cups. You will compare all three orders at the end.</p>
+          <div style="display: flex; gap: 10px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">Next: thermometer →</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showMeasurePanel }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="blue" hint-size="100%,460px">
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">The same five cups, this time with a <strong style="color: #ff6a5e;">thermometer</strong>. <strong style="color: #ffb627;">Predict:</strong> will the thermometer's order match the order your finger gave?</p>
+          <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="3">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,52px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <div style="margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: rgba(74,144,226,.1); border: 1px solid rgba(74,144,226,.35);">
+            <div style="font-size: 14px; font-weight: 800; color: #6aa9f0; margin-bottom: 8px;">Then test it</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.6; color: #d6dee6;">
+              <li>Tap a cup, then lower the thermometer into the water.</li>
+              <li>Keep the tip <strong style="color:#fff;">off the bottom</strong> of the cup.</li>
+              <li>Wait until the column <strong style="color:#fff;">stops changing</strong>, read it at <strong style="color:#fff;">eye level</strong>, then record.</li>
+            </ol>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; margin: 12px 0 14px; color: #8a98a6;">A thermometer measures temperature <strong style="color: #ff6a5e;">accurately</strong>, in <strong style="color: #ff6a5e;">degrees Celsius</strong> (°C).</p>
+          <div style="display: flex; gap: 10px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">Next: challenge →</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showTouchControls }}">
+        <div style="order: 1; zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Finger test" accent="red" hint-size="100%,300px">
+          <p style="margin: 0 0 10px; font-size: 15px; line-height: 1.45; color: #d6dee6;">{{ dipHint }}</p>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+            <sc-for list="{{ cupButtons }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.tap }}" style="{{ c.css }}">
+                <span style="font-size: 19px; font-weight: 900; color: #ffb627;">{{ c.letter }}</span>
+                <span style="font-size: 11px; font-weight: 800; line-height: 1.1; color: #d6dee6;">{{ c.word }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(232,73,63,.12); border: 1px solid rgba(232,73,63,.4); font-size: 13px; font-weight: 700; line-height: 1.4; color: #ffc9c4;">⚠️ Very hot water can scald. Two seconds, then out.</div>
+          <div style="margin-top: 10px;">
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">View</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <sc-for list="{{ viewButtons }}" as="v" hint-placeholder-count="4">
+                <div style="{{ v.ring }}">
+                  <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ v.active }}" onClick="{{ v.pick }}" hint-size="100%,40px">{{ v.label }}</x-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showMeasureControls }}">
+        <div style="order: 1; zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Controls" accent="green" hint-size="100%,430px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 14px; color: #d6dee6; font-weight: 600;">{{ cupLabel }}</span>
+            <span style="{{ readCss }}">{{ readStr }}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px;">
+            <sc-for list="{{ cupButtons }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.tap }}" style="{{ c.css }}">
+                <span style="font-size: 19px; font-weight: 900; color: #ffb627;">{{ c.letter }}</span>
+                <span style="font-size: 11px; font-weight: 800; line-height: 1.1; color: #d6dee6;">{{ c.word }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 13px; font-weight: 700; color: #8a98a6;">Lower the thermometer</span>
+            <span style="font-size: 12px; font-weight: 800; color: #d6dee6;">{{ depthWord }}</span>
+          </div>
+          <input class="cl-range" type="range" min="0" max="100" step="1" value="{{ depth }}" onChange="{{ setDepth }}" onInput="{{ setDepth }}" style="width: 100%; margin: 0;">
+          <div style="display: flex; justify-content: space-between; margin: 0 11px 10px; font-size: 11px; font-weight: 700; color: #5a6775;">
+            <span>Bulb in the air</span>
+            <span>On the bottom</span>
+          </div>
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">Eye</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+            <sc-for list="{{ eyeButtons }}" as="v" hint-placeholder-count="3">
+              <div style="{{ v.ring }}">
+                <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ v.active }}" onClick="{{ v.pick }}" hint-size="100%,40px">{{ v.label }}</x-import>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showHead }}">
+            <div style="margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(255,182,39,.1); border: 1px solid rgba(255,182,39,.4);">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span style="font-size: 13px; font-weight: 800; color: #ffb627;">Head height</span>
+                <span style="font-size: 12px; font-weight: 800; color: #d6dee6;">{{ headWord }}</span>
+              </div>
+              <input class="cl-range" type="range" min="-100" max="100" step="1" value="{{ head }}" onChange="{{ setHead }}" onInput="{{ setHead }}" style="width: 100%; margin: 0;">
+              <div style="display: flex; justify-content: space-between; margin: 0 11px; font-size: 11px; font-weight: 700; color: #5a6775;">
+                <span>Crouch down</span>
+                <span>Stand up</span>
+              </div>
+              <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: #d6dee6;">{{ headNote }}</p>
+            </div>
+          </sc-if>
+          <div style="{{ statusCss }}">{{ statusText }}</div>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" disabled="{{ recordOff }}" onClick="{{ record }}" hint-size="100%,44px">{{ recordLabel }}</x-import>
+          <div style="margin-top: 10px;">
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">View</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <sc-for list="{{ viewButtons }}" as="v" hint-placeholder-count="4">
+                <div style="{{ v.ring }}">
+                  <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ v.active }}" onClick="{{ v.pick }}" hint-size="100%,40px">{{ v.label }}</x-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showReadings }}">
+        <div style="order: 2; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Cup · Temperature" accent="blue" hint-size="100%,420px">
+          <div style="display: flex; gap: 12px;">
+            <div style="flex: 1; min-width: 0;">
+              <sc-for list="{{ tableRows }}" as="t" hint-placeholder-count="5">
+                <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="{{ t.label }}" value="{{ t.value }}" valueColor="{{ t.color }}" hint-size="100%,28px"></x-import>
+              </sc-for>
+              <p style="margin: 10px 0 0; font-size: 13px; line-height: 1.45; color: #8a98a6;">{{ recordedHint }}</p>
+            </div>
+            <div style="width: 124px; flex: none; padding: 8px 4px; border-radius: 12px; background: #0a1320; border: 1px solid rgba(255,255,255,.1);">
+              <svg viewBox="0 0 124 252" style="display: block; width: 100%; height: auto;">
+                <rect x="30" y="14" width="16" height="220" rx="8" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.14)" stroke-width="1"></rect>
+                <circle cx="38" cy="238" r="11" fill="#ff6a5e"></circle>
+                <rect x="{{ colX }}" y="{{ colY }}" width="8" height="{{ colH }}" rx="4" fill="#ff6a5e"></rect>
+                <sc-for list="{{ ticks }}" as="k" hint-placeholder-count="8">
+                  <line x1="18" y1="{{ k.y }}" x2="30" y2="{{ k.y }}" stroke="rgba(255,255,255,.3)" stroke-width="1"></line>
+                </sc-for>
+                <sc-for list="{{ ticks }}" as="k" hint-placeholder-count="8">
+                  <text x="15" y="{{ k.ty }}" text-anchor="end" fill="#8a98a6" font-size="10" font-weight="800" font-family="Nunito, system-ui, sans-serif">{{ k.label }}</text>
+                </sc-for>
+                <sc-for list="{{ marks }}" as="m" hint-placeholder-count="0">
+                  <line x1="46" y1="{{ m.y }}" x2="54" y2="{{ m.y }}" stroke="{{ m.color }}" stroke-width="2"></line>
+                </sc-for>
+                <sc-for list="{{ marks }}" as="m" hint-placeholder-count="0">
+                  <text x="57" y="{{ m.ty }}" text-anchor="start" fill="{{ m.color }}" font-size="11" font-weight="900" font-family="Nunito, system-ui, sans-serif">{{ m.label }}</text>
+                </sc-for>
+              </svg>
+            </div>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showSentence }}">
+        <div style="order: 2; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Finish the sentence" accent="purple" hint-size="100%,230px">
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 12px; color: #fff; font-weight: 700;">The <span style="{{ blankCss }}">{{ blankWord }}</span> the temperature, the hotter the water.</p>
+          <sc-for list="{{ sentenceOptions }}" as="o" hint-placeholder-count="2">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" state="{{ o.state }}" onClick="{{ o.pick }}" hint-size="100%,48px">{{ o.text }}</x-import>
+          </sc-for>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isQuiz }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Challenge" accent="green" hint-size="100%,520px">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Badge" tone="cyan" hint-size="auto,26px">{{ qTopic }}</x-import>
+            <span style="font-size: 14px; color: #8a98a6; font-weight: 700;">{{ qCounter }}</span>
+          </div>
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 14px; color: #fff; font-weight: 700; text-wrap: pretty;">{{ qText }}</p>
+          <sc-for list="{{ qOptions }}" as="o" hint-placeholder-count="4">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" state="{{ o.state }}" onClick="{{ o.pick }}" hint-size="100%,56px">{{ o.text }}</x-import>
+          </sc-for>
+          <sc-if value="{{ qAnswered }}">
+            <div style="margin: 14px 0; padding: 14px; border-radius: 12px; background: rgba(63,195,95,.1); border: 1px solid rgba(63,195,95,.4);">
+              <div style="font-size: 15px; font-weight: 900; color: #5ee07a; margin-bottom: 6px;">{{ qVerdict }}</div>
+              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #d6dee6; text-wrap: pretty;">{{ qWhy }}</p>
+            </div>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ nextQ }}" hint-size="100%,44px">{{ qNextLabel }}</x-import>
+          </sc-if>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ isDone }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Well done, scientist" accent="yellow" hint-size="100%,470px">
+          <p style="font-size: 18px; line-height: 1.5; margin: 0 0 14px; color: #fff; font-weight: 700;">{{ scoreLine }}</p>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.ProgressBar" value="{{ score }}" max="6" tone="green" label="{{ scoreLabel }}" hint-size="100%,34px"></x-import>
+          <div style="margin: 16px 0; padding: 16px; border-radius: 12px; background: rgba(255,182,39,.1); border: 1px solid rgba(255,182,39,.4);">
+            <div style="font-size: 14px; font-weight: 900; color: #ffb627; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px;">The big idea</div>
+            <ol style="margin: 0; padding-left: 24px; display: grid; gap: 12px; font-size: 18px; line-height: 1.5; color: #fff; text-wrap: pretty;">
+              <li>Your <strong style="color: #ff6a5e;">sense of touch</strong> gives a rough idea of hot or cold — never the exact <strong style="color: #ff6a5e;">temperature</strong>, and not the same answer for everyone.</li>
+              <li><strong style="color: #ff6a5e;">Temperature</strong> is a measure of how hot or cold an object is.</li>
+              <li>A <strong style="color: #ff6a5e;">thermometer</strong> measures temperature <strong style="color: #ff6a5e;">accurately</strong>. Everyone who reads it properly gets the same number.</li>
+              <li>The unit of temperature is <strong style="color: #ff6a5e;">degrees Celsius</strong> (°C).</li>
+              <li>Read it properly: tip in the water and off the bottom, wait until the column <strong style="color: #ff6a5e;">stops changing</strong>, and read at <strong style="color: #ff6a5e;">eye level</strong>.</li>
+            </ol>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ restart }}" hint-size="100%,44px">↺ Start again</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="active" onClick="{{ goTouch }}" hint-size="100%,44px">Replay experiments</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showNav }}">
+        <div style="display: flex; gap: 10px; order: 3;">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">{{ nextLabel }}</x-import>
+        </div>
+      </sc-if>
+
+    </aside>
+
+    <section style="{{ sceneCss }}">
+      <x-import component-from-global-scope="thermo-scene" from="./thermo-scene.js" experiment="{{ experiment }}" cup="{{ cupAttr }}" action="{{ action }}" eye="{{ eye }}" head="{{ headAttr }}" depth="{{ depthAttr }}" view="{{ view }}" temps="{{ tempsAttr }}" hint-size="100%,100%" style="position: absolute; inset: 0;"></x-import>
+      <div style="position: absolute; top: 14px; left: 14px; display: flex; gap: 8px; align-items: center; padding: 7px 14px; border-radius: 999px; background: rgba(7,13,21,.8); border: 1px solid rgba(255,255,255,.14); font-size: 13px; color: #8a98a6; font-weight: 700; white-space: nowrap; pointer-events: none;">
+        <span>{{ hintChip }}</span>
+      </div>
+      <sc-if value="{{ showPredChip }}">
+        <button onClick="{{ expandPanel }}" style="position: absolute; top: 14px; right: 14px; max-width: 320px; display: flex; flex-direction: column; gap: 3px; text-align: left; padding: 12px 16px; border-radius: 16px; background: rgba(7,13,21,.9); border: 2px solid rgba(232,73,63,.6); box-shadow: 0 0 18px rgba(232,73,63,.35); color: #fff; font-family: inherit; cursor: pointer;">
+          <span style="font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #ff6a5e;">My prediction</span>
+          <span style="font-size: 15px; font-weight: 800; line-height: 1.35;">{{ predLabel }}</span>
+          <span style="font-size: 12px; font-weight: 700; color: #8a98a6;">Tap to change it or see the steps</span>
+        </button>
+      </sc-if>
+      <sc-if value="{{ showFeelChip }}">
+        <div style="position: absolute; top: 82px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px; background: rgba(7,13,21,.92); border: 2px solid rgba(255,106,94,.7); box-shadow: 0 0 22px rgba(255,106,94,.4); animation: clPop 280ms cubic-bezier(.34,1.56,.64,1); pointer-events: none;">
+          <span style="font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6;">{{ feelCup }}</span>
+          <span style="font-size: 19px; font-weight: 900; color: #ff6a5e;">{{ feelWord }}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showBoard }}">
+        <div style="{{ boardCss }}">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #ffb627;">Least hot → Hottest</span>
+            <span style="font-size: 12px; font-weight: 700; color: #8a98a6;">{{ boardHint }}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+            <sc-for list="{{ slots }}" as="sl" hint-placeholder-count="5">
+              <button onClick="{{ sl.tap }}" style="{{ sl.css }}">{{ sl.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showTray }}">
+            <div style="display: flex; gap: 6px; align-items: center; min-height: 40px;">
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #5a6775;">Tiles</span>
+              <sc-for list="{{ tray }}" as="t" hint-placeholder-count="5">
+                <button onClick="{{ t.tap }}" style="{{ t.css }}">{{ t.label }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showLockBtn }}">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="sm" disabled="{{ lockOff }}" onClick="{{ lockOrder }}" hint-size="100%,40px">{{ lockLabel }}</x-import>
+          </sc-if>
+          <sc-if value="{{ showGroups }}">
+            <div style="display: grid; gap: 5px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,.12);">
+              <sc-for list="{{ groupRows }}" as="r" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="width: 68px; flex: none; font-size: 11px; font-weight: 800; color: #8a98a6;">{{ r.name }}</span>
+                  <span style="{{ r.s0 }}">{{ r.l0 }}</span>
+                  <span style="{{ r.s1 }}">{{ r.l1 }}</span>
+                  <span style="{{ r.s2 }}">{{ r.l2 }}</span>
+                  <span style="{{ r.s3 }}">{{ r.l3 }}</span>
+                  <span style="{{ r.s4 }}">{{ r.l4 }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showSight }}">
+        <div style="{{ sightCss }}">
+          <div style="flex: 1; height: 0; border-top: 2px dashed rgba(255,182,39,.8);"></div>
+          <div style="flex: none; margin-right: 14px; padding: 7px 14px; border-radius: 999px; background: rgba(7,13,21,.92); border: 2px solid {{ sightColor }}; box-shadow: 0 0 18px rgba(0,0,0,.5); font-size: 15px; font-weight: 900; color: {{ sightColor }}; white-space: nowrap;">{{ sightLabel }}</div>
+        </div>
+        <div style="position: absolute; left: 50%; bottom: 52px; transform: translateX(-50%); width: 460px; max-width: calc(100% - 28px); padding: 10px 16px; border-radius: 16px; background: rgba(7,13,21,.92); border: 1px solid rgba(255,182,39,.45); font-size: 14px; font-weight: 700; line-height: 1.4; color: #ffe3ab; text-align: center; text-wrap: pretty; pointer-events: none;">Drag up and down, press ↑ ↓, or use the head slider to move your eye. The mark that lines up with the top of the liquid changes.</div>
+      </sc-if>
+      <sc-if value="{{ showNote }}">
+        <div style="{{ noteCss }}">{{ noteText }}</div> line-height: 1.45; color: #d6f5de; text-align: center; text-wrap: pretty;">{{ noteText }}</div>
+      </sc-if>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 900}, &quot;creditsPerCorrect&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 3, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 1, &quot;max&quot;: 10, &quot;section&quot;: &quot;Lesson&quot;}, &quot;showCredits&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;sound&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;defaultView&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;apparatus&quot;, &quot;zoom&quot;, &quot;both&quot;], &quot;default&quot;: &quot;both&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;3D view&quot;}}">
+const STEPS = [
+  { id: 'intro', label: 'Intro' },
+  { id: 'touch', label: '✋ Finger test' },
+  { id: 'measure', label: '🌡️ Thermometer' },
+  { id: 'quiz', label: '🏆 Challenge' },
+  { id: 'done', label: 'Wrap-up' }
+];
+
+const CUPS = ['a', 'b', 'c', 'd', 'e'];
+const POOL = [14, 23, 36, 42, 51];
+const ROOM = 28;
+
+const PREDS = {
+  touch: [
+    { v: 'yes', text: 'Yes, exactly right' },
+    { v: 'most', text: 'Mostly, with a few mixed up' },
+    { v: 'no', text: 'No — fingers cannot tell' }
+  ],
+  measure: [
+    { v: 'yes', text: 'Yes, exactly' },
+    { v: 'most', text: 'Mostly' },
+    { v: 'no', text: 'Probably not' }
+  ]
+};
+
+const NOTES = {
+  touch: 'Three groups, three different orders. Touch tells us roughly hot or cold, but not how hot, and not the same for everyone. We need a better tool.',
+  measure: 'Every group got the same order, because a thermometer measures temperature accurately. The higher the temperature, the hotter the water. The unit is degrees Celsius, °C.'
+};
+
+const QUESTIONS = [
+  {
+    topic: 'Sense of touch',
+    text: 'Three groups dipped a finger into the same five cups and wrote down three different orders. Why?',
+    options: [
+      'Touch only gives a rough idea of hot or cold, and the cup you touched just before changes what you feel.',
+      'Touch is accurate if you are careful, so two of the groups must have been careless.',
+      'The water in the cups changed temperature while the groups were working.',
+      'Some fingers are bigger, so they pick up more heat.'
+    ],
+    answer: 0,
+    why: 'Your finger compares. After a hot cup the next one feels cooler than it really is, and two cups close together feel the same. Nobody was careless — touch simply cannot give you a number.'
+  },
+  {
+    topic: 'Temperature',
+    text: 'What does a thermometer measure?',
+    options: [
+      'Temperature — how hot or cold something is.',
+      'The amount of heat stored inside the water.',
+      'How much water is in the cup.',
+      'How quickly the water is cooling down.'
+    ],
+    answer: 0,
+    why: 'Temperature is a measure of how hot or cold an object is. A thermometer measures it accurately, so everyone who reads it properly gets the same number.'
+  },
+  {
+    topic: 'Units',
+    text: 'The thermometer in cup C stops at the mark for 36. How do you write that reading down?',
+    options: [
+      '36 ml',
+      '36 degrees',
+      '36 °C — degrees Celsius',
+      '36 g'
+    ],
+    answer: 2,
+    why: 'Temperature is measured in degrees Celsius, written °C. "Degrees" on its own does not say which scale you used.'
+  },
+  {
+    topic: 'Reading it properly',
+    text: 'Why do you put your eye level with the top of the liquid before you read the scale?',
+    options: [
+      'Looking down from above, or up from below, makes you read a mark that is one or two degrees out.',
+      'It makes the liquid rise faster, so you wait less.',
+      'It stops the thermometer from tipping over in the cup.',
+      'It keeps your face away from the hot water.'
+    ],
+    answer: 0,
+    why: 'From above or below, the top of the liquid and the mark on the scale no longer line up, so you read the wrong number. At eye level everyone reads the same value.'
+  },
+  {
+    topic: 'Reading it properly',
+    text: 'The liquid is still creeping up the tube. Why wait before you read it?',
+    options: [
+      'A column that is still moving means the water is heating up.',
+      'The liquid has not finished moving, so the number is not the temperature of the water yet.',
+      'The thermometer could break if you read it too early.',
+      'The water needs time to mix itself up.'
+    ],
+    answer: 1,
+    why: 'The thermometer has to reach the same temperature as the water. When the column stops changing, it has — and only then is the reading the temperature of the water.'
+  },
+  {
+    topic: 'Reading it properly',
+    text: 'Why must the tip of the thermometer not rest on the bottom of the cup?',
+    options: [
+      'The glass tip would crack against the cup.',
+      'The reading would always come out too low.',
+      'You would be measuring the cup instead of the water.',
+      'The water would spill over the side.'
+    ],
+    answer: 2,
+    why: 'Keep the tip in the water and clear of the bottom and the sides, so the thermometer takes the temperature of the water only.'
+  }
+];
+
+function unlockedIds() {
+  let raw = null;
+  try { raw = new URLSearchParams(location.search).get('unlock'); } catch (e) { raw = null; }
+  if (raw === null || raw === undefined) return STEPS.map(s => s.id);
+  raw = String(raw).trim();
+  if (raw.toLowerCase() === 'all') return STEPS.map(s => s.id);
+  const list = raw.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+  if (list.indexOf('intro') < 0) list.push('intro');
+  return list;
+}
+
+function shuffle(a) {
+  const o = a.slice();
+  for (let i = o.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = o[i]; o[i] = o[j]; o[j] = t;
+  }
+  return o;
+}
+
+function dealTemps() {
+  const v = shuffle(POOL);
+  const out = {};
+  CUPS.forEach((c, i) => { out[c] = v[i]; });
+  return out;
+}
+
+/* two plausible finger orderings: the true order with one or two
+   neighbouring swaps, never the same as the pupil's row */
+function otherGroups(trueOrder, pupil) {
+  const key = r => r.join('');
+  const swap = (n) => {
+    const a = trueOrder.slice();
+    for (let i = 0; i < n; i++) {
+      const j = 1 + Math.floor(Math.random() * (a.length - 1));
+      const t = a[j - 1]; a[j - 1] = a[j]; a[j] = t;
+    }
+    return a;
+  };
+  const rows = [];
+  let guard = 0;
+  while (rows.length < 2 && guard++ < 80) {
+    const r = swap(rows.length ? 2 : 1);
+    if (key(r) === key(pupil) || key(r) === key(trueOrder)) continue;
+    if (rows.some(x => key(x) === key(r))) continue;
+    rows.push(r);
+  }
+  while (rows.length < 2) rows.push(swap(1));
+  return rows;
+}
+
+const TICKS = [0, 10, 20, 30, 40, 50, 60, 70];
+const SY = (t) => 232 - (t / 70) * 214;
+
+class Component extends DCLogic {
+  unlocked = unlockedIds();
+
+  state = {
+    step: 0,
+    temps: dealTemps(),
+    pred: {},
+    expanded: false,
+    cup: null,
+    action: 'none',
+    dip: 0,
+    dipped: {},
+    feelChip: null,
+    head: 0,
+    depth: 55,
+    shown: ROOM,
+    steady: false,
+    readings: {},
+    boards: {
+      touch: { slots: [null, null, null, null, null], locked: false, groups: null, msg: '' },
+      measure: { slots: [null, null, null, null, null], locked: false, groups: null, msg: '' }
+    },
+    sentence: null,
+    sightY: 0.5,
+    view: null,
+    lockMsg: false,
+    qi: 0,
+    picked: null,
+    score: 0,
+    credits: 0
+  };
+
+  componentDidMount() {
+    this._onRead = (e) => {
+      const d = e.detail;
+      if (!d) return;
+      const s = this.state;
+      this._lastEmit = Date.now();
+      if (Math.abs(d.shownTemp - s.shown) < 0.07 && d.steady === s.steady && Math.abs(d.dip - s.dip) < 0.03) return;
+      const sy = typeof d.sightY === 'number' ? d.sightY : this.state.sightY;
+      this.setState({ shown: d.shownTemp, steady: d.steady, dip: d.dip, sightY: sy });
+    };
+    this._onDipped = (e) => {
+      const d = e.detail || {};
+      clearTimeout(this._dipT);
+      this._prevDip = d.trueTemp;
+      this.cue('select');
+      const dipped = Object.assign({}, this.state.dipped);
+      dipped[d.cup] = d.feeling;
+      this.setState({ dipped, cup: null, action: 'none', dip: 0, feelChip: { cup: d.cup, feeling: d.feeling } });
+      clearTimeout(this._chipT);
+      this._chipT = setTimeout(() => this.setState({ feelChip: null }), 3600);
+    };
+    this._onSettled = () => this.cue('click');
+    this._onHead = (e) => {
+      const h = (e.detail || {}).head;
+      if ((this.state.view || this.props.defaultView || 'both') !== 'eyeline') return;
+      if (typeof h === 'number' && Math.abs(h - this.state.head) > 0.8) this.setState({ head: h });
+    };
+    this._onPick = (e) => this.tapCup((e.detail || {}).cup);
+    addEventListener('thermo', this._onRead);
+    addEventListener('thermo-dipped', this._onDipped);
+    addEventListener('thermo-settled', this._onSettled);
+    addEventListener('thermo-pick', this._onPick);
+    addEventListener('thermo-head', this._onHead);
+
+    /* ← → walk along the row of cups; ↑ ↓ raise and lower the head in the
+       first-person view */
+    this._onKey = (e) => {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      const id = this.stepId();
+      if (id !== 'touch' && id !== 'measure') return;
+      const s = this.state;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const from = s.cup || this._lastCup;
+        const cur = from ? CUPS.indexOf(from) : -1;
+        const step = e.key === 'ArrowRight' ? 1 : -1;
+        const next = cur < 0 ? (step > 0 ? 0 : CUPS.length - 1) : (cur + step + CUPS.length) % CUPS.length;
+        this.tapCup(CUPS[next]);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        if ((s.view || this.props.defaultView || 'both') !== 'eyeline') return;
+        e.preventDefault();
+        const d = e.key === 'ArrowUp' ? 12 : -12;
+        this.setState({ head: Math.max(-100, Math.min(100, s.head + d)) });
+      }
+    };
+    addEventListener('keydown', this._onKey);
+
+    this._unlockAudio = () => {
+      if (this._ac) return;
+      try { this._ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this._ac = null; }
+    };
+    addEventListener('pointerdown', this._unlockAudio, true);
+    addEventListener('keydown', this._unlockAudio, true);
+
+    /* fallback clock: if the bench is not sending readings (no WebGL, or the
+       tab was in the background) the same pure physics() still runs the column */
+    this._probeTick = setInterval(() => {
+      const s = this.state;
+      const now = Date.now();
+      if (this.stepId() !== 'measure' || !s.cup || s.action !== 'probe') { this._pAt = now; return; }
+      const since = now - this._pAt;
+      this._pAt = now;
+      if (now - (this._lastEmit || 0) < 600) return;
+      /* time only accumulates while the tip is clear of the bottom — never rewound */
+      if (this._zoneWas !== this.zone()) { this._zoneWas = this.zone(); this._goodMs = 0; this._pStart0 = s.shown; }
+      this._goodMs = (this._goodMs || 0) + Math.min(300, since);
+      const P = window.thermoPhysics;
+      const t = (this._goodMs || 0) / 1000;
+      const TG = window.thermoTarget ? window.thermoTarget(this.zone(), s.temps[s.cup]) : s.temps[s.cup];
+      const r = P ? P(TG, this._pStart0, t) : { value: TG, steady: t >= 4 };
+      const off = window.thermoParallax ? window.thermoParallax(s.head) : 0;
+      this.setState({ shown: r.value + (r.steady ? off : 0), steady: r.steady });
+    }, 140);
+  }
+
+  componentWillUnmount() {
+    removeEventListener('thermo', this._onRead);
+    removeEventListener('thermo-dipped', this._onDipped);
+    removeEventListener('thermo-settled', this._onSettled);
+    removeEventListener('thermo-pick', this._onPick);
+    removeEventListener('thermo-head', this._onHead);
+    removeEventListener('keydown', this._onKey);
+    removeEventListener('pointerdown', this._unlockAudio, true);
+    removeEventListener('keydown', this._unlockAudio, true);
+    clearTimeout(this._chipT);
+    clearTimeout(this._lockT);
+    clearTimeout(this._dipT);
+    clearInterval(this._probeTick);
+  }
+
+  cue(kind) {
+    if (this.props.sound === false) return;
+    const ac = this._ac;
+    if (!ac) return;
+    if (ac.state === 'suspended') ac.resume();
+    const t0 = ac.currentTime;
+    const beep = (f, at, dur, type, vol) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + at + 0.014);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0 + at); o.stop(t0 + at + dur + 0.03);
+    };
+    if (kind === 'click') beep(320, 0, 0.07, 'square', 0.05);
+    else if (kind === 'select') beep(560, 0, 0.1, 'triangle', 0.06);
+    else if (kind === 'correct') [523, 659, 784].forEach((f, i) => beep(f, i * 0.075, 0.15, 'triangle', 0.07));
+    else if (kind === 'wrong') { beep(208, 0, 0.2, 'sine', 0.07); beep(165, 0.1, 0.24, 'sine', 0.055); }
+  }
+
+  stepId() { return STEPS[this.state.step].id; }
+  experiment() { return this.stepId() === 'measure' ? 'measure' : 'touch'; }
+  phase() { return this.experiment(); }
+  isOpen(id) { return this.unlocked.indexOf(id) >= 0; }
+  zone() {
+    const Z = window.thermoZone;
+    const d = this.state.depth;
+    return Z ? Z(d) : (d < 34 ? 'air' : d > 88 ? 'bottom' : 'ok');
+  }
+  depthOk() { return this.zone() === 'ok'; }
+  trueOrder() {
+    const t = this.state.temps;
+    return CUPS.slice().sort((a, b) => t[a] - t[b]);
+  }
+
+  goStep(n) {
+    const st = STEPS[n];
+    if (!st) return;
+    if (!this.isOpen(st.id)) {
+      this.cue('wrong');
+      clearTimeout(this._lockT);
+      this.setState({ lockMsg: true });
+      this._lockT = setTimeout(() => this.setState({ lockMsg: false }), 3000);
+      return;
+    }
+    this.cue('click');
+    this.setState({
+      step: n, cup: null, action: 'none', dip: 0, steady: false,
+      picked: null, expanded: false, lockMsg: false, feelChip: null
+    });
+  }
+
+  tapCup(id) {
+    if (CUPS.indexOf(id) < 0) return;
+    this._lastCup = id;
+    const s = this.state, step = this.stepId();
+    if (step === 'touch') {
+      if (s.action === 'dip') return;
+      if (s.boards.touch.locked) return;
+      this.cue('click');
+      this.setState({ cup: id, action: 'dip', dip: 0, feelChip: null });
+      /* if the bench never reports the dip, resolve it here so the finger
+         test can always be finished */
+      clearTimeout(this._dipT);
+      this._dipT = setTimeout(() => {
+        if (this.state.cup !== id || this.state.action !== 'dip') return;
+        const F = window.thermoFeel;
+        const t = this.state.temps[id];
+        const word = F ? F(t, this._prevDip ?? null) : (t < 19 ? 'icy' : t < 29 ? 'cool' : t < 40 ? 'warm' : t < 50 ? 'hot' : 'very hot');
+        this._prevDip = t;
+        window.dispatchEvent(new CustomEvent('thermo-dipped', { detail: { cup: id, trueTemp: t, feeling: word } }));
+      }, 2400);
+    } else if (step === 'measure') {
+      if (s.boards.measure.locked) return;
+      this.cue('click');
+      this._pAt = Date.now();
+      this._goodMs = 0;
+      this._pStart0 = ROOM;
+      this.setState({ cup: id, action: 'probe', steady: false, shown: ROOM });
+    }
+  }
+
+  record() {
+    const s = this.state;
+    if (!s.cup || !s.steady || Math.abs(s.head) > 25 || this.zone() !== 'ok') return;
+    const readings = Object.assign({}, s.readings);
+    readings[s.cup] = s.temps[s.cup];
+    const done = Object.keys(readings).length === CUPS.length;
+    this.cue('correct');
+    this._goodMs = 0;
+    this.setState({ readings, cup: null, action: 'none', steady: false });
+    if (done) setTimeout(() => this.cue('correct'), 260);
+  }
+
+  setBoard(patch) {
+    const ph = this.phase();
+    const boards = Object.assign({}, this.state.boards);
+    boards[ph] = Object.assign({}, boards[ph], patch);
+    this.setState({ boards });
+  }
+
+  place(id) {
+    const b = this.state.boards[this.phase()];
+    if (b.locked) return;
+    const slots = b.slots.slice();
+    const i = slots.indexOf(null);
+    if (i < 0) return;
+    slots[i] = id;
+    this.cue('select');
+    this.setBoard({ slots, msg: '' });
+  }
+
+  clearSlot(i) {
+    const b = this.state.boards[this.phase()];
+    if (b.locked || !b.slots[i]) return;
+    const slots = b.slots.slice();
+    slots[i] = null;
+    this.cue('click');
+    this.setBoard({ slots, msg: '' });
+  }
+
+  lockOrder() {
+    const ph = this.phase();
+    const b = this.state.boards[ph];
+    if (b.locked || b.slots.some(x => !x)) return;
+    const truth = this.trueOrder();
+    if (ph === 'measure') {
+      const same = b.slots.every((c, i) => c === truth[i]);
+      if (!same) {
+        this.cue('wrong');
+        this.setBoard({ msg: 'One is out of place — check your readings again.' });
+        return;
+      }
+      this.cue('correct');
+      this.setBoard({ locked: true, groups: [truth, truth], msg: '' });
+      return;
+    }
+    this.cue('select');
+    this.setBoard({ locked: true, groups: otherGroups(truth, b.slots), msg: '' });
+  }
+
+  ring(on, radius) {
+    const r = radius || 16;
+    return 'display:block;padding:3px;border-radius:' + r + 'px;' + (on
+      ? 'background:linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f);background-size:300% 100%;animation:clRainbow 2.4s linear infinite;box-shadow:0 0 16px rgba(255,255,255,.28);'
+      : 'background:transparent;');
+  }
+
+  renderVals() {
+    const s = this.state, id = this.stepId(), exp = this.experiment();
+    const board = s.boards[exp] || s.boards.touch;
+    const truth = this.trueOrder();
+    const q = QUESTIONS[Math.min(s.qi, QUESTIONS.length - 1)];
+    const answered = s.picked !== null;
+    const correct = answered && s.picked === q.answer;
+    const perCorrect = this.props.creditsPerCorrect ?? 3;
+    const showCredits = this.props.showCredits ?? true;
+    const isPredStep = id === 'touch' || id === 'measure';
+    const chosen = (PREDS[exp] || []).find(o => o.v === s.pred[exp]);
+    const collapsed = isPredStep && !!chosen && !s.expanded;
+    const recorded = Object.keys(s.readings);
+    const allRead = recorded.length === CUPS.length;
+    const allDipped = CUPS.every(c => s.dipped[c]);
+    const zone = this.zone();
+    const depthOk = zone === 'ok';
+    const eye = s.head > 25 ? 'above' : s.head < -25 ? 'below' : 'level';
+    const level = eye === 'level';
+    const par = window.thermoParallax ? window.thermoParallax(s.head) : 0;
+
+    const pillBase = 'padding:8px 12px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:800;transition:all 120ms ease-out;';
+    const steps = STEPS.map((st, i) => {
+      const open = this.isOpen(st.id);
+      return {
+        label: (open ? '' : '🔒 ') + st.label,
+        go: () => this.goStep(i),
+        pill: pillBase + (i === s.step
+          ? 'background:#2f6fd6;color:#fff;border:2px solid #6aa9f0;box-shadow:0 0 16px rgba(74,144,226,.5);'
+          : 'background:#2b3340;color:#d6dee6;border:1px solid rgba(255,255,255,.14);')
+          + (open ? 'cursor:pointer;' : 'opacity:.38;cursor:not-allowed;')
+      };
+    });
+
+    const predOptions = (PREDS[exp] || []).map(o => ({
+      text: o.text,
+      selected: s.pred[exp] === o.v,
+      ring: this.ring(s.pred[exp] === o.v, 15),
+      pick: () => {
+        this.cue('select');
+        const pred = Object.assign({}, s.pred);
+        pred[exp] = o.v;
+        this.setState({ pred, expanded: false });
+      }
+    }));
+
+    const activeView = s.view || this.props.defaultView || 'both';
+    const viewButtons = [
+      { v: 'apparatus', label: 'Bench' },
+      { v: 'zoom', label: 'Liquid' },
+      { v: 'both', label: 'Both' },
+      { v: 'eyeline', label: '👁 Eye' }
+    ].map(o => ({
+      label: o.label,
+      active: activeView === o.v,
+      ring: this.ring(activeView === o.v, 15),
+      pick: () => { this.cue('click'); this.setState({ view: o.v }); }
+    }));
+
+    const eyeButtons = [
+      { v: 'above', label: 'Above' },
+      { v: 'level', label: 'Level' },
+      { v: 'below', label: 'Below' }
+    ].map(o => ({
+      label: o.label,
+      active: eye === o.v,
+      ring: this.ring(eye === o.v, 15),
+      pick: () => {
+        this.cue('click');
+        this.setState({ head: o.v === 'above' ? 100 : o.v === 'below' ? -100 : 0 });
+      }
+    }));
+
+    /* the five cup buttons — a two-second ring fills while the finger is in */
+    const cupButtons = CUPS.map(c => {
+      const active = s.cup === c;
+      const dipping = active && s.action === 'dip';
+      const done = id === 'touch' ? !!s.dipped[c] : s.readings[c] !== undefined;
+      const pct = Math.round(Math.min(1, s.dip) * 100);
+      const base = 'display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;min-height:52px;border-radius:12px;font-family:inherit;cursor:pointer;transition:all 120ms ease-out;';
+      let css = base;
+      if (dipping) {
+        css += 'background:conic-gradient(#ff6a5e ' + pct + '%, rgba(255,106,94,.12) 0);border:2px solid #ff6a5e;box-shadow:0 0 14px rgba(255,106,94,.5);';
+      } else if (active) {
+        css += 'background:#2f6fd6;border:2px solid #6aa9f0;box-shadow:0 0 14px rgba(74,144,226,.5);';
+      } else if (done) {
+        css += 'background:rgba(63,195,95,.16);border:2px solid rgba(94,224,122,.7);';
+      } else {
+        css += 'background:#0e1925;border:1px solid rgba(255,255,255,.16);';
+      }
+      return {
+        letter: c.toUpperCase(),
+        word: id === 'touch' ? (s.dipped[c] || '—') : (s.readings[c] !== undefined ? s.readings[c] + '°' : '—'),
+        css,
+        tap: () => this.tapCup(c)
+      };
+    });
+
+    /* the ordering board */
+    const placed = board.slots.filter(Boolean);
+    const pool = id === 'measure' ? recorded.slice().sort() : CUPS;
+    const slots = board.slots.map((c, i) => {
+      const filled = !!c;
+      let css = 'display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;font-family:inherit;font-size:19px;font-weight:900;transition:all 120ms ease-out;';
+      css += filled
+        ? 'background:#0e1925;border:2px solid #ffb627;color:#ffb627;box-shadow:0 0 12px rgba(255,182,39,.3);'
+        : 'background:rgba(255,255,255,.04);border:2px dashed rgba(255,255,255,.22);color:#3d4a5a;';
+      css += board.locked ? 'cursor:default;' : 'cursor:pointer;';
+      return { label: filled ? c.toUpperCase() : String(i + 1), css, tap: () => this.clearSlot(i) };
+    });
+    const tray = pool.filter(c => placed.indexOf(c) < 0).map(c => ({
+      label: c.toUpperCase(),
+      css: 'width:40px;height:40px;border-radius:12px;background:#22303f;border:2px solid rgba(255,182,39,.55);color:#ffb627;font-family:inherit;font-size:18px;font-weight:900;cursor:pointer;transition:all 120ms ease-out;',
+      tap: () => this.place(c)
+    }));
+    const rowsSrc = board.locked
+      ? [{ name: 'You', cells: board.slots }].concat((board.groups || []).map((r, i) => ({ name: 'Group ' + (i + 2), cells: r })))
+      : [];
+    const groupRows = rowsSrc.map((r, ri) => {
+      const o = { name: r.name };
+      r.cells.forEach((c, i) => {
+        const mine = board.slots[i];
+        const agree = exp === 'measure' || c === mine;
+        const cellCss = 'flex:1;text-align:center;padding:5px 0;border-radius:9px;font-size:14px;font-weight:900;'
+          + (exp === 'measure'
+            ? 'background:rgba(63,195,95,.18);border:1px solid rgba(94,224,122,.6);color:#5ee07a;'
+            : (ri === 0
+              ? 'background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:#d6dee6;'
+              : agree
+                ? 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#8a98a6;'
+                : 'background:rgba(255,182,39,.2);border:1px solid rgba(255,182,39,.7);color:#ffb627;'));
+        o['l' + i] = c.toUpperCase();
+        o['s' + i] = cellCss;
+      });
+      return o;
+    });
+
+    /* readings table + the big scale beside it */
+    const tableRows = CUPS.map(c => ({
+      label: 'Cup ' + c.toUpperCase(),
+      value: s.readings[c] !== undefined ? s.readings[c] + ' °C' : '—',
+      color: s.readings[c] !== undefined ? '#ff6a5e' : '#5a6775'
+    }));
+    const ticks = TICKS.map(t => ({ y: SY(t).toFixed(1), ty: (SY(t) + 3).toFixed(1), label: String(t) }));
+    const shownClamped = Math.max(0, Math.min(70, s.shown));
+    const marks = recorded
+      .slice()
+      .sort((a, b) => s.readings[a] - s.readings[b])
+      .map(c => ({
+        y: SY(s.readings[c]).toFixed(1),
+        ty: (SY(s.readings[c]) + 3.5).toFixed(1),
+        label: s.readings[c] + ' °C (' + c.toUpperCase() + ')',
+        color: '#ffb627'
+      }));
+
+    const sentenceOptions = [
+      { v: 'higher', text: 'higher ✓' },
+      { v: 'lower', text: 'lower' }
+    ].map(o => ({
+      text: o.text,
+      selected: s.sentence === o.v,
+      state: s.sentence === null ? undefined : (o.v === 'higher' ? 'correct' : (s.sentence === o.v ? 'wrong' : undefined)),
+      pick: () => {
+        if (s.sentence !== null) return;
+        this.cue(o.v === 'higher' ? 'correct' : 'wrong');
+        this.setState({ sentence: o.v });
+      }
+    }));
+
+    const qOptions = q.options.map((text, i) => ({
+      text,
+      selected: !answered && s.picked === i,
+      state: answered ? (i === q.answer ? 'correct' : (i === s.picked ? 'wrong' : undefined)) : undefined,
+      pick: () => {
+        if (s.picked !== null) return;
+        const good = i === q.answer;
+        this.cue(good ? 'correct' : 'wrong');
+        this.setState({ picked: i, score: s.score + (good ? 1 : 0), credits: s.credits + (good ? perCorrect : 0) });
+      }
+    }));
+
+    const statusOk = s.cup && s.steady && level && depthOk;
+    let statusText = 'Tap a cup — or press ← → — to lift its cover and lower the thermometer in.';
+    let statusTone = 'muted';
+    if (s.cup) {
+      if (zone === 'air') {
+        statusText = s.steady
+          ? 'Steady, but the bulb is in the air — that is the temperature of the room, not the water. Lower it in.'
+          : 'The bulb is in the air, above the water. Lower it in.';
+        statusTone = 'amber';
+      } else if (zone === 'bottom') {
+        statusText = s.steady
+          ? 'Steady, but the tip is on the bottom — you are measuring the cup, not the water. Lift it a little.'
+          : 'Not touching the bottom — lift it a little.';
+        statusTone = 'amber';
+      } else if (!s.steady) { statusText = 'Reading… wait until the column stops changing.'; statusTone = 'cyan'; }
+      else if (!level) { statusText = 'Read it at eye level — you are ' + (eye === 'above' ? 'looking down on it' : 'looking up at it') + '.'; statusTone = 'amber'; }
+      else { statusText = 'Steady — that is the temperature of the water.'; statusTone = 'green'; }
+    }
+    const toneCss = {
+      muted: 'background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:#8a98a6;',
+      amber: 'background:rgba(255,182,39,.16);border:1px solid rgba(255,182,39,.55);color:#ffb627;',
+      cyan: 'background:rgba(102,204,255,.14);border:1px solid rgba(102,204,255,.5);color:#66ccff;',
+      green: 'background:rgba(63,195,95,.16);border:1px solid rgba(94,224,122,.6);color:#5ee07a;'
+    }[statusTone];
+
+    const noteOn = collapsed && board.locked && (exp === 'touch' || s.sentence !== null);
+
+    return {
+      /* the wrap-up is the whole point of the lesson: give it two thirds of
+         the screen and put the bench away */
+      asideCss: 'width:' + (id === 'done' ? '66%' : '308px')
+        + ';flex:none;padding:' + (id === 'done' ? '16px 22px' : '12px')
+        + ';display:flex;flex-direction:column;gap:12px;overflow-y:auto;background:#060b12;'
+        + (id === 'done' ? '' : 'border-right:1px solid rgba(255,255,255,.08);'),
+      sceneCss: id === 'done'
+        ? 'display:none;'
+        : 'flex:1;position:relative;min-width:0;background:#08131f;',
+      steps, lockMsg: s.lockMsg,
+      isIntro: id === 'intro', isQuiz: id === 'quiz', isDone: id === 'done',
+      showTouchPanel: id === 'touch' && !collapsed,
+      showMeasurePanel: id === 'measure' && !collapsed,
+      showTouchControls: id === 'touch' && collapsed,
+      showMeasureControls: id === 'measure' && collapsed && !board.locked,
+      showReadings: id === 'measure' && collapsed,
+      showSentence: id === 'measure' && collapsed && board.locked,
+      showPredChip: collapsed,
+      showNav: collapsed,
+      nextLabel: exp === 'touch' ? 'Next: thermometer →' : 'Next: challenge →',
+      predLabel: chosen ? chosen.text : '',
+      expandPanel: () => { this.cue('click'); this.setState({ expanded: true }); },
+
+      experiment: exp,
+      cupAttr: s.cup || 'none',
+      action: s.action,
+      eye,
+      head: s.head,
+      headAttr: String(Math.round(s.head)),
+      depthAttr: String(s.depth),
+      view: activeView,
+      tempsAttr: CUPS.map(c => c + ':' + s.temps[c]).join(','),
+
+      cupButtons,
+      dipHint: s.action === 'dip'
+        ? 'Keep your finger in… two seconds.'
+        : allDipped
+          ? 'All five felt. Now put them in order below the bench.'
+          : 'Tap a cup here or on the bench — or step along the row with ← →. The cover lifts, you dip for two seconds, then it goes back on.',
+      viewButtons, eyeButtons,
+
+      cupLabel: s.cup ? 'Cup ' + s.cup.toUpperCase() : 'No cup chosen',
+      readStr: s.cup ? Math.round(shownClamped) + ' °C' : '— °C',
+      readCss: 'font-size:24px;font-weight:900;color:' + (statusOk ? '#5ee07a' : s.cup ? '#ffb627' : '#5a6775') + ';',
+      depth: s.depth,
+      depthWord: zone === 'air' ? 'Bulb in the air' : zone === 'bottom' ? 'Resting on the bottom' : 'Tip in the water',
+      setDepth: (e) => this.setState({ depth: parseFloat(e.target.value) }),
+      statusText,
+      statusCss: 'margin:10px 0;padding:9px 12px;border-radius:12px;font-size:13px;font-weight:800;line-height:1.35;' + toneCss,
+      recordOff: !statusOk,
+      recordLabel: allRead ? 'All five recorded' : 'Record this reading',
+      record: () => this.record(),
+
+      hintChip: activeView === 'eyeline'
+        ? 'Drag or ↑ ↓ to move your head · scroll to zoom · ← → cups'
+        : 'Drag to orbit · scroll to zoom · ← → cups',
+      showHead: activeView === 'eyeline',
+      headWord: level ? 'Eye level' : (eye === 'above' ? 'Above the liquid' : 'Below the liquid'),
+      headNote: level
+        ? 'The top of the liquid lines up with the mark. This reading is right.'
+        : 'Your sight line crosses the scale ' + (par > 0 ? 'above' : 'below') + ' the true mark, so you read '
+          + Math.abs(Math.round(par * 10) / 10) + ' °C ' + (par > 0 ? 'too high' : 'too low') + '.',
+      setHead: (e) => this.setState({ head: parseFloat(e.target.value) }),
+      showSight: activeView === 'eyeline',
+      sightCss: 'position:absolute;left:0;right:0;top:' + (s.sightY * 100).toFixed(2)
+        + '%;display:flex;align-items:center;pointer-events:none;',
+      sightColor: level ? '#5ee07a' : '#ffb627',
+      sightLabel: s.cup
+        ? (level ? 'You read ' + Math.round(shownClamped) + ' °C ✓' : 'You read ' + Math.round(shownClamped) + ' °C · true ' + s.temps[s.cup] + ' °C')
+        : 'Tap a cup to measure',
+
+      tableRows, ticks, marks,
+      colX: '34', colY: SY(shownClamped).toFixed(1), colH: (232 - SY(shownClamped)).toFixed(1),
+      recordedHint: allRead
+        ? 'Five readings. Now order the cups by their readings below the bench.'
+        : recorded.length + ' of 5 recorded. The marker on the scale shows each one.',
+
+      showBoard: collapsed && (id === 'touch' ? allDipped : allRead),
+      showTray: !board.locked,
+      showLockBtn: !board.locked,
+      lockOff: board.slots.some(x => !x),
+      lockLabel: board.msg ? board.msg : 'Lock in my order',
+      boardHint: board.locked
+        ? (exp === 'measure' ? 'All three groups agree' : 'Amber = the groups disagree')
+        : 'Tap a tile, then tap a slot to take it back',
+      slots, tray, groupRows, showGroups: board.locked,
+      /* once the rows are in, the board rides above the note */
+      boardCss: 'position:absolute;left:50%;transform:translateX(-50%);bottom:'
+        + (board.locked ? '104px' : '44px')
+        + ';width:540px;max-width:calc(100% - 28px);display:flex;flex-direction:column;gap:8px;'
+        + 'padding:12px 14px;border-radius:18px;background:rgba(7,13,21,.9);'
+        + 'border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 30px rgba(0,0,0,.55);'
+        + 'backdrop-filter:blur(6px);',
+      lockOrder: () => this.lockOrder(),
+
+      blankWord: s.sentence === null ? '?' : 'higher',
+      blankCss: 'padding:1px 10px;border-radius:8px;background:rgba(255,106,94,.18);border:1px solid rgba(255,106,94,.6);color:#ff6a5e;',
+      sentenceOptions,
+
+      showFeelChip: !!s.feelChip,
+      feelCup: s.feelChip ? 'Cup ' + s.feelChip.cup.toUpperCase() + ' feels' : '',
+      feelWord: s.feelChip ? s.feelChip.feeling : '',
+
+      showNote: noteOn,
+      noteText: NOTES[exp] || '',
+      /* the note sits under the ordering board, never over the group rows */
+      noteCss: 'position:absolute;left:50%;transform:translateX(-50%);bottom:'
+        + (board.locked ? '44px' : '10px')
+        + ';width:540px;max-width:calc(100% - 28px);padding:10px 16px;border-radius:16px;'
+        + 'background:rgba(9,26,17,.94);border:1px solid rgba(94,224,122,.5);'
+        + 'box-shadow:0 8px 26px rgba(0,0,0,.5);font-size:14px;font-weight:700;line-height:1.4;'
+        + 'color:#d6f5de;text-align:center;text-wrap:pretty;',
+
+      predOptions,
+
+      qTopic: q.topic,
+      qCounter: 'Question ' + (s.qi + 1) + ' of ' + QUESTIONS.length,
+      qText: q.text,
+      qOptions,
+      qAnswered: answered,
+      qVerdict: correct
+        ? (showCredits ? 'Correct! +' + perCorrect + ' credits' : 'Correct!')
+        : 'Not quite — here is why',
+      qWhy: q.why,
+      qNextLabel: s.qi < QUESTIONS.length - 1 ? 'Next question →' : 'See my results →',
+      nextQ: () => {
+        this.cue('click');
+        if (s.qi < QUESTIONS.length - 1) this.setState({ qi: s.qi + 1, picked: null });
+        else this.goStep(STEPS.length - 1);
+      },
+      score: s.score,
+      scoreLine: s.score + ' out of ' + QUESTIONS.length + ' correct'
+        + (showCredits ? ' — ' + s.credits + ' credits earned.' : '.'),
+      scoreLabel: Math.round((s.score / QUESTIONS.length) * 100) + '% correct',
+
+      next: () => this.goStep(Math.min(STEPS.length - 1, s.step + 1)),
+      back: () => this.goStep(Math.max(0, s.step - 1)),
+      goTouch: () => this.goStep(1),
+      restart: () => {
+        this.cue('click');
+        this.setState({
+          step: 0, temps: dealTemps(), pred: {}, expanded: false,
+          cup: null, action: 'none', dip: 0, dipped: {}, feelChip: null,
+          head: 0, depth: 55, shown: ROOM, steady: false, readings: {},
+          boards: {
+            touch: { slots: [null, null, null, null, null], locked: false, groups: null, msg: '' },
+            measure: { slots: [null, null, null, null, null], locked: false, groups: null, msg: '' }
+          },
+          sentence: null, qi: 0, picked: null, score: 0, credits: 0
+        });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
