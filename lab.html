@@ -607,7 +607,7 @@ function tidySpeech(t){ return String(t||'').replace(/\s*\b(full stop|period)\b/
    The browser's own English reader. Every step and card gets a small speaker;
    a part gets "Read this part", which walks through its segments in order.
    The segment being read wears the rainbow ring. Nothing leaves the device. */
-const TTS = { el: null, words: [], queue: [], on: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window };
+const TTS = { el: null, words: [], queue: [], audio: null, seq: 0, cloud: null, on: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window };
 function ttsVoice(){
   const vs = speechSynthesis.getVoices() || [];
   for (const lang of ['en-SG', 'en-GB', 'en-AU', 'en-US', 'en']) { const v = vs.find(x => (x.lang || '').replace('_', '-').toLowerCase().startsWith(lang.toLowerCase())); if (v) return v; }
@@ -655,29 +655,70 @@ function ttsMark(el, i){
   el.querySelectorAll('.w.now').forEach(x => x.classList.remove('now'));
   if (i != null && TTS.words[i]) TTS.words[i].sp.classList.add('now');
 }
-function ttsSpeak(el, onDone){
-  const { words, text } = ttsWords(el);
-  if (!text) { if (onDone) onDone(); return; }
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-SG'; u.rate = ttsRate(); u.pitch = 1;
-  const v = ttsVoice(); if (v) u.voice = v;
+// Read one segment. The natural voice comes from the server when a speech key
+// is set there (the audio arrives as mp3, with word times when the service gives
+// them); otherwise the browser's own voice reads it. Either way the segment
+// wears the ring and the word being spoken lights up.
+function ttsBegin(el, words){
   TTS.el = el; TTS.words = words; el.classList.add('reading');
   const b = el.querySelector('button.say'); if (b) { b.textContent = '⏹'; b.setAttribute('aria-label', 'Stop reading'); }
   try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
+}
+function ttsFinish(el, onDone){
+  if (TTS.el !== el) return;
+  ttsMark(el, null); el.classList.remove('reading');
+  const b = el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); }
+  TTS.el = null; if (onDone) onDone();
+}
+async function ttsSpeak(el, onDone){
+  const { words, text } = ttsWords(el);
+  if (!text) { if (onDone) onDone(); return; }
+  ttsBegin(el, words);
+  const my = ++TTS.seq;
+  if (TTS.cloud !== false){
+    try {
+      const d = await api('/api/lab', { action: 'speak', text });
+      if (TTS.seq !== my || TTS.el !== el) return;           // stopped while we waited
+      if (d && d.audio){ ttsPlay(el, words, text, d, () => ttsFinish(el, onDone)); return; }
+      if (d && d.off) TTS.cloud = false;                     // no key on the server: browser voice from now on
+    } catch(e){ if (TTS.seq !== my || TTS.el !== el) return; }
+  }
+  ttsBrowser(el, words, text, () => ttsFinish(el, onDone));
+}
+function ttsPlay(el, words, text, d, done){
+  let url = null;
+  try {
+    const bin = atob(d.audio); const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    url = URL.createObjectURL(new Blob([arr], { type: 'audio/mpeg' }));
+  } catch(e){ ttsBrowser(el, words, text, done); return; }
+  const au = new Audio(url); au.preload = 'auto'; au.playbackRate = ttsSlow() ? 0.8 : 1;
+  TTS.audio = au;
+  // When the service gives word times, each of our words takes the time of the
+  // mark that covers its first character. Otherwise time is spread evenly over
+  // the text, which is close enough to follow.
+  const marks = Array.isArray(d.marks) && d.marks.length ? d.marks : null;
+  const times = marks ? words.map(w => { const m = marks.find(x => w.start >= x.start && w.start < x.end) || marks.find(x => x.start >= w.start); return m ? m.t0 : null; }) : null;
+  const tick = () => {
+    if (TTS.audio !== au) return;
+    const t = au.currentTime; let i = -1;
+    if (times){ for (let k = 0; k < times.length; k++) if (times[k] != null && times[k] <= t) i = k; }
+    else if (au.duration && isFinite(au.duration)){ const ci = (t / au.duration) * text.length; for (let k = 0; k < words.length; k++) if (words[k].start <= ci) i = k; }
+    if (i >= 0) ttsMark(el, i);
+    requestAnimationFrame(tick);
+  };
+  const end = () => { if (TTS.audio !== au) return; TTS.audio = null; try { URL.revokeObjectURL(url); } catch(e){} done(); };
+  au.onended = end;
+  au.onerror = () => { if (TTS.audio !== au) return; TTS.audio = null; try { URL.revokeObjectURL(url); } catch(e){} ttsBrowser(el, words, text, done); };
+  au.play().then(() => requestAnimationFrame(tick)).catch(() => { if (TTS.audio !== au) return; TTS.audio = null; try { URL.revokeObjectURL(url); } catch(e){} ttsBrowser(el, words, text, done); });
+}
+function ttsBrowser(el, words, text, done){
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-SG'; u.rate = ttsRate(); u.pitch = 1;
+  const v = ttsVoice(); if (v) u.voice = v;
   u.onboundary = ev => { if (TTS.el !== el) return; const ci = ev.charIndex || 0; let i = words.findIndex(w => ci >= w.start && ci < w.end); if (i < 0) i = words.findIndex(w => w.start >= ci); if (i >= 0) ttsMark(el, i); };
-  u.onend = u.onerror = () => { if (TTS.el !== el) return; ttsMark(el, null); el.classList.remove('reading'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } TTS.el = null; if (onDone) onDone(); };
+  u.onend = u.onerror = () => { if (TTS.el === el) done(); };
   speechSynthesis.speak(u);
-}
-function ttsStop(){
-  if (!TTS.on) return;
-  TTS.queue = [];
-  try { speechSynthesis.cancel(); } catch(e){}
-  ttsClear();
-}
-function ttsClear(){
-  if (TTS.el){ ttsMark(TTS.el, null); TTS.el.classList.remove('reading'); const b = TTS.el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } }
-  TTS.el = null;
-  $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this part'; });
 }
 function ttsNext(){
   const el = TTS.queue.shift();
@@ -706,7 +747,7 @@ function addReaders(a){
     sp.className = 'ghost readspeed'; sp.type = 'button';
     const label = () => { sp.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; sp.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); };
     label();
-    sp.onclick = e => { e.stopPropagation(); try { localStorage.setItem(TTS_SLOW, ttsSlow() ? '0' : '1'); } catch(x){} $('act').querySelectorAll('button.readspeed').forEach(x => { x.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; x.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); }); };
+    sp.onclick = e => { e.stopPropagation(); try { localStorage.setItem(TTS_SLOW, ttsSlow() ? '0' : '1'); } catch(x){} if (TTS.audio) TTS.audio.playbackRate = ttsSlow() ? 0.8 : 1; $('act').querySelectorAll('button.readspeed').forEach(x => { x.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; x.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); }); };
     const b = document.createElement('button');
     b.className = 'ghost readpart'; b.type = 'button'; b.textContent = '🔊 Read this part';
     b.onclick = e => {

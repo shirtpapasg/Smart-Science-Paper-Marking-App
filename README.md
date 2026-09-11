@@ -90,6 +90,23 @@ progress screen by someone holding the device's parent code.
 
     CRON_SECRET        long random string, at least 16 characters
 
+## Read aloud, natural voice
+
+The lab steps page reads any step or card aloud. With no speech key set it uses
+the browser's own voice. For a natural voice, set one of these in Vercel:
+
+- `OPENAI_API_KEY` — OpenAI's `gpt-4o-mini-tts`; optional `TTS_VOICE` (default
+  `nova`; also `coral`, `sage`, `shimmer`…). Word highlighting is estimated.
+- `ELEVENLABS_API_KEY` — ElevenLabs; set `TTS_VOICE` to a voice id from your
+  ElevenLabs voice library (default is their "Rachel"). Word highlighting is
+  exact, from the service's own timings.
+- `TTS_PROVIDER` (`openai` or `elevenlabs`) when both keys exist; `TTS_MODEL`
+  to override the model.
+
+Audio for each segment is cached in KV for a month, so a segment costs once no
+matter how many pupils hear it. Members only while the lock is on, with its own
+per-IP limit. Text is capped at 1500 characters per request.
+
 ## Speak instead of typing
 
 Every box a pupil types into has a "Say it instead" button. It uses the

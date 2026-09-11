@@ -71,7 +71,8 @@ integrated, it must be checked against this list.
 - three.js pinned to 0.184.0, loaded the way Heat Lab does.
 - On the steps page: question text 19px; the chosen answer gets the rainbow ring.
 - **Read aloud.** Every step and card on the steps page carries a 🔊 button that
-  reads it in English with the browser's own voice; each part has "🔊 Read this
+  reads it in English with a natural voice from the speech service set in Vercel
+  (browser voice as the fallback); each part has "🔊 Read this
   part", which walks through its segments in order. The segment being read wears
   the same rainbow ring and the word being spoken lights up, so a slow or weak
   reader can follow with their eyes. A "🐢 Slow voice" toggle, remembered on the
