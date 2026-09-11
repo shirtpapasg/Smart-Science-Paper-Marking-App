@@ -100,7 +100,11 @@
   .card.idea.reading{--rb:var(--accent-bg)}
   .card.warn.reading{--rb:var(--warn-bg)}
   .reading button.say{color:var(--accent);border-color:var(--accent)}
-  button.readpart{width:auto;min-height:38px;font-size:14px;padding:6px 14px;margin:0 0 6px;display:inline-flex;gap:8px;align-items:center}
+  button.readpart,button.readspeed{width:auto;min-height:38px;font-size:14px;padding:6px 14px;margin:0 8px 6px 0;display:inline-flex;gap:8px;align-items:center}
+  .readrow{display:flex;flex-wrap:wrap;align-items:center}
+  .w{border-radius:4px;transition:background .12s}
+  .w.now{background:var(--hl-soft);box-shadow:0 0 0 3px var(--hl-soft);color:var(--hl-ink);font-weight:700}
+  html[data-theme="dark"] .w.now{color:var(--hl-ink)}
   @media (prefers-reduced-motion:reduce){.reading{animation:none}}
   .opt:disabled{opacity:.85}
   .verdict{margin-top:10px;font-family:var(--round);font-weight:600;color:var(--accent)}
@@ -603,19 +607,66 @@ function tidySpeech(t){ return String(t||'').replace(/\s*\b(full stop|period)\b/
    The browser's own English reader. Every step and card gets a small speaker;
    a part gets "Read this part", which walks through its segments in order.
    The segment being read wears the rainbow ring. Nothing leaves the device. */
-const TTS = { el: null, queue: [], on: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window };
+const TTS = { el: null, words: [], queue: [], on: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window };
 function ttsVoice(){
   const vs = speechSynthesis.getVoices() || [];
   for (const lang of ['en-SG', 'en-GB', 'en-AU', 'en-US', 'en']) { const v = vs.find(x => (x.lang || '').replace('_', '-').toLowerCase().startsWith(lang.toLowerCase())); if (v) return v; }
   return null;
 }
 if (TTS.on) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch(e){} }
-function ttsText(el){
-  const c = el.cloneNode(true);
-  c.querySelectorAll('.opt').forEach((o, i) => o.replaceWith(document.createTextNode(' Option ' + (i + 1) + ': ' + o.textContent.trim() + '. ')));
-  c.querySelectorAll('button, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg').forEach(x => x.remove());
-  c.querySelectorAll('.eyebrow, .q, div, p, h2, h3, li').forEach(x => x.append('. '));
-  return c.textContent.replace(/_{2,}/g, ' blank ').replace(/\s+/g, ' ').replace(/(\.\s*)+/g, '. ').replace(/\s+([,.;:!?])/g, '$1').trim();
+// Speed: weak readers need the slow one. Remembered on this device.
+const TTS_SLOW = 'sm-tts-slow-v1';
+const ttsSlow = () => { try { return localStorage.getItem(TTS_SLOW) === '1'; } catch(e){ return false; } };
+const ttsRate = () => ttsSlow() ? 0.72 : 0.9;
+// Wrap every word of a segment in a span once, so the word being spoken can
+// light up. Buttons that are options are read as "Option 1: …"; other controls
+// are skipped. Returns the words in reading order with their place in the text.
+const TTS_SKIP = 'button.say, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg, button.readpart, button.readspeed, .readrow, button.primary, button.ghost, button.secondary, button.mic';
+const BLOCKY = { DIV:1, P:1, H2:1, H3:1, LI:1, BUTTON:1, SPAN:0 };
+function ttsWords(el){
+  const words = []; let text = '';
+  const endSentence = () => { const t = text.trimEnd(); if (t && !/[.!?:]$/.test(t)) text = t + '. '; else if (t) text = t + ' '; };
+  const walk = node => {
+    if (node.nodeType === 3){
+      const parts = node.nodeValue.split(/(\s+)/);
+      if (!parts.some(x => x.trim())) return;
+      const frag = document.createDocumentFragment();
+      parts.forEach(pt => {
+        if (!pt) return;
+        if (!pt.trim()){ frag.appendChild(document.createTextNode(pt)); text += ' '; return; }
+        const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = pt; frag.appendChild(sp);
+        const spoken = pt.replace(/_{2,}/g, 'blank');
+        words.push({ sp, start: text.length, end: text.length + spoken.length }); text += spoken;
+      });
+      node.parentNode.replaceChild(frag, node);
+      return;
+    }
+    if (node.nodeType !== 1) return;
+    if (node.matches(TTS_SKIP)) return;
+    if (node.classList.contains('w')){ const spoken = node.textContent.replace(/_{2,}/g, 'blank'); words.push({ sp: node, start: text.length, end: text.length + spoken.length }); text += spoken + ' '; return; }
+    if (node.classList.contains('opt')){ endSentence(); text += 'Option ' + ([...node.parentNode.children].indexOf(node) + 1) + ': '; }
+    [...node.childNodes].forEach(walk);
+    if (BLOCKY[node.tagName] || node.classList.contains('eyebrow') || node.classList.contains('q')) endSentence();
+  };
+  walk(el);
+  return { words, text: text.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim() };
+}
+function ttsMark(el, i){
+  el.querySelectorAll('.w.now').forEach(x => x.classList.remove('now'));
+  if (i != null && TTS.words[i]) TTS.words[i].sp.classList.add('now');
+}
+function ttsSpeak(el, onDone){
+  const { words, text } = ttsWords(el);
+  if (!text) { if (onDone) onDone(); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-SG'; u.rate = ttsRate(); u.pitch = 1;
+  const v = ttsVoice(); if (v) u.voice = v;
+  TTS.el = el; TTS.words = words; el.classList.add('reading');
+  const b = el.querySelector('button.say'); if (b) { b.textContent = '⏹'; b.setAttribute('aria-label', 'Stop reading'); }
+  try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
+  u.onboundary = ev => { if (TTS.el !== el) return; const ci = ev.charIndex || 0; let i = words.findIndex(w => ci >= w.start && ci < w.end); if (i < 0) i = words.findIndex(w => w.start >= ci); if (i >= 0) ttsMark(el, i); };
+  u.onend = u.onerror = () => { if (TTS.el !== el) return; ttsMark(el, null); el.classList.remove('reading'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } TTS.el = null; if (onDone) onDone(); };
+  speechSynthesis.speak(u);
 }
 function ttsStop(){
   if (!TTS.on) return;
@@ -624,7 +675,7 @@ function ttsStop(){
   ttsClear();
 }
 function ttsClear(){
-  if (TTS.el){ TTS.el.classList.remove('reading'); const b = TTS.el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } }
+  if (TTS.el){ ttsMark(TTS.el, null); TTS.el.classList.remove('reading'); const b = TTS.el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } }
   TTS.el = null;
   $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this part'; });
 }
@@ -662,6 +713,12 @@ function addReaders(a){
     el.appendChild(b);
   });
   $('act').querySelectorAll('.part-body').forEach(body => {
+    const row = document.createElement('div'); row.className = 'readrow';
+    const sp = document.createElement('button');
+    sp.className = 'ghost readspeed'; sp.type = 'button';
+    const label = () => { sp.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; sp.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); };
+    label();
+    sp.onclick = e => { e.stopPropagation(); try { localStorage.setItem(TTS_SLOW, ttsSlow() ? '0' : '1'); } catch(x){} $('act').querySelectorAll('button.readspeed').forEach(x => { x.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; x.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); }); };
     const b = document.createElement('button');
     b.className = 'ghost readpart'; b.type = 'button'; b.textContent = '🔊 Read this part';
     b.onclick = e => {
@@ -673,7 +730,8 @@ function addReaders(a){
       LOG.event('lab', { code: a.code, what: 'read part aloud' });
       ttsNext();
     };
-    body.insertBefore(b, body.firstChild);
+    row.appendChild(b); row.appendChild(sp);
+    body.insertBefore(row, body.firstChild);
   });
 }
 addEventListener('hashchange', ttsStop);

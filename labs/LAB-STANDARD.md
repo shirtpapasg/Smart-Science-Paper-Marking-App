@@ -73,8 +73,12 @@ integrated, it must be checked against this list.
 - **Read aloud.** Every step and card on the steps page carries a 🔊 button that
   reads it in English with the browser's own voice; each part has "🔊 Read this
   part", which walks through its segments in order. The segment being read wears
-  the same rainbow ring. Reading stops when the bench opens or the page changes.
-  Nothing leaves the device.
+  the same rainbow ring and the word being spoken lights up, so a slow or weak
+  reader can follow with their eyes. A "🐢 Slow voice" toggle, remembered on the
+  device, drops the speed. Reading stops when the bench opens or the page
+  changes. Nothing leaves the device. This is for pupils who read slowly, read
+  with difficulty, or have a condition that makes reading hard: it is part of
+  every activity, never an extra.
 
 ## 6. Content rules
 
