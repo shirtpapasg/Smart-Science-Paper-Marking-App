@@ -169,7 +169,7 @@ export const LABS = [
   ],
 },
 {
-  id: 'p4-7-1', level: 'P4', chapter: 'Effects of Heat', code: '7.1', minutes: 35, kind: 'lab3d', status: 'review',
+  id: 'p4-7-1', level: 'P4', chapter: 'Effects of Heat', code: '7.1', minutes: 35, kind: 'lab3d', status: 'ready',
   title: 'Heat on the move',
   cc21: ['Critical Thinking', 'Communication'],
   skills: ['Analysing Data', 'Using Models', 'Communicating with Evidence'],
@@ -238,7 +238,7 @@ export const LABS = [
   ],
 },
 {
-  id: 'p4-7-2', level: 'P4', chapter: 'Effects of Heat', code: '7.2', minutes: 45, kind: 'lab3d', status: 'review',
+  id: 'p4-7-2', level: 'P4', chapter: 'Effects of Heat', code: '7.2', minutes: 45, kind: 'lab3d', status: 'ready',
   title: 'Good and poor conductors',
   cc21: ['Critical Thinking', 'Adaptive Thinking'],
   skills: ['Designing Investigations', 'Analysing Data', 'Informed Decisions'],
