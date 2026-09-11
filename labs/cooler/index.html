@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<meta name="robots" content="noindex">
+<script>
+/* Members only. Same session as the app; anyone without one goes to the lab sign-in. */
+(async () => {
+  try {
+    const tok = localStorage.getItem('sm-session-v1') || '';
+    const r = await fetch('/api/access', { method:'POST', headers: Object.assign({'content-type':'application/json'}, tok ? { authorization: 'Bearer ' + tok } : {}), body: JSON.stringify({ action:'session' }) });
+    const d = await r.json();
+    if (d.locked && !d.ok) location.replace('/lab.html');
+  } catch (e) { /* server unreachable: the page itself holds no answers, let it show */ }
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/styles.css">
+  <script src="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/_ds_bundle.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+  <style>
+    html, body { margin: 0; padding: 0; background: #070d15; }
+    a { color: #66ccff; }
+    a:hover { color: #4a90e2; }
+    @media (max-height: 740px) {
+      aside { gap: 8px !important; padding: 10px !important; }
+      aside p, aside li { font-size: 14px !important; }
+    }
+    #cl-tilt { display: none; }
+    @media (max-width: 820px) and (orientation: portrait) {
+      #cl-tilt { display: flex !important; }
+    }
+    @keyframes clNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+    @keyframes clFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes clTilt { 0%,100% { transform: rotate(-90deg); } 50% { transform: rotate(0deg); } }
+    @keyframes clRainbow { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+    input.cl-range { -webkit-appearance: none; appearance: none; height: 26px; background: transparent; }
+    input.cl-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2f6fd6, #66ccff); }
+    input.cl-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -8px; border-radius: 50%; background: #fff; border: 3px solid #0a1320; box-shadow: 0 0 12px rgba(255,255,255,.5); cursor: pointer; }
+    input.cl-range::-moz-range-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2f6fd6, #66ccff); }
+    input.cl-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #0a1320; cursor: pointer; }
+  </style>
+</helmet>
+
+<div id="cl-tilt" style="position: fixed; inset: 0; z-index: 99; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 32px; text-align: center; background: #04070c; color: #fff; font-family: Nunito, system-ui, sans-serif;">
+  <div style="font-size: 64px; animation: clTilt 2.4s ease-in-out infinite;">📱</div>
+  <div style="font-size: 24px; font-weight: 900; color: #ffb627;">Turn your phone sideways</div>
+  <p style="margin: 0; max-width: 320px; font-size: 16px; line-height: 1.5; color: #8a98a6;">Cooler Lab needs <strong style="color: #ff6a5e;">landscape mode</strong> so the 3D bench and your readings fit on screen together.</p>
+</div>
+
+<div style="height: 100vh; display: flex; flex-direction: column; background: #070d15; color: #fff; font-family: Nunito, system-ui, sans-serif; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 20px; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,.14); background: #04070c;">
+    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 236px; flex: none;">
+      <div style="font-size: 21px; font-weight: 900; letter-spacing: .04em; color: #ffb627; white-space: nowrap;">🧊 COOLER LAB</div>
+      <div style="font-size: 13px; color: #8a98a6; font-weight: 600;">Keeping things cold · P4 Science</div>
+    </div>
+    <nav style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+        <button onClick="{{ s.go }}" style="{{ s.pill }}">{{ s.label }}</button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <sc-if value="{{ lockMsg }}">
+    <div style="padding: 8px 20px; background: rgba(255,182,39,.14); border-bottom: 1px solid rgba(255,182,39,.45); font-size: 14px; font-weight: 800; color: #ffb627;">🔒 That part is locked. Finish the steps for it first, then come back.</div>
+  </sc-if>
+
+  <div style="flex: 1; display: flex; min-height: 0;">
+
+    <aside style="width: 300px; flex: none; padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; background: #060b12; border-right: 1px solid rgba(255,255,255,.08);">
+
+      <sc-if value="{{ isIntro }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Cooler Lab" accent="yellow" hint-size="100%,480px">
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 14px; color: #fff; text-wrap: pretty;">It is a hot afternoon — <strong style="color: #ff6a5e;">32 °C</strong> — and you want to carry a bottle of iced water to a picnic. Nothing around the bottle makes cold. Heat from the warm air <strong style="color: #ff6a5e;">flows into</strong> the water, so the water <strong style="color: #ff6a5e;">gains heat</strong> and warms up. How do we slow that down, and how do we find out fairly which wrapping works best?</p>
+          <div style="display: grid; gap: 10px; margin-bottom: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">📋</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ff6a5e;">Plan a fair test</strong> — change one thing, keep the rest the same</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">🧊</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ff6a5e;">Run the test</strong> — four bottles, four wrappings, one warm room</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">🎒</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ff6a5e;">Build a cooler</strong> — pick your materials and race the clock</span>
+            </div>
+          </div>
+          <p style="font-size: 14px; line-height: 1.5; margin: 0 0 16px; color: #8a98a6;">Drag the 3D view to walk around the table, scroll to zoom. Watch the little arrows: they are heat from the warm air, always moving <strong style="color: #ff6a5e;">towards</strong> the cold water.</p>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="lg" onClick="{{ next }}" hint-size="100%,56px">Start planning →</x-import>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ isPlan }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Plan a fair test" accent="cyan" hint-size="100%,560px">
+          <p style="font-size: 15px; line-height: 1.5; margin: 0 0 14px; color: #d6dee6; text-wrap: pretty;">Four bottles of iced water are going on the table. Before we start, plan it properly: a <strong style="color: #ff6a5e;">fair test</strong> changes one <strong style="color: #ff6a5e;">variable</strong> and keeps the rest the same.</p>
+
+          <sc-if value="{{ p1Done }}">
+            <div style="display: flex; gap: 8px; align-items: flex-start; padding: 9px 11px; border-radius: 10px; background: rgba(63,195,95,.1); border: 1px solid rgba(63,195,95,.35); margin-bottom: 10px;">
+              <span style="font-size: 14px; font-weight: 900; color: #5ee07a;">✓</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #d6dee6;">We change: <strong style="color: #fff;">the wrapping material</strong></span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ p1Open }}">
+            <div style="font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #66ccff; margin-bottom: 6px;">Question 1 of 3</div>
+            <p style="font-size: 16px; line-height: 1.45; margin: 0 0 10px; color: #fff; font-weight: 700; text-wrap: pretty;">What is the ONE thing we will change?</p>
+            <sc-for list="{{ q1Options }}" as="o" hint-placeholder-count="4">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" state="{{ o.state }}" onClick="{{ o.pick }}" hint-size="100%,48px">{{ o.text }}</x-import>
+            </sc-for>
+          </sc-if>
+
+          <sc-if value="{{ p2Done }}">
+            <div style="display: flex; gap: 8px; align-items: flex-start; padding: 9px 11px; border-radius: 10px; background: rgba(63,195,95,.1); border: 1px solid rgba(63,195,95,.35); margin-bottom: 10px;">
+              <span style="font-size: 14px; font-weight: 900; color: #5ee07a;">✓</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #d6dee6;">We <strong style="color: #fff;">keep the same</strong>: {{ p2Sum }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ p2Open }}">
+            <div style="font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #66ccff; margin: 14px 0 6px;">Question 2 of 3</div>
+            <p style="font-size: 16px; line-height: 1.45; margin: 0 0 10px; color: #fff; font-weight: 700; text-wrap: pretty;">Tick everything we must keep the same.</p>
+            <sc-for list="{{ q2Options }}" as="o" hint-placeholder-count="6">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,44px">{{ o.text }}</x-import>
+            </sc-for>
+            <div style="margin-top: 10px;">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="active" size="sm" onClick="{{ p2Check }}" hint-size="100%,40px">Check my list</x-import>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ p3Done }}">
+            <div style="display: flex; gap: 8px; align-items: flex-start; padding: 9px 11px; border-radius: 10px; background: rgba(63,195,95,.1); border: 1px solid rgba(63,195,95,.35); margin-bottom: 10px;">
+              <span style="font-size: 14px; font-weight: 900; color: #5ee07a;">✓</span>
+              <span style="font-size: 13px; line-height: 1.4; color: #d6dee6;">We measure: <strong style="color: #fff;">the water temperature at the end</strong></span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ p3Open }}">
+            <div style="font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #66ccff; margin: 14px 0 6px;">Question 3 of 3</div>
+            <p style="font-size: 16px; line-height: 1.45; margin: 0 0 10px; color: #fff; font-weight: 700; text-wrap: pretty;">What will we measure?</p>
+            <sc-for list="{{ q3Options }}" as="o" hint-placeholder-count="4">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" state="{{ o.state }}" onClick="{{ o.pick }}" hint-size="100%,48px">{{ o.text }}</x-import>
+            </sc-for>
+          </sc-if>
+
+          <sc-if value="{{ planErr }}">
+            <div style="margin: 12px 0 0; padding: 11px 13px; border-radius: 12px; background: rgba(255,182,39,.12); border: 1px solid rgba(255,182,39,.45); font-size: 14px; line-height: 1.45; font-weight: 700; color: #ffb627; text-wrap: pretty;">{{ planErr }}</div>
+          </sc-if>
+
+          <sc-if value="{{ planOk }}">
+            <div style="margin: 4px 0 12px; padding: 12px 14px; border-radius: 12px; background: rgba(63,195,95,.12); border: 1px solid rgba(94,224,122,.5); font-size: 15px; line-height: 1.45; font-weight: 800; color: #5ee07a; text-wrap: pretty;">A fair test. Only the wrapping is different.</div>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="lg" onClick="{{ next }}" hint-size="100%,52px">Run the test →</x-import>
+          </sc-if>
+
+          <p style="font-size: 13px; line-height: 1.5; margin: 14px 0 0; color: #8a98a6; text-wrap: pretty;">A <strong style="color: #ff6a5e;">fair test</strong> changes one thing and keeps everything else the same. Then we know what caused the result.</p>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showTestPred }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="blue" hint-size="100%,470px">
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">Four bottles, the same iced water at <strong style="color: #66ccff;">4 °C</strong>, the same warm room at <strong style="color: #ff6a5e;">32 °C</strong>. Only the wrapping is different. <strong style="color: #ffb627;">Predict:</strong> which wrapping will keep the water coldest after 30 minutes?</p>
+          <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="4">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,50px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <div style="margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: rgba(74,144,226,.1); border: 1px solid rgba(74,144,226,.35);">
+            <div style="font-size: 14px; font-weight: 800; color: #6aa9f0; margin-bottom: 8px;">Then test it</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.6; color: #d6dee6;">
+              <li>Press <strong style="color:#fff;">▶ Play</strong> and let the clock run.</li>
+              <li>Watch the four lines on the graph pull apart.</li>
+              <li>Read the table at 30 minutes.</li>
+            </ol>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; margin: 12px 0 14px; color: #8a98a6;">The clock runs one minute per second, so half an hour takes 30 seconds of your time. Drag the scrubber to jump to any moment.</p>
+          <div style="display: flex; gap: 10px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">Next: build a cooler →</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showTestControls }}">
+        <div style="order: 1; zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Controls" accent="green" hint-size="100%,290px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <span style="font-size: 14px; color: #d6dee6; font-weight: 600;">Time</span>
+            <span style="font-size: 20px; font-weight: 900; color: #ffb627;">{{ timeStr }}</span>
+          </div>
+          <input class="cl-range" type="range" min="0" max="30" step="0.2" value="{{ time }}" onChange="{{ setTime }}" onInput="{{ setTime }}" style="width: 100%; margin: 0;">
+          <div style="display: flex; justify-content: space-between; margin: 0 11px 10px;">
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>0</span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>10</span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>20</span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>30</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="sm" onClick="{{ togglePlay }}" hint-size="100%,40px">{{ playLabel }}</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="neutral" size="sm" onClick="{{ reset }}" hint-size="100%,40px">↺ Reset</x-import>
+          </div>
+          <div style="margin-top: 10px;">
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">View</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+              <sc-for list="{{ viewButtons }}" as="v" hint-placeholder-count="3">
+                <div style="{{ v.ring }}">
+                  <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ v.active }}" onClick="{{ v.pick }}" hint-size="100%,40px">{{ v.label }}</x-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTestReadings }}">
+        <div style="zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Water temperature" accent="blue" hint-size="100%,420px">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="No wrapping" value="{{ noneStr }}" valueColor="#b6c2cd" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Foil" value="{{ foilStr }}" valueColor="#9ec6e8" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Cloth" value="{{ clothStr }}" valueColor="#ffb627" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Foam" value="{{ foamStr }}" valueColor="#5ee07a" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Warm room" value="32 °C" valueColor="#ff6a5e" hint-size="100%,28px"></x-import>
+          <div style="margin-top: 12px; padding: 10px 8px 4px; border-radius: 12px; background: #0a1320; border: 1px solid rgba(255,255,255,.1);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 0 6px 4px;">
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6;">Temperature · °C</span>
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #5a6775;">Minutes</span>
+            </div>
+            <svg viewBox="0 0 320 134" style="display: block; width: 100%; height: auto;">
+              <line x1="34" y1="112" x2="310" y2="112" stroke="rgba(255,255,255,.16)" stroke-width="1"></line>
+              <line x1="34" y1="83.1" x2="310" y2="83.1" stroke="rgba(255,255,255,.09)" stroke-width="1"></line>
+              <line x1="34" y1="54.3" x2="310" y2="54.3" stroke="rgba(255,255,255,.09)" stroke-width="1"></line>
+              <line x1="34" y1="25.4" x2="310" y2="25.4" stroke="rgba(255,255,255,.09)" stroke-width="1"></line>
+              <line x1="34" y1="18.7" x2="310" y2="18.7" stroke="rgba(255,106,94,.45)" stroke-width="1" stroke-dasharray="3 4"></line>
+              <text x="28" y="115" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">0</text>
+              <text x="28" y="86.1" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">10</text>
+              <text x="28" y="57.3" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">20</text>
+              <text x="28" y="28.4" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">30</text>
+              <text x="316" y="21.7" text-anchor="start" fill="#8a4a44" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">32</text>
+              <line x1="34" y1="10" x2="34" y2="116" stroke="rgba(255,255,255,.16)" stroke-width="1"></line>
+              <line x1="126" y1="10" x2="126" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
+              <line x1="218" y1="10" x2="218" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
+              <line x1="310" y1="10" x2="310" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
+              <text x="34" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">0</text>
+              <text x="126" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">10</text>
+              <text x="218" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">20</text>
+              <text x="310" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">30</text>
+              <path d="{{ nonePath }}" fill="none" stroke="#8a98a6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="{{ foilPath }}" fill="none" stroke="#9ec6e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="{{ clothPath }}" fill="none" stroke="#ffb627" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="{{ foamPath }}" fill="none" stroke="#5ee07a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+              <circle cx="{{ nowX }}" cy="{{ noneY }}" r="3.2" fill="#8a98a6"></circle>
+              <circle cx="{{ nowX }}" cy="{{ foilY }}" r="3.2" fill="#9ec6e8"></circle>
+              <circle cx="{{ nowX }}" cy="{{ clothY }}" r="3.2" fill="#ffb627"></circle>
+              <circle cx="{{ nowX }}" cy="{{ foamY }}" r="3.4" fill="#5ee07a"></circle>
+            </svg>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTestReadings }}">
+        <div style="zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Results" accent="purple" hint-size="100%,210px">
+          <div style="display: grid; grid-template-columns: 1.25fr .7fr .7fr .7fr; gap: 4px 6px; align-items: center;">
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: #8a98a6;">Material</span>
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: #8a98a6; text-align: right;">Start</span>
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: #8a98a6; text-align: right;">End</span>
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: #8a98a6; text-align: right;">Rise</span>
+            <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="4">
+              <span style="{{ r.nameStyle }}">{{ r.name }}</span>
+              <span style="font-size: 14px; font-weight: 800; color: #d6dee6; text-align: right;">{{ r.start }}</span>
+              <span style="font-size: 14px; font-weight: 800; color: #d6dee6; text-align: right;">{{ r.end }}</span>
+              <span style="font-size: 14px; font-weight: 900; color: #ff6a5e; text-align: right;">{{ r.rise }}</span>
+            </sc-for>
+          </div>
+          <p style="margin: 12px 0 0; font-size: 13px; line-height: 1.5; color: #8a98a6;">{{ tableNote }}</p>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showDesignPred }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="purple" hint-size="100%,450px">
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">Now build your own cooler for one bottle. You start with <strong style="color: #fff;">one layer of foil and no lid</strong> — the worst you can do. <strong style="color: #ffb627;">Predict:</strong> which single change will help most?</p>
+          <sc-for list="{{ dPredOptions }}" as="o" hint-placeholder-count="4">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,50px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <div style="margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: rgba(181,87,230,.1); border: 1px solid rgba(181,87,230,.35);">
+            <div style="font-size: 14px; font-weight: 800; color: #cd7bf5; margin-bottom: 8px;">Then test it</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.6; color: #d6dee6;">
+              <li>Pick a material, a thickness and a lid.</li>
+              <li>Press <strong style="color:#fff;">▶ Start the clock</strong>.</li>
+              <li>See how long the water stays below <strong style="color:#66ccff;">10 °C</strong>.</li>
+            </ol>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 14px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">Next: the challenge →</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showBuild }}">
+        <div style="zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Your cooler" accent="purple" hint-size="100%,420px">
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">Material</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+            <sc-for list="{{ matButtons }}" as="b" hint-placeholder-count="5">
+              <div style="{{ b.ring }}">
+                <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ b.active }}" onClick="{{ b.pick }}" hint-size="100%,40px">{{ b.label }}</x-import>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">Thickness</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+            <sc-for list="{{ layerButtons }}" as="b" hint-placeholder-count="3">
+              <div style="{{ b.ring }}">
+                <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ b.active }}" onClick="{{ b.pick }}" hint-size="100%,40px">{{ b.label }}</x-import>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">Lid</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+            <sc-for list="{{ lidButtons }}" as="b" hint-placeholder-count="3">
+              <div style="{{ b.ring }}">
+                <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ b.active }}" onClick="{{ b.pick }}" hint-size="100%,40px">{{ b.label }}</x-import>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top: 12px; padding: 11px 13px; border-radius: 12px; background: rgba(102,204,255,.1); border: 1px solid rgba(102,204,255,.35); font-size: 14px; line-height: 1.45; font-weight: 700; color: #66ccff;">Target: keep the water below 10 °C for as long as you can.</div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showDesignControls }}">
+        <div style="order: 1; zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Clock" accent="green" hint-size="100%,300px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <span style="font-size: 14px; color: #d6dee6; font-weight: 600;">Time</span>
+            <span style="font-size: 20px; font-weight: 900; color: #ffb627;">{{ timeStr }}</span>
+          </div>
+          <input class="cl-range" type="range" min="0" max="60" step="0.2" value="{{ time }}" onChange="{{ setTime }}" onInput="{{ setTime }}" style="width: 100%; margin: 0;">
+          <div style="display: flex; justify-content: space-between; margin: 0 11px 10px;">
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>0</span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>20</span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>40</span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #5a6775;"><span style="width: 1px; height: 7px; background: rgba(255,255,255,.35);"></span>60</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="sm" onClick="{{ togglePlay }}" hint-size="100%,40px">{{ dPlayLabel }}</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="neutral" size="sm" onClick="{{ reset }}" hint-size="100%,40px">↺ Reset</x-import>
+          </div>
+          <p style="margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #8a98a6;">One minute per second. Change any part of your cooler and the clock starts again.</p>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showDesignReadings }}">
+        <div style="zoom: .75; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Stopwatch" accent="blue" hint-size="100%,300px">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Water now" value="{{ dTempStr }}" valueColor="{{ dTempColor }}" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Stayed under 10 °C" value="{{ dUnderStr }}" valueColor="#5ee07a" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Best so far" value="{{ dBestStr }}" valueColor="#ffb627" hint-size="100%,28px"></x-import>
+          <div style="margin-top: 12px; padding: 10px 8px 4px; border-radius: 12px; background: #0a1320; border: 1px solid rgba(255,255,255,.1);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 0 6px 4px;">
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6;">Temperature · °C</span>
+              <span style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #5a6775;">Minutes</span>
+            </div>
+            <svg viewBox="0 0 320 134" style="display: block; width: 100%; height: auto;">
+              <line x1="34" y1="112" x2="310" y2="112" stroke="rgba(255,255,255,.16)" stroke-width="1"></line>
+              <line x1="34" y1="82.9" x2="310" y2="82.9" stroke="rgba(102,204,255,.5)" stroke-width="1" stroke-dasharray="3 4"></line>
+              <line x1="34" y1="53.7" x2="310" y2="53.7" stroke="rgba(255,255,255,.09)" stroke-width="1"></line>
+              <line x1="34" y1="24.6" x2="310" y2="24.6" stroke="rgba(255,255,255,.09)" stroke-width="1"></line>
+              <line x1="34" y1="18.7" x2="310" y2="18.7" stroke="rgba(255,106,94,.45)" stroke-width="1" stroke-dasharray="3 4"></line>
+              <text x="28" y="115" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">0</text>
+              <text x="28" y="85.9" text-anchor="end" fill="#66ccff" font-size="9" font-weight="800" font-family="Nunito, system-ui, sans-serif">10</text>
+              <text x="28" y="56.7" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">20</text>
+              <text x="28" y="27.6" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">30</text>
+              <line x1="34" y1="10" x2="34" y2="116" stroke="rgba(255,255,255,.16)" stroke-width="1"></line>
+              <line x1="126" y1="10" x2="126" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
+              <line x1="218" y1="10" x2="218" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
+              <line x1="310" y1="10" x2="310" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
+              <text x="34" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">0</text>
+              <text x="126" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">20</text>
+              <text x="218" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">40</text>
+              <text x="310" y="128" text-anchor="middle" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">60</text>
+              <path d="{{ dPath }}" fill="none" stroke="#66ccff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path>
+              <circle cx="{{ dNowX }}" cy="{{ dNowY }}" r="3.6" fill="#66ccff"></circle>
+            </svg>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isQuiz }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Challenge" accent="green" hint-size="100%,520px">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Badge" tone="cyan" hint-size="auto,26px">{{ qTopic }}</x-import>
+            <span style="font-size: 14px; color: #8a98a6; font-weight: 700;">{{ qCounter }}</span>
+          </div>
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 14px; color: #fff; font-weight: 700; text-wrap: pretty;">{{ qText }}</p>
+          <sc-for list="{{ qOptions }}" as="o" hint-placeholder-count="4">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" state="{{ o.state }}" onClick="{{ o.pick }}" hint-size="100%,56px">{{ o.text }}</x-import>
+          </sc-for>
+          <sc-if value="{{ qAnswered }}">
+            <div style="margin: 14px 0; padding: 14px; border-radius: 12px; background: rgba(63,195,95,.1); border: 1px solid rgba(63,195,95,.4);">
+              <div style="font-size: 15px; font-weight: 900; color: #5ee07a; margin-bottom: 6px;">{{ qVerdict }}</div>
+              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #d6dee6; text-wrap: pretty;">{{ qWhy }}</p>
+            </div>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ nextQ }}" hint-size="100%,44px">{{ qNextLabel }}</x-import>
+          </sc-if>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ isDone }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Well done, scientist" accent="yellow" hint-size="100%,440px">
+          <p style="font-size: 18px; line-height: 1.5; margin: 0 0 14px; color: #fff; font-weight: 700;">{{ scoreLine }}</p>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.ProgressBar" value="{{ score }}" max="6" tone="green" label="{{ scoreLabel }}" hint-size="100%,34px"></x-import>
+          <div style="margin: 16px 0; padding: 16px; border-radius: 12px; background: rgba(255,182,39,.1); border: 1px solid rgba(255,182,39,.4);">
+            <div style="font-size: 14px; font-weight: 900; color: #ffb627; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px;">The big idea</div>
+            <ol style="margin: 0; padding-left: 22px; display: grid; gap: 10px; font-size: 16px; line-height: 1.5; color: #fff;">
+              <li>Heat flows from the <strong style="color: #ff6a5e;">warm air into the cold water</strong>, never the other way. The water <strong style="color: #ff6a5e;">gains heat</strong> — nothing makes cold.</li>
+              <li>A <strong style="color: #ff6a5e;">poor conductor</strong> around the water lets that heat through <strong style="color: #ff6a5e;">slowly</strong>, so the water stays cold for longer. Foam, cloth and bubble wrap are poor conductors; foil is a <strong style="color: #ff6a5e;">good conductor</strong>.</li>
+              <li>Heat gets in everywhere — the sides <em>and</em> the top. The best cooler has a poor conductor all the way round.</li>
+              <li>A <strong style="color: #ff6a5e;">fair test</strong> changes one <strong style="color: #ff6a5e;">variable</strong> and <strong style="color: #ff6a5e;">keeps the same</strong> everything else. We measure with a thermometer, not with our hands.</li>
+            </ol>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ restart }}" hint-size="100%,44px">↺ Start again</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="active" onClick="{{ goTest }}" hint-size="100%,44px">Replay experiments</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showNav }}">
+        <div style="display: flex; gap: 10px; order: 2;">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">{{ nextLabel }}</x-import>
+        </div>
+      </sc-if>
+
+    </aside>
+
+    <section style="flex: 1; position: relative; min-width: 0; background: #08131f;">
+      <x-import component-from-global-scope="cooler-scene" from="./cooler-scene.js" experiment="{{ experiment }}" time="{{ time }}" plan="{{ planStr }}" build="{{ buildStr }}" view="{{ view }}" hint-size="100%,100%" style="position: absolute; inset: 0;"></x-import>
+      <div style="position: absolute; top: 14px; left: 14px; display: flex; gap: 8px; align-items: center; padding: 7px 14px; border-radius: 999px; background: rgba(7,13,21,.8); border: 1px solid rgba(255,255,255,.14); font-size: 13px; color: #8a98a6; font-weight: 700; pointer-events: none;">
+        <span>🖱️ Drag to orbit · scroll to zoom</span>
+      </div>
+      <sc-if value="{{ showPredChip }}">
+        <button onClick="{{ expandPanel }}" style="position: absolute; top: 14px; right: 14px; max-width: 320px; display: flex; flex-direction: column; gap: 3px; text-align: left; padding: 12px 16px; border-radius: 16px; background: rgba(7,13,21,.9); border: 2px solid rgba(232,73,63,.6); box-shadow: 0 0 18px rgba(232,73,63,.35); color: #fff; font-family: inherit; cursor: pointer;">
+          <span style="font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #ff6a5e;">My prediction</span>
+          <span style="font-size: 15px; font-weight: 800; line-height: 1.35;">{{ predLabel }}</span>
+          <span style="font-size: 12px; font-weight: 700; color: #8a98a6;">Tap to change it or see the steps</span>
+        </button>
+      </sc-if>
+      <sc-if value="{{ showBestChip }}">
+        <div style="position: absolute; bottom: 52px; right: 14px; display: flex; align-items: baseline; gap: 8px; padding: 10px 16px; border-radius: 999px; background: rgba(7,13,21,.9); border: 2px solid rgba(255,182,39,.55); box-shadow: 0 0 18px rgba(255,182,39,.25); font-family: inherit;">
+          <span style="font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #ffb627;">Best</span>
+          <span style="font-size: 18px; font-weight: 900; color: #fff;">{{ bestChip }}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showNote }}">
+        <div style="position: absolute; bottom: 52px; left: 32%; transform: translateX(-50%); width: 380px; padding: 11px 16px; border-radius: 16px; background: rgba(9,26,17,.92); border: 1px solid rgba(94,224,122,.5); box-shadow: 0 8px 26px rgba(0,0,0,.5); font-size: 14px; font-weight: 700; line-height: 1.45; color: #d6f5de; text-align: center; text-wrap: pretty;">{{ noteText }}</div>
+      </sc-if>
+      <sc-if value="{{ showPlanNote }}">
+        <div style="position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%); width: 400px; padding: 11px 16px; border-radius: 16px; background: rgba(36,26,6,.94); border: 1px solid rgba(255,182,39,.55); box-shadow: 0 8px 26px rgba(0,0,0,.5); font-size: 14px; font-weight: 700; line-height: 1.45; color: #ffd98a; text-align: center; text-wrap: pretty;">{{ planErr }}</div>
+      </sc-if>
+      <sc-if value="{{ showHint }}">
+        <div style="{{ hintWrap }}">
+          <span style="{{ hintArrow }}">◀</span>
+          <span style="padding: 10px 16px; border-radius: 14px; background: rgba(255,182,39,.94); color: #10161f; font-size: 15px; font-weight: 800; line-height: 1.35; box-shadow: 0 6px 22px rgba(0,0,0,.45);">{{ hintText }}</span>
+        </div>
+      </sc-if>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 900}, &quot;creditsPerCorrect&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 3, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 1, &quot;max&quot;: 10, &quot;section&quot;: &quot;Lesson&quot;}, &quot;showCredits&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;sound&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;minutesPerSecond&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 1, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 0.5, &quot;max&quot;: 3, &quot;step&quot;: 0.5, &quot;unit&quot;: &quot;min/s&quot;, &quot;section&quot;: &quot;Experiment&quot;}, &quot;defaultView&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;apparatus&quot;, &quot;particles&quot;, &quot;both&quot;], &quot;default&quot;: &quot;both&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;3D view&quot;}}">
+const STEPS = [
+  { id: 'intro', label: 'Intro' },
+  { id: 'plan', label: '📋 Plan a fair test' },
+  { id: 'test', label: '🧊 Run the test' },
+  { id: 'design', label: '🎒 Build a cooler' },
+  { id: 'quiz', label: '🏆 Challenge' },
+  { id: 'done', label: 'Wrap-up' }
+];
+
+const TEST_PRED = [
+  { v: 'foil', text: 'Foil' },
+  { v: 'cloth', text: 'Cloth' },
+  { v: 'foam', text: 'Foam' },
+  { v: 'none', text: 'No wrapping' }
+];
+
+const DESIGN_PRED = [
+  { v: 'material', text: 'Foam instead of foil' },
+  { v: 'layers', text: 'Three layers instead of one' },
+  { v: 'lid', text: 'A lid instead of no lid' },
+  { v: 'same', text: 'They all help about the same' }
+];
+
+const QUESTIONS = [
+  {
+    topic: 'Poor conductors',
+    text: 'Ice cream travels home from the shop in a thick foam box. Why does it stay frozen?',
+    options: [
+      'The foam makes cold and pushes it into the ice cream.',
+      'Foam is a poor conductor, so heat from the warm air gets through to the ice cream slowly.',
+      'The foam locks the cold inside so none of it can leak out.',
+      'The box is colder than the ice cream, so no heat can move at all.'
+    ],
+    answer: 1,
+    why: 'Nothing makes cold. The warm air outside is always passing heat inwards — a poor conductor just slows that down, so the ice cream takes much longer to melt.'
+  },
+  {
+    topic: 'Good conductors',
+    text: 'A bottle wrapped in foil warms up almost as fast as a bare bottle. Why?',
+    options: [
+      'Foil reflects the cold back into the water, and cold wears off quickly.',
+      'Foil is thin, so the cold leaks out through the gaps.',
+      'Foil makes heat of its own once it gets warm.',
+      'Foil is a good conductor, so heat from the air passes straight through it into the water.'
+    ],
+    answer: 3,
+    why: 'A good conductor hardly slows heat down at all. The foil looks protective, but heat crosses it almost as easily as it crosses air.'
+  },
+  {
+    topic: 'Fair test',
+    text: 'You want to find out which wrapping keeps water coldest. Which set-up is a fair test?',
+    options: [
+      'Two bottles with the same amount of water, in the same room, for the same time, with different wrappings.',
+      'Two bottles with different amounts of water and different wrappings, checked after different times.',
+      'One bottle with foam in a cool room and one bottle with cloth in a hot room.',
+      'Two bottles with the same wrapping, one opened early and one opened late.'
+    ],
+    answer: 0,
+    why: 'Only one variable changes — the wrapping. Everything else is kept the same, so any difference at the end must be caused by the material.'
+  },
+  {
+    topic: 'Heat flow',
+    text: 'What does a wrapping actually do for a bottle of iced water?',
+    options: [
+      'It makes cold and feeds it to the water.',
+      'It stops the cold inside from leaking out.',
+      'It slows down the heat coming in from the warmer air.',
+      'It cools the water down further as time passes.'
+    ],
+    answer: 2,
+    why: 'Cold is not a thing that moves. Heat moves — from the warm air towards the cold water — and a poor conductor slows that journey down.'
+  },
+  {
+    topic: 'Heat flow',
+    text: 'Two bottles are wrapped in the same foam. One has a foam lid, the other is open at the top. Why does the open one warm up faster?',
+    options: [
+      'The cold air inside the bottle escapes upwards through the opening.',
+      'Heat also gets in through the top, and an open top has no poor conductor to slow it down.',
+      'The lid makes the water colder than it was before.',
+      'Lids only matter for hot drinks, not for cold ones.'
+    ],
+    answer: 1,
+    why: 'Heat gets in wherever it can. Sides and top both need a poor conductor, or the gap you leave becomes the fast way in.'
+  },
+  {
+    topic: 'Measuring',
+    text: 'To compare two wrappings properly, what should you measure?',
+    options: [
+      'How cold the outside of each bottle feels to your hand.',
+      'How heavy each bottle is at the end.',
+      'Which wrapping looks the thickest.',
+      'The temperature of the water in each bottle, with a thermometer.'
+    ],
+    answer: 3,
+    why: 'Your hand only tells you how fast heat leaves your skin — a good conductor always feels colder. A thermometer gives a number you can compare fairly.'
+  }
+];
+
+function unlockedIds() {
+  let raw = null;
+  try { raw = new URLSearchParams(location.search).get('unlock'); } catch (e) { raw = null; }
+  if (raw === null || raw === undefined) return STEPS.map(s => s.id);
+  raw = String(raw).trim();
+  if (raw.toLowerCase() === 'all') return STEPS.map(s => s.id);
+  const list = raw.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+  if (list.indexOf('intro') < 0) list.push('intro');
+  return list;
+}
+
+class Component extends DCLogic {
+  unlocked = unlockedIds();
+
+  state = {
+    step: 0,
+    time: 0,
+    playing: false,
+    view: null,
+    p1: null, p2: [], p2done: false, p3: null, planErr: '', mistake: '',
+    pred: {},
+    expanded: false,
+    read: { experiment: 'plan', t: 0, room: 32, none: 4, foil: 4, cloth: 4, foam: 4 },
+    dread: { t: 0, temp: 4, room: 32, k: 0.049, crossAt: 0 },
+    build: { material: 'foil', layers: 1, lid: 'none' },
+    crossed: null, best: null,
+    lockMsg: false,
+    qi: 0, picked: null, score: 0, credits: 0,
+    idle: false, hintBox: null
+  };
+
+  componentDidMount() {
+    this._onRead = (e) => {
+      const d = e.detail;
+      if (!d) return;
+      if (d.experiment === 'design') {
+        const p = this.state.dread;
+        if (Math.abs(d.temp - p.temp) < 0.02 && Math.abs(d.t - p.t) < 0.02) return;
+        this.setState({ dread: d });
+      } else {
+        const p = this.state.read;
+        if (Math.abs(d.none - p.none) < 0.02 && Math.abs(d.foam - p.foam) < 0.02 && Math.abs(d.t - p.t) < 0.02) return;
+        this.setState({ read: d });
+      }
+    };
+    this._onCross = (e) => {
+      if (this.stepId() !== 'design') return;
+      this.markCrossed((e.detail && e.detail.minutes) || 0);
+    };
+    addEventListener('cooler', this._onRead);
+    addEventListener('cooler-crossed', this._onCross);
+
+    this._unlockAudio = () => {
+      if (this._ac) return;
+      try { this._ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this._ac = null; }
+    };
+    addEventListener('pointerdown', this._unlockAudio, true);
+    addEventListener('keydown', this._unlockAudio, true);
+
+    this._tick = setInterval(() => {
+      if (!this.state.playing) return;
+      const mps = this.props.minutesPerSecond ?? 1;
+      const max = this.tmax();
+      const nt = Math.min(max, this.state.time + 0.05 * mps);
+      this.setState({ time: nt, playing: nt < max });
+      if (this.stepId() === 'design' && this.state.crossed === null && window.coolerDesign) {
+        const d = window.coolerDesign(nt, this.buildStr());
+        if (d.temp >= 10) this.markCrossed(d.crossAt);
+      }
+    }, 50);
+
+    this._lastAct = Date.now();
+    this._bump = () => {
+      this._lastAct = Date.now();
+      if (this.state.idle) this.setState({ idle: false });
+    };
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(t => addEventListener(t, this._bump, true));
+    this._idleTimer = setInterval(() => {
+      const idle = Date.now() - this._lastAct > 10000;
+      if (idle !== this.state.idle) this.setState({ idle, hintBox: idle ? this.measureHint() : null });
+      else if (idle) {
+        const b = this.measureHint();
+        const cur = this.state.hintBox;
+        if (!b) { if (cur) this.setState({ hintBox: null }); }
+        else if (!cur || Math.abs(b.y - cur.y) > 4 || Math.abs(b.x - cur.x) > 4) this.setState({ hintBox: b });
+      }
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    removeEventListener('cooler', this._onRead);
+    removeEventListener('cooler-crossed', this._onCross);
+    removeEventListener('pointerdown', this._unlockAudio, true);
+    removeEventListener('keydown', this._unlockAudio, true);
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(t => removeEventListener(t, this._bump, true));
+    clearInterval(this._tick);
+    clearInterval(this._idleTimer);
+    clearTimeout(this._lockT);
+    clearTimeout(this._mistakeT);
+  }
+
+  markCrossed(mins) {
+    if (this.state.crossed !== null) return;
+    this.cue('select');
+    this.setState({
+      crossed: mins,
+      playing: false,
+      best: this.state.best === null ? mins : Math.max(this.state.best, mins)
+    });
+  }
+
+  cue(kind) {
+    if (this.props.sound === false) return;
+    const ac = this._ac;
+    if (!ac) return;
+    if (ac.state === 'suspended') ac.resume();
+    const t0 = ac.currentTime;
+    const beep = (f, at, dur, type, vol) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + at + 0.014);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0 + at); o.stop(t0 + at + dur + 0.03);
+    };
+    if (kind === 'click') beep(320, 0, 0.07, 'square', 0.05);
+    else if (kind === 'select') beep(560, 0, 0.1, 'triangle', 0.06);
+    else if (kind === 'correct') [523, 659, 784].forEach((f, i) => beep(f, i * 0.075, 0.15, 'triangle', 0.07));
+    else if (kind === 'wrong') { beep(208, 0, 0.2, 'sine', 0.07); beep(165, 0.1, 0.24, 'sine', 0.055); }
+  }
+
+  stepId() { return STEPS[this.state.step].id; }
+
+  tmax() { return this.stepId() === 'design' ? 60 : 30; }
+
+  experiment() {
+    const id = this.stepId();
+    if (id === 'test') return 'test';
+    if (id === 'design') return 'design';
+    return 'plan';
+  }
+
+  view() {
+    if (this.stepId() !== 'test') return 'apparatus';
+    return this.state.view || this.props.defaultView || 'both';
+  }
+
+  planStr() {
+    const s = this.state, id = this.stepId();
+    if (id === 'intro') return '';
+    if (id !== 'plan') return 'change,same,measure';
+    const t = [];
+    if (s.p1 === 1) t.push('change');
+    if (s.p2done) t.push('same');
+    if (s.p3 === 0) t.push('measure');
+    if (s.mistake) t.push(s.mistake);
+    return t.join(',');
+  }
+
+  buildStr() {
+    const b = this.state.build;
+    return b.material + ',' + b.layers + ',' + b.lid;
+  }
+
+  isOpen(id) { return this.unlocked.indexOf(id) >= 0; }
+
+  goStep(n) {
+    const st = STEPS[n];
+    if (!st) return;
+    if (!this.isOpen(st.id)) {
+      this.cue('wrong');
+      clearTimeout(this._lockT);
+      this.setState({ lockMsg: true });
+      this._lockT = setTimeout(() => this.setState({ lockMsg: false }), 3000);
+      return;
+    }
+    this.cue('click');
+    this.setState({
+      step: n, time: 0, playing: false, picked: null,
+      expanded: false, lockMsg: false, hintBox: null, crossed: null
+    });
+  }
+
+  measureHint() {
+    const id = this.stepId();
+    const pick = (root, re) => [...document.querySelectorAll(root)].find(b => re.test(b.textContent || ''));
+    let el = null;
+    if (id === 'done') return null;
+    if (id === 'intro') el = pick('aside button', /Start planning/);
+    else if (id === 'quiz') el = this.state.picked !== null
+      ? pick('aside button', /Next question|See my results/)
+      : document.querySelector('aside button');
+    else el = pick('aside button', /Play|Pause|Start the clock/) || document.querySelector('aside button');
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { mode: 'right', x: r.right + 12, y: r.top + r.height / 2 };
+  }
+
+  ring(on, radius) {
+    const r = radius || 16;
+    return 'display:block;padding:3px;border-radius:' + r + 'px;' + (on
+      ? 'background:linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f);background-size:300% 100%;animation:clRainbow 2.4s linear infinite;box-shadow:0 0 16px rgba(255,255,255,.28);'
+      : 'background:transparent;');
+  }
+
+  navVals() {
+    const s = this.state, id = this.stepId();
+    const pillBase = 'padding:8px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:800;transition:all 120ms ease-out;';
+    return {
+      steps: STEPS.map((st, i) => {
+        const open = this.isOpen(st.id);
+        return {
+          label: (open ? '' : '🔒 ') + st.label,
+          go: () => this.goStep(i),
+          pill: pillBase + (i === s.step
+            ? 'background:#2f6fd6;color:#fff;border:2px solid #6aa9f0;box-shadow:0 0 16px rgba(74,144,226,.5);'
+            : 'background:#2b3340;color:#d6dee6;border:1px solid rgba(255,255,255,.14);')
+            + (open ? 'cursor:pointer;' : 'opacity:.38;cursor:not-allowed;')
+        };
+      }),
+      lockMsg: s.lockMsg,
+      isIntro: id === 'intro',
+      isPlan: id === 'plan',
+      isQuiz: id === 'quiz',
+      isDone: id === 'done',
+      experiment: this.experiment(),
+      view: this.view(),
+      time: s.time,
+      planStr: this.planStr(),
+      buildStr: this.buildStr(),
+      next: () => this.goStep(Math.min(STEPS.length - 1, s.step + 1)),
+      back: () => this.goStep(Math.max(0, s.step - 1)),
+      goTest: () => this.goStep(2),
+      restart: () => {
+        this.cue('click');
+        this.setState({
+          step: 0, time: 0, playing: false, p1: null, p2: [], p2done: false, p3: null,
+          planErr: '', mistake: '', pred: {}, expanded: false, crossed: null, best: null,
+          build: { material: 'foil', layers: 1, lid: 'none' },
+          qi: 0, picked: null, score: 0, credits: 0
+        });
+      }
+    };
+  }
+
+  flash(err, mistake) {
+    clearTimeout(this._mistakeT);
+    this.cue('wrong');
+    this.setState({ planErr: err, mistake: mistake || '' });
+    if (mistake) this._mistakeT = setTimeout(() => this.setState({ mistake: '' }), 2800);
+  }
+
+  planVals() {
+    const s = this.state;
+    const q1 = [
+      'The amount of iced water in each bottle',
+      'The wrapping material around the bottle',
+      'The temperature of the room',
+      'How long we wait before we measure'
+    ];
+    const q2 = [
+      'Amount of water',
+      'Starting temperature of the water',
+      'Size and type of bottle',
+      'Time we wait',
+      'Room temperature',
+      'The wrapping material'
+    ];
+    const q3 = [
+      'The temperature of the water at the end',
+      'How heavy the bottle is',
+      'How the wrapping looks',
+      'How cold the bottle feels'
+    ];
+    const p1Done = s.p1 === 1, p2Done = s.p2done, p3Done = s.p3 === 0;
+
+    return {
+      p1Done, p1Open: !p1Done,
+      p2Done, p2Open: p1Done && !p2Done,
+      p3Done, p3Open: p1Done && p2Done && !p3Done,
+      planOk: p1Done && p2Done && p3Done,
+      planErr: s.planErr,
+      p2Sum: s.p2.slice().sort().map(i => q2[i].toLowerCase()).join(' · '),
+      q1Options: q1.map((text, i) => ({
+        text,
+        selected: false,
+        state: s.p1 === i && i !== 1 ? 'wrong' : undefined,
+        pick: () => {
+          if (i === 1) { this.cue('correct'); this.setState({ p1: 1, planErr: '' }); }
+          else { this.setState({ p1: i }); this.flash('That one must stay the same in every bottle. We only change the wrapping.', ''); }
+        }
+      })),
+      q2Options: q2.map((text, i) => ({
+        text,
+        selected: s.p2.indexOf(i) >= 0,
+        pick: () => {
+          this.cue('select');
+          this.setState(prev => ({
+            p2: prev.p2.indexOf(i) >= 0 ? prev.p2.filter(x => x !== i) : prev.p2.concat([i]),
+            planErr: ''
+          }));
+        }
+      })),
+      p2Check: () => {
+        const list = this.state.p2;
+        if (list.indexOf(5) >= 0) {
+          this.flash('That is the one thing we change. If every bottle had the same wrapping, there would be nothing to compare.', 'mistake-material');
+          return;
+        }
+        if (list.indexOf(0) < 0) {
+          this.flash('One bottle has more water than the others. Then we could not tell whether the material or the water amount made the difference.', 'mistake-water');
+          return;
+        }
+        if (list.length < 3) {
+          this.flash('Tick at least three things that must stay the same.', '');
+          return;
+        }
+        this.cue('correct');
+        this.setState({ p2done: true, planErr: '' });
+      },
+      q3Options: q3.map((text, i) => ({
+        text,
+        selected: false,
+        state: s.p3 === i && i !== 0 ? 'wrong' : undefined,
+        pick: () => {
+          if (i === 0) { this.cue('correct'); this.setState({ p3: 0, planErr: '' }); }
+          else { this.setState({ p3: i }); this.flash('Hands and eyes cannot compare wrappings. We need a number from the thermometer.', ''); }
+        }
+      }))
+    };
+  }
+
+  testVals() {
+    const s = this.state, id = this.stepId();
+    const isTest = id === 'test';
+    const chosen = TEST_PRED.find(o => o.v === s.pred.test);
+    const collapsed = isTest && !!chosen && !s.expanded;
+    const X = (m) => 34 + (m / 30) * 276;
+    const Y = (T) => 112 - (T / 35) * 102;
+    const P = window.coolerPhysics;
+    const r = (P && isTest) ? P(s.time) : s.read;
+    const paths = { none: '', foil: '', cloth: '', foam: '' };
+    if (P && isTest) {
+      const stepMin = 0.25, n = Math.max(1, Math.ceil(s.time / stepMin));
+      const acc = { none: [], foil: [], cloth: [], foam: [] };
+      for (let i = 0; i <= n; i++) {
+        const m = Math.min(s.time, i * stepMin);
+        const v = P(m);
+        ['none', 'foil', 'cloth', 'foam'].forEach(k => {
+          acc[k].push((i ? 'L' : 'M') + X(m).toFixed(1) + ' ' + Y(v[k]).toFixed(1));
+        });
+      }
+      Object.keys(acc).forEach(k => { paths[k] = acc[k].join(' '); });
+    }
+    const done = s.time >= 30;
+    const end = P ? P(30) : { none: 24, foil: 21, cloth: 13, foam: 9 };
+    const rows = [
+      { key: 'none', name: 'No wrapping', color: '#b6c2cd' },
+      { key: 'foil', name: 'Foil', color: '#9ec6e8' },
+      { key: 'cloth', name: 'Cloth', color: '#ffb627' },
+      { key: 'foam', name: 'Foam', color: '#5ee07a' }
+    ].map(o => ({
+      name: o.name,
+      nameStyle: 'font-size:14px;font-weight:800;color:' + o.color + ';',
+      start: done ? '4 °C' : '—',
+      end: done ? Math.round(end[o.key]) + ' °C' : '—',
+      rise: done ? '+' + Math.round(end[o.key] - 4) : '—'
+    }));
+
+    return {
+      showTestPred: isTest && !collapsed,
+      showTestControls: isTest && collapsed,
+      showTestReadings: isTest && collapsed,
+      predOptions: TEST_PRED.map(o => ({
+        text: o.text,
+        selected: s.pred.test === o.v,
+        ring: this.ring(s.pred.test === o.v, 15),
+        pick: () => {
+          this.cue('select');
+          this.setState({ pred: Object.assign({}, s.pred, { test: o.v }), expanded: false });
+        }
+      })),
+      viewButtons: [
+        { v: 'apparatus', label: 'Apparatus' },
+        { v: 'particles', label: 'Particles' },
+        { v: 'both', label: 'Both' }
+      ].map(o => ({
+        label: o.label,
+        active: this.view() === o.v,
+        ring: this.ring(this.view() === o.v, 15),
+        pick: () => { this.cue('click'); this.setState({ view: o.v }); }
+      })),
+      timeStr: s.time.toFixed(1) + ' min',
+      playLabel: s.playing ? '⏸ Pause' : '▶ Play',
+      togglePlay: () => {
+        this.cue('click');
+        const max = this.tmax();
+        const restart = s.time >= max || s.crossed !== null;
+        this.setState({
+          playing: !s.playing,
+          time: restart ? 0 : s.time,
+          crossed: restart ? null : s.crossed
+        });
+      },
+      reset: () => { this.cue('click'); this.setState({ time: 0, playing: false, crossed: null }); },
+      setTime: (e) => this.setState({ time: parseFloat(e.target.value), playing: false }),
+      noneStr: Math.round(r.none) + ' °C',
+      foilStr: Math.round(r.foil) + ' °C',
+      clothStr: Math.round(r.cloth) + ' °C',
+      foamStr: Math.round(r.foam) + ' °C',
+      nonePath: paths.none, foilPath: paths.foil, clothPath: paths.cloth, foamPath: paths.foam,
+      nowX: X(s.time).toFixed(1),
+      noneY: Y(r.none).toFixed(1),
+      foilY: Y(r.foil).toFixed(1),
+      clothY: Y(r.cloth).toFixed(1),
+      foamY: Y(r.foam).toFixed(1),
+      tableRows: rows,
+      tableNote: done
+        ? 'Every bottle started at 4 °C. The rise tells you how much heat got in.'
+        : 'The table fills in when the clock reaches 30 minutes.'
+    };
+  }
+
+  setBuild(patch) {
+    this.cue('click');
+    this.setState({
+      build: Object.assign({}, this.state.build, patch),
+      time: 0, playing: false, crossed: null
+    });
+  }
+
+  designVals() {
+    const s = this.state, id = this.stepId();
+    const isDesign = id === 'design';
+    const chosen = DESIGN_PRED.find(o => o.v === s.pred.design);
+    const collapsed = isDesign && !!chosen && !s.expanded;
+    const X = (m) => 34 + (m / 60) * 276;
+    const Y = (T) => 112 - (T / 35) * 102;
+    const D = window.coolerDesign;
+    const d = (D && isDesign) ? D(s.time, this.buildStr()) : s.dread;
+    let dPath = '';
+    if (D && isDesign) {
+      const stepMin = 0.5, n = Math.max(1, Math.ceil(s.time / stepMin)), acc = [];
+      for (let i = 0; i <= n; i++) {
+        const m = Math.min(s.time, i * stepMin);
+        acc.push((i ? 'L' : 'M') + X(m).toFixed(1) + ' ' + Y(D(m, this.buildStr()).temp).toFixed(1));
+      }
+      dPath = acc.join(' ');
+    }
+    const mk = (list, key) => list.map(o => ({
+      label: o.label,
+      active: s.build[key] === o.v,
+      ring: this.ring(s.build[key] === o.v, 15),
+      pick: () => this.setBuild({ [key]: o.v })
+    }));
+
+    return {
+      showDesignPred: isDesign && !collapsed,
+      showBuild: isDesign && collapsed,
+      showDesignControls: isDesign && collapsed,
+      showDesignReadings: isDesign && collapsed,
+      dPredOptions: DESIGN_PRED.map(o => ({
+        text: o.text,
+        selected: s.pred.design === o.v,
+        ring: this.ring(s.pred.design === o.v, 15),
+        pick: () => {
+          this.cue('select');
+          this.setState({ pred: Object.assign({}, s.pred, { design: o.v }), expanded: false });
+        }
+      })),
+      matButtons: mk([
+        { v: 'foil', label: 'Foil' },
+        { v: 'cloth', label: 'Cloth' },
+        { v: 'foam', label: 'Foam' },
+        { v: 'bubble', label: 'Bubble wrap' },
+        { v: 'newspaper', label: 'Newspaper' }
+      ], 'material'),
+      layerButtons: mk([
+        { v: 1, label: '1 layer' },
+        { v: 2, label: '2 layers' },
+        { v: 3, label: '3 layers' }
+      ], 'layers'),
+      lidButtons: mk([
+        { v: 'none', label: 'No lid' },
+        { v: 'plastic', label: 'Plastic' },
+        { v: 'foam', label: 'Foam lid' }
+      ], 'lid'),
+      dPlayLabel: s.playing ? '⏸ Pause' : (s.time > 0 && s.crossed === null ? '▶ Keep going' : '▶ Start the clock'),
+      dTempStr: Math.round(d.temp) + ' °C',
+      dTempColor: d.temp < 10 ? '#66ccff' : '#ff6a5e',
+      dUnderStr: s.crossed !== null
+        ? Math.round(s.crossed) + ' min'
+        : (d.temp < 10 && s.time > 0 ? s.time.toFixed(1) + ' min…' : '—'),
+      dBestStr: s.best === null ? '—' : Math.round(s.best) + ' min',
+      dPath,
+      dNowX: X(s.time).toFixed(1),
+      dNowY: Y(d.temp).toFixed(1)
+    };
+  }
+
+  quizVals() {
+    const s = this.state;
+    const q = QUESTIONS[Math.min(s.qi, QUESTIONS.length - 1)];
+    const answered = s.picked !== null;
+    const correct = answered && s.picked === q.answer;
+    const perCorrect = this.props.creditsPerCorrect ?? 3;
+    const showCredits = this.props.showCredits ?? true;
+    return {
+      qTopic: q.topic,
+      qCounter: 'Question ' + (s.qi + 1) + ' of ' + QUESTIONS.length,
+      qText: q.text,
+      qOptions: q.options.map((text, i) => ({
+        text,
+        selected: !answered && s.picked === i,
+        state: answered ? (i === q.answer ? 'correct' : (i === s.picked ? 'wrong' : undefined)) : undefined,
+        pick: () => {
+          if (s.picked !== null) return;
+          const good = i === q.answer;
+          this.cue(good ? 'correct' : 'wrong');
+          this.setState({
+            picked: i,
+            score: s.score + (good ? 1 : 0),
+            credits: s.credits + (good ? perCorrect : 0)
+          });
+        }
+      })),
+      qAnswered: answered,
+      qVerdict: correct
+        ? (showCredits ? 'Correct! +' + perCorrect + ' credits' : 'Correct!')
+        : 'Not quite — here is why',
+      qWhy: q.why,
+      qNextLabel: s.qi < QUESTIONS.length - 1 ? 'Next question →' : 'See my results →',
+      nextQ: () => {
+        this.cue('click');
+        if (s.qi < QUESTIONS.length - 1) this.setState({ qi: s.qi + 1, picked: null });
+        else this.goStep(STEPS.length - 1);
+      },
+      score: s.score,
+      scoreLine: s.score + ' out of ' + QUESTIONS.length + ' correct'
+        + (showCredits ? ' — ' + s.credits + ' credits earned.' : '.'),
+      scoreLabel: Math.round((s.score / QUESTIONS.length) * 100) + '% correct'
+    };
+  }
+
+  benchVals() {
+    const s = this.state, id = this.stepId();
+    const isTest = id === 'test', isDesign = id === 'design';
+    const list = isTest ? TEST_PRED : isDesign ? DESIGN_PRED : [];
+    const chosen = list.find(o => o.v === s.pred[isTest ? 'test' : 'design']);
+    const collapsed = (isTest || isDesign) && !!chosen && !s.expanded;
+    const answered = s.picked !== null;
+    return {
+      showPlanNote: id === 'plan' && !!s.planErr,
+      showPredChip: collapsed,
+      predLabel: chosen ? chosen.text : '',
+      expandPanel: () => { this.cue('click'); this.setState({ expanded: true }); },
+      showNav: collapsed,
+      nextLabel: isTest ? 'Next: build a cooler →' : 'Next: the challenge →',
+      showBestChip: isDesign && collapsed && s.best !== null,
+      bestChip: s.best === null ? '' : Math.round(s.best) + ' min',
+      showNote: collapsed && ((isTest && s.time >= 30) || (isDesign && s.crossed !== null)),
+      noteText: isTest
+        ? 'The foam sleeve won. Heat from the warm air had to pass through the wrapping to reach the water. Foam is a poor conductor, so heat got through slowly. Foil is a good conductor — it hardly slowed the heat at all.'
+        : 'Every poor conductor around the water slows the heat down — on the sides AND on top. The best cooler has a poor conductor everywhere heat could get in.',
+      showHint: s.idle && !!s.hintBox && !(id === 'plan' && !!s.planErr),
+      hintText: id === 'intro' ? 'Tap here to start planning'
+        : id === 'plan' ? 'Answer the three planning questions here'
+          : id === 'quiz' ? (answered ? 'Read the answer, then continue here' : 'Choose an answer here')
+            : !collapsed ? 'Make your prediction here first'
+              : isTest ? 'Press ▶ Play and watch the four lines'
+                : 'Build your cooler, then start the clock',
+      hintWrap: 'position: fixed; z-index: 60; display: flex; align-items: center; gap: 8px; max-width: 300px; animation: clFadeIn 300ms ease-out; pointer-events: none;'
+        + (s.hintBox
+          ? 'left: ' + Math.round(s.hintBox.x) + 'px; top: ' + Math.round(s.hintBox.y) + 'px; transform: translateY(-50%);'
+          : 'left: 50%; top: 50%;'),
+      hintArrow: 'font-size: 26px; color: #ffb627; animation: clNudge 1.1s ease-in-out infinite;'
+    };
+  }
+
+  renderVals() {
+    return Object.assign({}, this.navVals(), this.planVals(), this.testVals(),
+      this.designVals(), this.quizVals(), this.benchVals());
+  }
+}
+</script>
+</body>
+</html>
