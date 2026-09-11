@@ -679,18 +679,6 @@ function ttsClear(){
   TTS.el = null;
   $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this part'; });
 }
-function ttsSpeak(el, onDone){
-  const text = ttsText(el);
-  if (!text) { if (onDone) onDone(); return; }
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-SG'; u.rate = 0.95; u.pitch = 1;
-  const v = ttsVoice(); if (v) u.voice = v;
-  TTS.el = el; el.classList.add('reading');
-  const b = el.querySelector('button.say'); if (b) { b.textContent = '⏹'; b.setAttribute('aria-label', 'Stop reading'); }
-  try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
-  u.onend = u.onerror = () => { if (TTS.el !== el) return; el.classList.remove('reading'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } TTS.el = null; if (onDone) onDone(); };
-  speechSynthesis.speak(u);
-}
 function ttsNext(){
   const el = TTS.queue.shift();
   if (!el) { ttsClear(); return; }
