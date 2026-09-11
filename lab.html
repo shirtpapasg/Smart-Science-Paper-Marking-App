@@ -241,7 +241,37 @@ const KIND = { lab3d:'Experiment', observe:'Observation', make:'Make it' };
 // The adult, for the lab: a parent code has been set on this device AND unlocked
 // in this session. (No code at all does not count here — a family that never set
 // one must not see activities still in review, nor skip the locks.)
-const adminDevice = () => { try { return !!localStorage.getItem('sm-adm-v1') && sessionStorage.getItem('sm-adm-open') === '1'; } catch(e){ return false; } };
+// Admin mode (logged in from the app's buddy menu, or here) counts too: the site
+// owner testing the app sees everything and no bench is locked.
+const ADMIN_ON = 'sm-admin-v1';
+const ADMIN_FP = '6a93db1e49bd29e2f2c8e4c5a5a79c4ede9723cc0c5a296e2bd221e77aa8886d';
+const isSiteAdmin = () => { try { return localStorage.getItem(ADMIN_ON) === '1'; } catch(e){ return false; } };
+const adminDevice = () => { try { return isSiteAdmin() || (!!localStorage.getItem('sm-adm-v1') && sessionStorage.getItem('sm-adm-open') === '1'); } catch(e){ return false; } };
+// The admin can also log in here, so an activity still in review can be checked
+// on this page directly. Only a fingerprint of the password lives in the page.
+async function codeHash(t){
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('sm:' + t));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+function reviewerBar(){
+  if (isSiteAdmin()) return '<div class="muted" style="margin-top:34px;font-size:13px">Admin mode is on for this device: activities in review are shown and every bench is open. <a href="#" id="rev-off">Admin logout</a></div>';
+  if (adminDevice()) return '<div class="muted" style="margin-top:34px;font-size:13px">Adult mode is on for this tab: activities in review are shown and every bench is open.</div>';
+  return '<div style="margin-top:34px;display:flex;gap:8px;align-items:center;flex-wrap:wrap" class="muted"><span style="font-size:13px">Admin?</span>' +
+    '<input id="rev-pin" type="password" autocomplete="current-password" placeholder="Admin password" style="width:160px">' +
+    '<button class="ghost" id="rev-go" type="button">Log in</button><span id="rev-msg" style="font-size:13px"></span></div>';
+}
+function wireReviewer(){
+  const off = $('rev-off'); if (off) off.onclick = e => { e.preventDefault(); try { localStorage.removeItem(ADMIN_ON); } catch(x){} renderList(); };
+  const go = $('rev-go'); if (!go) return;
+  const tryIt = async () => {
+    const v = $('rev-pin').value || '';
+    if (!v) return;
+    if (await codeHash(v) === ADMIN_FP){ try { localStorage.setItem(ADMIN_ON, '1'); } catch(e){} renderList(); }
+    else { $('rev-msg').textContent = 'That is not the admin password.'; $('rev-pin').value = ''; }
+  };
+  go.onclick = tryIt;
+  $('rev-pin').onkeydown = e => { if (e.key === 'Enter') tryIt(); };
+}
 const tags = a => (a.cc21 || []).map(t => '<span class="badge kind">' + esc(t) + '</span>').join('') +
                   (a.skills || []).map(t => '<span class="badge soon">' + esc(t) + '</span>').join('');
 async function renderList(){
@@ -255,7 +285,7 @@ async function renderList(){
       (earned.length ? '<div class="card idea" style="margin-top:18px"><span class="eyebrow" style="color:var(--accent)">Your badges</span><div class="badges">' +
         earned.map(a => '<span class="bdg">' + a.badge.icon + ' ' + esc(a.badge.name) + '</span>').join('') + '</div></div>' : '') +
       d.chapters.map(ch => '<div style="margin-top:28px"><span class="eyebrow">Chapter ' + ch.n + '</span><h2 style="margin-top:6px">' + esc(ch.title) + '</h2>' +
-        ch.activities.filter(a => a.status !== 'review' || adminDevice()).map(a => {
+        ch.activities.slice().sort((x, y) => x.code.localeCompare(y.code, undefined, { numeric: true })).filter(a => a.status !== 'review' || adminDevice()).map(a => {
           const got = (p[a.id] || {}).badge, open = a.status === 'ready' || a.status === 'review';
           return '<div class="item' + (open ? ' link' : '') + '"' + (open ? ' data-open="' + a.id + '"' : '') + '>' +
             '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="eyebrow">' + esc(a.code) + '</span>' +
@@ -264,8 +294,9 @@ async function renderList(){
              a.status === 'review' ? '<span class="badge" style="background:var(--warn-bg);color:var(--warn)">In review</span>' : '<span class="badge soon">Coming soon</span>') + '</div>' +
             '<div class="muted" style="margin-top:6px">' + KIND[a.kind] + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + (a.sim ? ' · runs in 3D' : '') + '</div>' +
             '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 0">' + tags(a).replace(/margin-left:8px/g, '') + '</div></div>';
-        }).join('') + '</div>').join('');
+        }).join('') + '</div>').join('') + reviewerBar();
     $('list').querySelectorAll('[data-open]').forEach(el => el.onclick = () => { location.hash = '#a/' + el.dataset.open; });
+    wireReviewer();
   } catch(e){ $('list').innerHTML += '<div class="err">' + esc(e.message) + '</div>'; }
 }
 

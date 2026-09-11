@@ -219,6 +219,11 @@
   #gate{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;align-items:center;justify-content:center;
     padding:28px 22px;overflow:auto}
   #gate.on{display:flex}
+  #adm-win{position:fixed;inset:0;z-index:71;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px}
+  #adm-win.on{display:flex}
+  #adm-win .a-box{max-width:400px;width:100%;background:var(--surface);border:1.5px solid var(--rule);border-radius:18px;padding:22px 22px 18px}
+  #adm-win input{width:100%;font-family:var(--body);font-size:17px;padding:12px 14px;border:1.5px solid var(--rule);border-radius:12px;background:var(--bg);color:var(--ink)}
+  #adm-win input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
   #gate .g-box{max-width:420px;width:100%}
   #gate input{width:100%;font-family:var(--body);font-size:17px;padding:14px 16px;border:1.5px solid var(--rule);
     border-radius:10px;background:var(--card,#fff);color:var(--ink);margin-top:18px}
@@ -969,6 +974,15 @@
 </div>
 
 <!-- ══ MEMBERS ONLY ══ shown until the server confirms this browser holds a session. -->
+<div id="adm-win" role="dialog" aria-modal="true" aria-labelledby="adm-win-h">
+  <div class="a-box">
+    <h2 id="adm-win-h" style="margin:0 0 6px">Admin login</h2>
+    <p class="muted" style="margin:0 0 14px;font-size:15px;line-height:1.5">For testing the app. Admin mode opens every lock, shows activities still in review, and stays on for this device until you log out.</p>
+    <input id="adm-win-pw" type="password" autocomplete="current-password" placeholder="Admin password">
+    <div id="adm-win-msg" class="muted" style="margin-top:10px;font-size:14px;min-height:1.3em"></div>
+    <div style="display:flex;gap:10px;margin-top:10px"><button class="primary" id="adm-win-go" style="flex:1;margin:0">Log in</button><button class="ghost" id="adm-win-x" style="width:auto;margin:0">Cancel</button></div>
+  </div>
+</div>
 <div id="gate">
   <div class="g-box">
     <span class="eyebrow">Science Marking</span>
@@ -1128,6 +1142,7 @@
   <button id="pm-notes"><span>✎</span>My notes</button>
   <button id="pm-theme"><span>◐</span>Dark mode</button>
   <button id="pm-lab"><span>⚗</span>Members' lab</button>
+  <button id="pm-admin"><span>⚙</span>Admin login</button>
   <button id="pm-help"><span>?</span>Help me</button>
 </div>
 
@@ -2214,6 +2229,36 @@ $('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
 $('pm-help').onclick  = e => { e.stopPropagation(); pmTap('h-fab'); };
 $('pm-lab').onclick   = e => { e.stopPropagation(); location.href = 'lab.html'; };
 
+/* ── admin login, for testing ───────────────────────────── */
+function renderAdminItem(){
+  const m = $('pm-admin'); if (!m) return;
+  m.innerHTML = isSiteAdmin() ? '<span>⚙</span>Admin logout' : '<span>⚙</span>Admin login';
+}
+function adminChanged(){
+  renderAdminItem();
+  if (typeof renderAdmBar === 'function') renderAdmBar();
+  if (typeof renderQs === 'function') renderQs();
+}
+$('pm-admin').onclick = e => {
+  e.stopPropagation(); pmOpen(false);
+  if (isSiteAdmin()){ try { localStorage.removeItem(ADMIN_ON); } catch(x){} adminChanged(); return; }
+  $('adm-win-pw').value = ''; $('adm-win-msg').textContent = '';
+  $('adm-win').classList.add('on'); $('adm-win-pw').focus();
+};
+$('adm-win-x').onclick = () => $('adm-win').classList.remove('on');
+$('adm-win').onclick = e => { if (e.target === $('adm-win')) $('adm-win').classList.remove('on'); };
+async function adminTry(){
+  const v = $('adm-win-pw').value || '';
+  if (!v) return;
+  if (await hash(v) === ADMIN_FP){
+    try { localStorage.setItem(ADMIN_ON, '1'); } catch(x){}
+    $('adm-win').classList.remove('on'); adminChanged();
+  } else { $('adm-win-msg').textContent = 'That is not the admin password.'; $('adm-win-pw').value = ''; }
+}
+$('adm-win-go').onclick = adminTry;
+$('adm-win-pw').onkeydown = e => { if (e.key === 'Enter') adminTry(); };
+renderAdminItem();
+
 document.addEventListener('click', () => { if (pmIsOpen()) pmOpen(false); });
 
 /* ── light or dark ──────────────────────────────────────── */
@@ -2858,7 +2903,12 @@ gateReady.then(() => { if (!DB.raw(SEEN)) tourOpen(); });
 const ADM = 'sm-adm-v1';
 // No code set means nothing to unlock — you own this device. A code is something
 // you add on purpose, for when a student is using it.
-const isAdmin = () => !DB.raw(ADM) || DB.flag('sm-adm-open');
+// Admin mode: the site owner, logged in from the buddy menu to test the app.
+// The page keeps only a fingerprint of the password, never the word itself.
+const ADMIN_ON = 'sm-admin-v1';
+const ADMIN_FP = '6a93db1e49bd29e2f2c8e4c5a5a79c4ede9723cc0c5a296e2bd221e77aa8886d';
+const isSiteAdmin = () => { try { return localStorage.getItem(ADMIN_ON) === '1'; } catch(e){ return false; } };
+const isAdmin = () => isSiteAdmin() || !DB.raw(ADM) || DB.flag('sm-adm-open');
 const admSet = () => !!DB.raw(ADM);
 
 async function hash(t){
