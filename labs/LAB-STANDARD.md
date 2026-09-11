@@ -70,6 +70,11 @@ integrated, it must be checked against this list.
   lab must feel every other lab is the same place with a different experiment.
 - three.js pinned to 0.184.0, loaded the way Heat Lab does.
 - On the steps page: question text 19px; the chosen answer gets the rainbow ring.
+- **Read aloud.** Every step and card on the steps page carries a 🔊 button that
+  reads it in English with the browser's own voice; each part has "🔊 Read this
+  part", which walks through its segments in order. The segment being read wears
+  the same rainbow ring. Reading stops when the bench opens or the page changes.
+  Nothing leaves the device.
 
 ## 6. Content rules
 

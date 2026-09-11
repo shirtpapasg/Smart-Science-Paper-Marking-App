@@ -86,6 +86,22 @@
   .opt.right.picked{background:linear-gradient(var(--accent-bg),var(--accent-bg)) padding-box,
       linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f) border-box;background-size:100% 100%,300% 100%}
   @media (prefers-reduced-motion:reduce){.opt.picked{animation:none}}
+  /* read aloud: the segment being read wears the same rainbow ring */
+  .step,.card{position:relative}
+  button.say{position:absolute;top:10px;right:10px;width:36px;height:36px;min-height:0;padding:0;margin:0;border-radius:50%;
+    border:1.5px solid var(--rule);background:var(--surface);color:var(--mid);font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+  button.say:hover{color:var(--accent);border-color:var(--accent)}
+  .has-say{padding-right:54px}
+  .reading{--rb:var(--card);border:2px solid transparent !important;
+    background:linear-gradient(var(--rb),var(--rb)) padding-box,
+      linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f) border-box !important;
+    background-size:100% 100%,300% 100% !important;animation:rainbowSlide 2.4s linear infinite;box-shadow:0 0 14px rgba(255,255,255,.18)}
+  .step.note.reading{--rb:var(--surface)}
+  .card.idea.reading{--rb:var(--accent-bg)}
+  .card.warn.reading{--rb:var(--warn-bg)}
+  .reading button.say{color:var(--accent);border-color:var(--accent)}
+  button.readpart{width:auto;min-height:38px;font-size:14px;padding:6px 14px;margin:0 0 6px;display:inline-flex;gap:8px;align-items:center}
+  @media (prefers-reduced-motion:reduce){.reading{animation:none}}
   .opt:disabled{opacity:.85}
   .verdict{margin-top:10px;font-family:var(--round);font-weight:600;color:var(--accent)}
   textarea{width:100%;font-family:var(--round);font-weight:600;font-size:17px;line-height:1.6;padding:12px 14px;min-height:110px;margin-top:10px;
@@ -275,6 +291,7 @@ function wireReviewer(){
 const tags = a => (a.cc21 || []).map(t => '<span class="badge kind">' + esc(t) + '</span>').join('') +
                   (a.skills || []).map(t => '<span class="badge soon">' + esc(t) + '</span>').join('');
 async function renderList(){
+  ttsStop();
   $('act').classList.add('hide'); $('list').classList.remove('hide');
   $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p><div class="busy">Loading…</div>';
   try {
@@ -368,6 +385,7 @@ function renderActivity(a){
     '<div class="muted" style="font-size:13.5px;margin-top:2px">Clears every prediction, observation and answer here so you can redo it. A badge you have earned stays yours.</div>';
   $('act').innerHTML = h;
   wireActivity(a);
+  addReaders(a);
   refreshGates(a);
   window.scrollTo(0, 0);
 }
@@ -464,6 +482,7 @@ function successSound(){
    "Let's test it now!" opens it over the steps; "Back to the steps" closes it
    and everything the pupil had ticked is still there. */
 function openLab(a, pid){
+  ttsStop();
   const m = pid ? simFor(a, pid) : null, page = (m && m.page) || a.sim.page;
   const url = page + '?unlock=' + encodeURIComponent(unlockList(a, page));
   $('labwin-frame').src = url; $('labwin-title').textContent = a.title; $('labwin-tab').href = url;
@@ -580,6 +599,86 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const MICS = new Set();
 function tidySpeech(t){ return String(t||'').replace(/\s*\b(full stop|period)\b/gi,'.').replace(/\s*\bcomma\b/gi,',').replace(/\s*\bquestion mark\b/gi,'?')
   .replace(/\s+([.,?])/g,'$1').replace(/([.?]\s+|^\s*)([a-z])/g,(m,a,b)=>a+b.toUpperCase()).trim(); }
+/* ── read aloud ─────────────────────────────────────────────
+   The browser's own English reader. Every step and card gets a small speaker;
+   a part gets "Read this part", which walks through its segments in order.
+   The segment being read wears the rainbow ring. Nothing leaves the device. */
+const TTS = { el: null, queue: [], on: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window };
+function ttsVoice(){
+  const vs = speechSynthesis.getVoices() || [];
+  for (const lang of ['en-SG', 'en-GB', 'en-AU', 'en-US', 'en']) { const v = vs.find(x => (x.lang || '').replace('_', '-').toLowerCase().startsWith(lang.toLowerCase())); if (v) return v; }
+  return null;
+}
+if (TTS.on) { try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } catch(e){} }
+function ttsText(el){
+  const c = el.cloneNode(true);
+  c.querySelectorAll('.opt').forEach((o, i) => o.replaceWith(document.createTextNode(' Option ' + (i + 1) + ': ' + o.textContent.trim() + '. ')));
+  c.querySelectorAll('button, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg').forEach(x => x.remove());
+  c.querySelectorAll('.eyebrow, .q, div, p, h2, h3, li').forEach(x => x.append('. '));
+  return c.textContent.replace(/_{2,}/g, ' blank ').replace(/\s+/g, ' ').replace(/(\.\s*)+/g, '. ').replace(/\s+([,.;:!?])/g, '$1').trim();
+}
+function ttsStop(){
+  if (!TTS.on) return;
+  TTS.queue = [];
+  try { speechSynthesis.cancel(); } catch(e){}
+  ttsClear();
+}
+function ttsClear(){
+  if (TTS.el){ TTS.el.classList.remove('reading'); const b = TTS.el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } }
+  TTS.el = null;
+  $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this part'; });
+}
+function ttsSpeak(el, onDone){
+  const text = ttsText(el);
+  if (!text) { if (onDone) onDone(); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-SG'; u.rate = 0.95; u.pitch = 1;
+  const v = ttsVoice(); if (v) u.voice = v;
+  TTS.el = el; el.classList.add('reading');
+  const b = el.querySelector('button.say'); if (b) { b.textContent = '⏹'; b.setAttribute('aria-label', 'Stop reading'); }
+  try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e){}
+  u.onend = u.onerror = () => { if (TTS.el !== el) return; el.classList.remove('reading'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } TTS.el = null; if (onDone) onDone(); };
+  speechSynthesis.speak(u);
+}
+function ttsNext(){
+  const el = TTS.queue.shift();
+  if (!el) { ttsClear(); return; }
+  ttsSpeak(el, ttsNext);
+}
+function addReaders(a){
+  if (!TTS.on) return;
+  const segs = [...$('act').querySelectorAll('.step, .card')];
+  segs.forEach(el => {
+    if (el.querySelector('button.say')) return;
+    el.classList.add('has-say');
+    const b = document.createElement('button');
+    b.className = 'say'; b.type = 'button'; b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); b.title = 'Read this to me';
+    b.onclick = e => {
+      e.stopPropagation();
+      if (TTS.el === el) { ttsStop(); return; }
+      ttsStop(); ttsSpeak(el);
+      LOG.event('lab', { code: a.code, what: 'read aloud' });
+    };
+    el.appendChild(b);
+  });
+  $('act').querySelectorAll('.part-body').forEach(body => {
+    const b = document.createElement('button');
+    b.className = 'ghost readpart'; b.type = 'button'; b.textContent = '🔊 Read this part';
+    b.onclick = e => {
+      e.stopPropagation();
+      if (TTS.queue.length || (TTS.el && body.contains(TTS.el))) { ttsStop(); return; }
+      ttsStop();
+      TTS.queue = [...body.querySelectorAll('.step, .card')];
+      b.textContent = '⏹ Stop reading';
+      LOG.event('lab', { code: a.code, what: 'read part aloud' });
+      ttsNext();
+    };
+    body.insertBefore(b, body.firstChild);
+  });
+}
+addEventListener('hashchange', ttsStop);
+addEventListener('pagehide', ttsStop);
+
 function attachMic(ta){
   const b = document.createElement('button'); b.type='button'; b.className='mic secondary'; b.innerHTML='<span>🎤</span>Say it instead';
   const hint = document.createElement('div'); hint.className='mic-hint';
