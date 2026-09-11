@@ -22,16 +22,20 @@
   const MELT = { metal: 3, foam: 15 };
 
   /* one pure model used by both the hot and the cold step */
-  function physics(tMin, mode) {
+  /* start = the water in the cups at 0 min, tub = the water around them; both
+     may be set from the page (sliders). Without them the defaults apply. */
+  function physics(tMin, mode, start0, tub0) {
     const cold = mode === 'cold';
     const k = cold ? RATE.cold : RATE.hot;
-    const start = cold ? COLD0 : HOT0;
+    const s0 = parseFloat(start0), b0 = parseFloat(tub0);
+    const start = isFinite(s0) ? clamp(s0, 0, 100) : (cold ? COLD0 : HOT0);
+    const tub = isFinite(b0) ? clamp(b0, 0, 100) : TUB;
     const t = clamp(isFinite(tMin) ? tMin : 0, 0, TMAX);
-    const d0 = start - TUB;
-    const metal = TUB + d0 * Math.exp(-k.metal * t);
-    const foam = TUB + d0 * Math.exp(-k.foam * t);
+    const d0 = start - tub;
+    const metal = tub + d0 * Math.exp(-k.metal * t);
+    const foam = tub + d0 * Math.exp(-k.foam * t);
     return {
-      t, mode: cold ? 'cold' : 'hot', tub: TUB, start, metal, foam,
+      t, mode: cold ? 'cold' : 'hot', tub, start, metal, foam,
       gap: Math.abs(metal - foam), dir: cold ? 1 : -1
     };
   }
@@ -53,11 +57,11 @@
     Math.pow(clamp((t - 8) / 48, 0, 1), 1.4));
 
   class ConductorScene extends HTMLElement {
-    static get observedAttributes() { return ['experiment', 'time', 'view']; }
+    static get observedAttributes() { return ['experiment', 'time', 'view', 'water', 'tub']; }
 
     constructor() {
       super();
-      this.cfg = { experiment: 'hot', time: 0, view: 'both' };
+      this.cfg = { experiment: 'hot', time: 0, view: 'both', water: null, tub: null };
       this.cam = { az: 0.55, el: 0.26, dist: 0.62 };
       this.last = 0;
       this.emitAt = 0;
@@ -72,6 +76,9 @@
         const nt = clamp(isFinite(p) ? p : 0, 0, TMAX);
         if (nt < this.cfg.time) this.gone = false;
         this.cfg.time = nt;
+      } else if (n === 'water' || n === 'tub') {
+        const p = parseFloat(v);
+        this.cfg[n] = isFinite(p) ? p : null;
       } else this.cfg[n] = v || this.cfg[n];
     }
 
@@ -517,7 +524,7 @@
 
       let readings;
       if (exp === 'hot' || exp === 'cold') {
-        const ph = physics(cfg.time, exp);
+        const ph = physics(cfg.time, exp, cfg.water, cfg.tub);
         this.updCups(ph, now, dt);
         this.updSlices(ph, now, dt);
         readings = Object.assign({ experiment: exp }, ph);
@@ -614,7 +621,7 @@
         const col = tempColor(T, temp);
         cup.waterMat.color.copy(col);
         cup.waterMat.emissive.copy(col);
-        cup.waterMat.emissiveIntensity = 0.18 + clamp(Math.abs(temp - 25) / 35, 0, 1) * 0.7;
+        cup.waterMat.emissiveIntensity = 0.18 + clamp(Math.abs(temp - ph.tub) / 35, 0, 1) * 0.7;
         cup.lidRimMat.color.copy(col);
         cup.lidRimMat.emissive.copy(col);
       };

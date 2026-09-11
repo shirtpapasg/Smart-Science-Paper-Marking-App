@@ -105,7 +105,7 @@
 
       <sc-if value="{{ showHotPanel }}">
         <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="cyan" hint-size="100%,470px">
-          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">Both cups hold water at <strong style="color: #ff6a5e;">60 °C</strong> and both stand in the same tub of water at <strong style="color: #66ccff;">25 °C</strong>. <strong style="color: #ffb627;">Predict:</strong> which cup will keep the water hot for longer?</p>
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">Both cups hold water at <strong style="color: #ff6a5e;">60 °C</strong> and both stand in the same tub of water at <strong style="color: #66ccff;">25 °C</strong>. <strong style="color: #ffb627;">Predict:</strong> which cup will keep the water hot for longer? After you predict, you can change both temperatures on the bench and test again.</p>
           <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="3">
             <div style="{{ o.ring }}">
               <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,52px">{{ o.text }}</x-import>
@@ -129,7 +129,7 @@
 
       <sc-if value="{{ showColdPanel }}">
         <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="blue" hint-size="100%,470px">
-          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">The same two cups, this time holding iced water at <strong style="color: #66ccff;">6 °C</strong>, in the same tub at <strong style="color: #66ccff;">25 °C</strong>. <strong style="color: #ffb627;">Predict:</strong> which cup will keep the water cold for longer?</p>
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">The same two cups, this time holding iced water at <strong style="color: #66ccff;">6 °C</strong>, in the same tub at <strong style="color: #66ccff;">25 °C</strong>. <strong style="color: #ffb627;">Predict:</strong> which cup will keep the water cold for longer? After you predict, you can change both temperatures on the bench and test again.</p>
           <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="3">
             <div style="{{ o.ring }}">
               <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" selected="{{ o.selected }}" onClick="{{ o.pick }}" hint-size="100%,52px">{{ o.text }}</x-import>
@@ -216,7 +216,7 @@
 
       <sc-if value="{{ showTimeControls }}">
         <div style="order: 1; zoom: .75; width: 100%;">
-        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Controls" accent="green" hint-size="100%,290px">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Controls" accent="green" hint-size="100%,430px">
           <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
             <span style="font-size: 14px; color: #d6dee6; font-weight: 600;">Time</span>
             <span style="font-size: 20px; font-weight: 900; color: #ffb627;">{{ timeStr }}</span>
@@ -232,6 +232,17 @@
             <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="sm" onClick="{{ togglePlay }}" hint-size="100%,40px">{{ playLabel }}</x-import>
             <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="neutral" size="sm" onClick="{{ reset }}" hint-size="100%,40px">↺ Reset</x-import>
           </div>
+          <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 14px; color: #d6dee6; font-weight: 600;">Water in the cups at the start</span>
+            <span style="font-size: 18px; font-weight: 900; color: #ff6a5e;">{{ waterStr }}</span>
+          </div>
+          <input class="cl-range" type="range" min="0" max="90" step="1" value="{{ waterNow }}" onChange="{{ setWater }}" onInput="{{ setWater }}" style="width: 100%; margin: 0;">
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+            <span style="font-size: 14px; color: #d6dee6; font-weight: 600;">Water in the tub around them</span>
+            <span style="font-size: 18px; font-weight: 900; color: #66ccff;">{{ tubStr }}</span>
+          </div>
+          <input class="cl-range" type="range" min="0" max="50" step="1" value="{{ tub }}" onChange="{{ setTub }}" onInput="{{ setTub }}" style="width: 100%; margin: 0;">
+          <p style="margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: #8a98a6;">Change a temperature and the clock goes back to 0 — a fresh test. Try water colder than the tub, or both the same.</p>
           <div style="margin-top: 10px;">
             <div style="font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">View</div>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
@@ -267,7 +278,7 @@
         <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Metal cup · Foam cup" accent="blue" hint-size="100%,340px">
           <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Metal cup" value="{{ metalStr }}" valueColor="#ff6a5e" hint-size="100%,28px"></x-import>
           <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Foam cup" value="{{ foamStr }}" valueColor="#ffb627" hint-size="100%,28px"></x-import>
-          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Tub water" value="25 °C" valueColor="#66ccff" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Tub water" value="{{ tubStr }}" valueColor="#66ccff" hint-size="100%,28px"></x-import>
           <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Gap between the cups" value="{{ gapStr }}" valueColor="#5ee07a" hint-size="100%,28px"></x-import>
           <div style="margin-top: 12px; padding: 10px 8px 4px; border-radius: 12px; background: #0a1320; border: 1px solid rgba(255,255,255,.1);">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 0 6px 4px;">
@@ -286,7 +297,7 @@
               <text x="28" y="{{ g2t }}" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">{{ g2l }}</text>
               <text x="28" y="{{ g3t }}" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">{{ g3l }}</text>
               <text x="28" y="{{ g4t }}" text-anchor="end" fill="#5a6775" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">{{ g4l }}</text>
-              <text x="316" y="{{ tubLineT }}" text-anchor="start" fill="#8a7440" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">25</text>
+              <text x="316" y="{{ tubLineT }}" text-anchor="start" fill="#8a7440" font-size="9" font-weight="700" font-family="Nunito, system-ui, sans-serif">{{ tubLabel }}</text>
               <line x1="34" y1="10" x2="34" y2="116" stroke="rgba(255,255,255,.16)" stroke-width="1"></line>
               <line x1="126" y1="10" x2="126" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
               <line x1="218" y1="10" x2="218" y2="116" stroke="rgba(255,255,255,.07)" stroke-width="1"></line>
@@ -331,7 +342,7 @@
     </aside>
 
     <section style="flex: 1; position: relative; min-width: 0; background: #08131f;">
-      <x-import component-from-global-scope="conductor-scene" from="./conductor-scene.js" experiment="{{ experiment }}" time="{{ time }}" view="{{ view }}" hint-size="100%,100%" style="position: absolute; inset: 0;"></x-import>
+      <x-import component-from-global-scope="conductor-scene" from="./conductor-scene.js" experiment="{{ experiment }}" time="{{ time }}" view="{{ view }}" water="{{ waterNow }}" tub="{{ tub }}" hint-size="100%,100%" style="position: absolute; inset: 0;"></x-import>
       <div style="position: absolute; top: 14px; left: 14px; display: flex; gap: 8px; align-items: center; padding: 7px 14px; border-radius: 999px; background: rgba(7,13,21,.8); border: 1px solid rgba(255,255,255,.14); font-size: 13px; color: #8a98a6; font-weight: 700; pointer-events: none;">
         <span>🖱️ Drag to orbit · scroll to zoom</span>
       </div>
@@ -391,6 +402,7 @@ const NEXT_LABELS = {
 };
 
 const NOTES = {
+  same: 'Nothing happened — and that is the result. The cups and the tub were at the same temperature, so there was no difference for heat to flow along. No difference, no heat flow, in either cup.',
   hot: 'The water in the foam cup stayed hot for longer. Foam is a poor conductor, so heat passed through its wall slowly. Metal is a good conductor, so heat left the metal cup quickly.',
   cold: 'The foam cup won again. A poor conductor slows heat down in BOTH directions — it lets heat in slowly and lets heat out slowly. That is why a foam cup keeps a drink cold as well as hot.',
   ice: 'The metal block is a good conductor: it passed heat from the warm room into the ice quickly, so that cube melted first. The foam block passed heat slowly.'
@@ -505,6 +517,9 @@ class Component extends DCLogic {
     playing: false,
     view: null,
     ph: { t: 0, metal: 60, foam: 60, tub: 25, mode: 'hot', gap: 0 },
+    waterHot: 60,
+    waterCold: 6,
+    tub: 25,
     ice: { t: 0, metal: 0, foam: 0 },
     pred: {},
     expanded: false,
@@ -673,6 +688,7 @@ class Component extends DCLogic {
     const ph = s.ph, ice = s.ice;
     const cold = id === 'cold';
     const isCups = id === 'hot' || id === 'cold';
+    const start = cold ? s.waterCold : s.waterHot, tub = s.tub;
     const q = QUESTIONS[Math.min(s.qi, QUESTIONS.length - 1)];
     const answered = s.picked !== null;
     const correct = answered && s.picked === q.answer;
@@ -735,7 +751,9 @@ class Component extends DCLogic {
     }));
 
     /* graph — same pure physics the bench runs on */
-    const yMin = cold ? 0 : 20, yMax = cold ? 30 : 65;
+    const lo = Math.min(start, tub), hi = Math.max(start, tub);
+    let yMin = Math.max(0, Math.floor((lo - 5) / 10) * 10), yMax = Math.ceil((hi + 5) / 10) * 10;
+    if (yMax - yMin < 20) yMax = yMin + 20;
     const Y = (T) => 112 - ((T - yMin) / (yMax - yMin)) * 102;
     const P = window.conductorPhysics;
     let metalPath = '', foamPath = '';
@@ -744,14 +762,14 @@ class Component extends DCLogic {
       const a = [], b = [];
       for (let i = 0; i <= n; i++) {
         const m = Math.min(s.time, i * stepMin);
-        const r = P(m, exp);
+        const r = P(m, exp, start, tub);
         a.push((i ? 'L' : 'M') + X(m).toFixed(1) + ' ' + Y(r.metal).toFixed(1));
         b.push((i ? 'L' : 'M') + X(m).toFixed(1) + ' ' + Y(r.foam).toFixed(1));
       }
       metalPath = a.join(' ');
       foamPath = b.join(' ');
     }
-    const grid = cold ? [10, 20, 30, null] : [30, 40, 50, 60];
+    const grid = [1, 2, 3, 4].map(i => Math.round(yMin + (yMax - yMin) * i / 4));
     const gy = grid.map(v => (v === null ? -20 : Y(v)));
     const gl = grid.map(v => (v === null ? '' : String(v)));
 
@@ -794,7 +812,10 @@ class Component extends DCLogic {
       g2y: gy[1].toFixed(1), g2t: (gy[1] + 3).toFixed(1), g2l: gl[1],
       g3y: gy[2].toFixed(1), g3t: (gy[2] + 3).toFixed(1), g3l: gl[2],
       g4y: gy[3].toFixed(1), g4t: (gy[3] + 3).toFixed(1), g4l: gl[3],
-      tubLineY: Y(25).toFixed(1), tubLineT: (Y(25) + 3).toFixed(1),
+      tubLineY: Y(tub).toFixed(1), tubLineT: (Y(tub) + 3).toFixed(1), tubLabel: String(Math.round(tub)),
+      waterNow: start, waterStr: Math.round(start) + ' °C', tubStr: Math.round(tub) + ' °C',
+      setWater: (e) => { const v = parseFloat(e.target.value); if (!isFinite(v)) return; this.setState(Object.assign({ time: 0, playing: false }, cold ? { waterCold: v } : { waterHot: v })); },
+      setTub: (e) => { const v = parseFloat(e.target.value); if (!isFinite(v)) return; this.setState({ tub: v, time: 0, playing: false }); },
 
       playLabel: s.playing ? '⏸ Pause' : '▶ Play',
       startLabel: s.playing ? '⏸ Pause' : '▶ Start',
@@ -809,7 +830,7 @@ class Component extends DCLogic {
       meltFBar: 'height:100%;border-radius:999px;background:#ffb627;transition:width 120ms linear;width:' + Math.round(ice.foam * 100) + '%;',
 
       showNote: noteOn,
-      noteText: NOTES[exp] || '',
+      noteText: isCups ? (Math.abs(start - tub) < 0.5 ? NOTES.same : start > tub ? NOTES.hot : NOTES.cold) : (NOTES[exp] || ''),
 
       predOptions,
 
