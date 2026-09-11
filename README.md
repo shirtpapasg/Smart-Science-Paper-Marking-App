@@ -122,7 +122,10 @@ Heat Lab: a side panel of steps and a bench you can orbit. `labs/heat/` is the
 Heat Lab itself, brought in unchanged, plus a member check at the top of the
 page. The lab page opens a 3D lab full-screen from the "Let's test it now!"
 button and returns to the steps afterwards. The record's `sim` block names the
-page. New labs follow the same layout so a pupil learns it once.
+page. New labs follow the same layout so a pupil learns it once. The rules every
+lab follows — predict first, the button beside the prediction, locks, admin
+mode, content rules, the record shape and the integration checklist — are in
+[`labs/LAB-STANDARD.md`](labs/LAB-STANDARD.md).
 
 A 3D lab opened on its own, with no `?unlock=` list, is fully open — that is how
 it is previewed. The lab page always sends an explicit list when a pupil comes
