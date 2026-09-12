@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<meta name="robots" content="noindex">
+<script>
+/* Members only. Same session as the app; anyone without one goes to the lab sign-in. */
+(async () => {
+  try {
+    const tok = localStorage.getItem('sm-session-v1') || '';
+    const r = await fetch('/api/access', { method:'POST', headers: Object.assign({'content-type':'application/json'}, tok ? { authorization: 'Bearer ' + tok } : {}), body: JSON.stringify({ action:'session' }) });
+    const d = await r.json();
+    if (d.locked && !d.ok) location.replace('/lab.html');
+  } catch (e) { /* server unreachable: the page itself holds no answers, let it show */ }
+})();
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/styles.css">
+  <script src="_ds/science-claw-design-system-0049d466-e787-4a70-b5c8-0dc67671c4bb/_ds_bundle.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
+  <style>
+    html, body { margin: 0; padding: 0; background: #070d15; }
+    a { color: #66ccff; }
+    a:hover { color: #4a90e2; }
+    @media (max-height: 740px) {
+      aside { gap: 8px !important; padding: 10px !important; }
+      aside p, aside li { font-size: 14px !important; }
+    }
+    #cl-tilt { display: none; }
+    @media (max-width: 820px) and (orientation: portrait) {
+      #cl-tilt { display: flex !important; }
+    }
+    @keyframes clNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+    @keyframes clNudgeY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+    @keyframes clFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes clTilt { 0%,100% { transform: rotate(-90deg); } 50% { transform: rotate(0deg); } }
+    @keyframes clRainbow { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+    input.cl-range { -webkit-appearance: none; appearance: none; height: 26px; background: transparent; }
+    input.cl-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2f6fd6, #66ccff); }
+    input.cl-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -8px; border-radius: 50%; background: #fff; border: 3px solid #0a1320; box-shadow: 0 0 12px rgba(255,255,255,.5); cursor: pointer; }
+    input.cl-range::-moz-range-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2f6fd6, #66ccff); }
+    input.cl-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #0a1320; cursor: pointer; }
+  </style>
+</helmet>
+
+<div id="cl-tilt" style="position: fixed; inset: 0; z-index: 99; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 32px; text-align: center; background: #04070c; color: #fff; font-family: Nunito, system-ui, sans-serif;">
+  <div style="font-size: 64px; animation: clTilt 2.4s ease-in-out infinite;">📱</div>
+  <div style="font-size: 24px; font-weight: 900; color: #ffb627;">Turn your phone sideways</div>
+  <p style="margin: 0; max-width: 320px; font-size: 16px; line-height: 1.5; color: #8a98a6;">Shadow Arc Lab needs <strong style="color: #ffb627;">landscape mode</strong> so the 3D stage and your readings fit on screen together.</p>
+</div>
+
+<div style="height: 100vh; display: flex; flex-direction: column; background: #070d15; color: #fff; font-family: Nunito, system-ui, sans-serif; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 20px; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,.14); background: #04070c;">
+    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 248px; flex: none;">
+      <div style="font-size: 21px; font-weight: 900; letter-spacing: .04em; color: #ffb627; white-space: nowrap;">💡 SHADOW ARC LAB</div>
+      <div style="font-size: 13px; color: #8a98a6; font-weight: 600;">Where a shadow falls · P4 Science</div>
+    </div>
+    <nav style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <button onClick="{{ s.go }}" style="{{ s.pill }}">{{ s.label }}</button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <sc-if value="{{ lockMsg }}">
+    <div style="padding: 8px 20px; background: rgba(255,182,39,.14); border-bottom: 1px solid rgba(255,182,39,.45); font-size: 14px; font-weight: 800; color: #ffb627;">🔒 That part is locked. Finish the steps for it first, then come back.</div>
+  </sc-if>
+
+  <div style="flex: 1; display: flex; min-height: 0; position: relative;">
+
+    <sc-if value="{{ isDone }}">
+      <div style="position: absolute; inset: 0; z-index: 70; padding: 26px 28px; background: rgba(4,7,12,.78); overflow-y: auto;">
+        <div style="width: 75%; max-width: 1040px; margin: 0 auto;">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Well done, scientist" accent="yellow" hint-size="100%,520px">
+            <p style="font-size: 26px; line-height: 1.4; margin: 0 0 16px; color: #fff; font-weight: 800;">{{ scoreLine }}</p>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.ProgressBar" value="{{ score }}" max="6" tone="green" label="{{ scoreLabel }}" hint-size="100%,38px"></x-import>
+            <div style="margin: 22px 0; padding: 22px 24px; border-radius: 16px; background: rgba(255,182,39,.1); border: 1px solid rgba(255,182,39,.4);">
+              <div style="font-size: 16px; font-weight: 900; color: #ffb627; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 16px;">The big idea</div>
+              <ol style="margin: 0; padding-left: 26px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px 32px; font-size: 19px; line-height: 1.5; color: #fff; text-wrap: pretty;">
+                <li>The <strong style="color: #ffb627;">position of the source of light</strong> decides where the shadow falls.</li>
+                <li>A shadow forms on the <strong style="color: #ffb627;">opposite side</strong> from the light, because the figure blocks the light that would have landed there.</li>
+                <li>The position of the light also decides how <strong style="color: #ffb627;">long</strong> the shadow is.</li>
+                <li>Light <strong style="color: #ffb627;">from the side, low down</strong>: the <strong style="color: #ffb627;">longest</strong> shadow. Light <strong style="color: #ffb627;">directly above</strong>: the <strong style="color: #ffb627;">shortest</strong>.</li>
+              </ol>
+            </div>
+            <div style="display: flex; gap: 14px; max-width: 520px;">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" size="lg" onClick="{{ restart }}" hint-size="100%,52px">↺ Start again</x-import>
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="active" size="lg" onClick="{{ goPosition }}" hint-size="100%,52px">Replay experiments</x-import>
+            </div>
+          </x-import>
+        </div>
+      </div>
+    </sc-if>
+
+    <aside style="width: 368px; flex: none; padding: 14px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; background: #060b12; border-right: 1px solid rgba(255,255,255,.08);">
+
+      <sc-if value="{{ isIntro }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Shadow Arc Lab" accent="yellow" hint-size="100%,470px">
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 14px; color: #fff; text-wrap: pretty;">A small wooden figure stands on a bench by a sunny window. One bright light rides an arc above it, from low on the left to low on the right. Close the curtain, then slide the light and watch the shadow swing across the stage and stretch.</p>
+          <div style="display: grid; gap: 10px; margin-bottom: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">↔</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ffb627;">Which side?</strong> — where does the shadow fall when the light moves</span>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: #0e1925; border: 1px solid rgba(255,255,255,.1);">
+              <span style="font-size: 22px;">📏</span>
+              <span style="font-size: 15px; color: #d6dee6;"><strong style="color: #ffb627;">How long?</strong> — measure the shadow at five positions</span>
+            </div>
+          </div>
+          <p style="font-size: 14px; line-height: 1.5; margin: 0 0 16px; color: #8a98a6;">Drag the 3D view to walk around the stage, scroll to zoom. The arc is marked A to E: <strong style="color: #ffb627;">A</strong> low on the left, <strong style="color: #ffb627;">C</strong> directly above, <strong style="color: #ffb627;">E</strong> low on the right.</p>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="lg" onClick="{{ next }}" hint-size="100%,56px">Go to the bench →</x-import>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showPositionPanel }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="cyan" hint-size="100%,470px">
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">The light is on the <strong style="color: #ffb627;">left</strong> of the figure, low down at A. <strong style="color: #ffb627;">Predict:</strong> which side will the shadow be on?</p>
+          <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="3">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" onClick="{{ o.pick }}" hint-size="100%,52px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <div style="margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: rgba(102,204,255,.1); border: 1px solid rgba(102,204,255,.35);">
+            <div style="font-size: 14px; font-weight: 800; color: #66ccff; margin-bottom: 8px;">Then test it</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.6; color: #d6dee6;">
+              <li>Press <strong style="color:#fff;">Close the curtain, start the experiment!</strong></li>
+              <li>Snap the light to <strong style="color:#fff;">A</strong>, low on the left.</li>
+              <li>Slide it round to <strong style="color:#fff;">E</strong> and watch the shadow swing.</li>
+            </ol>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; margin: 12px 0 14px; color: #8a98a6;">Switch on <strong style="color: #ffb627;">Show the rays</strong> to see the straight lines of light that the figure gets in the way of.</p>
+          <div style="display: flex; gap: 10px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">Next: how long? →</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showLengthPanel }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Prediction" accent="purple" hint-size="100%,460px">
+          <p style="font-size: 16px; line-height: 1.5; margin: 0 0 12px; color: #fff; text-wrap: pretty;">The light can sit at five marked positions on the arc. <strong style="color: #ffb627;">Predict:</strong> where will the shadow be longest?</p>
+          <sc-for list="{{ predOptions }}" as="o" hint-placeholder-count="3">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" onClick="{{ o.pick }}" hint-size="100%,52px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <div style="margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: rgba(181,87,230,.1); border: 1px solid rgba(181,87,230,.35);">
+            <div style="font-size: 14px; font-weight: 800; color: #cd7bf5; margin-bottom: 8px;">Then test it</div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.6; color: #d6dee6;">
+              <li>Close the curtain, then snap the light to <strong style="color:#fff;">A</strong>.</li>
+              <li>Press <strong style="color:#fff;">📏 Measure</strong> and read the tape.</li>
+              <li>Do the same at B, C, D and E.</li>
+            </ol>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 14px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">Next: the challenge →</x-import>
+          </div>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ isQuiz }}">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Challenge" accent="green" hint-size="100%,520px">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Badge" tone="cyan" hint-size="auto,26px">{{ qTopic }}</x-import>
+            <span style="font-size: 14px; color: #8a98a6; font-weight: 700;">{{ qCounter }}</span>
+          </div>
+          <p style="font-size: 17px; line-height: 1.5; margin: 0 0 14px; color: #fff; font-weight: 700; text-wrap: pretty;">{{ qText }}</p>
+          <sc-for list="{{ qOptions }}" as="o" hint-placeholder-count="4">
+            <div style="{{ o.ring }}">
+              <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.QuizOption" onClick="{{ o.pick }}" hint-size="100%,56px">{{ o.text }}</x-import>
+            </div>
+          </sc-for>
+          <sc-if value="{{ qAnswered }}">
+            <div style="margin: 14px 0; padding: 14px; border-radius: 12px; background: rgba(63,195,95,.1); border: 1px solid rgba(63,195,95,.4);">
+              <div style="font-size: 15px; font-weight: 900; color: #5ee07a; margin-bottom: 6px;">{{ qVerdict }}</div>
+              <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #d6dee6; text-wrap: pretty;">{{ qWhy }}</p>
+            </div>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ nextQ }}" hint-size="100%,44px">{{ qNextLabel }}</x-import>
+          </sc-if>
+        </x-import>
+      </sc-if>
+
+      <sc-if value="{{ showReadings }}">
+        <div style="width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Readings" accent="blue" hint-size="100%,240px">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Light at" value="{{ rAt }}" valueColor="#ffb627" hint-size="100%,28px"></x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Shadow falls to the" value="{{ rSide }}" valueColor="{{ rSideC }}" hint-size="100%,28px"></x-import>
+          <sc-if value="{{ isLength }}">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Length of shadow" value="{{ rLen }}" valueColor="#66ccff" hint-size="100%,28px"></x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.StatRow" label="Measured" value="{{ rCount }}" valueColor="#5ee07a" hint-size="100%,28px"></x-import>
+          </sc-if>
+          <div style="margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: rgba(255,182,39,.08); border: 1px solid rgba(255,182,39,.3); font-size: 15px; line-height: 1.45; font-weight: 700; color: #d6dee6; text-wrap: pretty;">{{ benchHint }}</div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showControls }}">
+        <div style="order: 1; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Controls" accent="green" hint-size="100%,300px">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" size="sm" onClick="{{ toggleOn }}" hint-size="100%,40px">{{ onLabel }}</x-import>
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="neutral" size="sm" onClick="{{ resetBench }}" hint-size="100%,40px">↺ Reset</x-import>
+          </div>
+          <div style="margin-top: 6px; {{ curtainRing }}" title="Curtain">
+            <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ curtainShut }}" onClick="{{ toggleCurtain }}" hint-size="100%,40px">{{ curtainLabel }}</x-import>
+          </div>
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.1);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <span style="font-size: 16px; color: #d6dee6; font-weight: 600;">Light on the arc</span>
+              <span style="font-size: 21px; font-weight: 900; color: #ffb627;">{{ angleStr }}</span>
+            </div>
+            <input class="cl-range" type="range" min="20" max="160" step="1" value="{{ angle }}" onChange="{{ setAngle }}" onInput="{{ setAngle }}" style="width: 100%; margin: 0;">
+            <div style="display: flex; justify-content: space-between; margin: -2px 9px 0;">
+              <sc-for list="{{ tickLetters }}" as="t" hint-placeholder-count="5">
+                <span style="{{ t.css }}">{{ t.ch }}</span>
+              </sc-for>
+            </div>
+            <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: #8a98a6;">{{ arcNote }}</p>
+          </div>
+          <sc-if value="{{ isPosition }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top: 12px;">
+              <div style="{{ raysRing }}">
+                <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ raysOn }}" onClick="{{ toggleRays }}" hint-size="100%,40px">☀ Show the rays</x-import>
+              </div>
+            </div>
+          </sc-if>
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.1);">
+            <div style="font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6; margin-bottom: 5px;">View</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+              <sc-for list="{{ viewButtons }}" as="v" hint-placeholder-count="3">
+                <div style="{{ v.ring }}">
+                  <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" size="sm" active="{{ v.active }}" onClick="{{ v.pick }}" hint-size="100%,40px">{{ v.label }}</x-import>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showSketches }}">
+        <div style="order: 2; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="My sketches" accent="cyan" hint-size="100%,220px">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #66ccff;">Light at A</span>
+              <sc-if value="{{ sawA }}">
+                <div style="position: relative; height: 92px; border-radius: 12px; overflow: hidden; background: #0e1925; border: 1px solid rgba(102,204,255,.45); animation: clFadeIn 320ms ease-out;">
+                  <span style="position: absolute; top: 12px; left: 11px; width: 13px; height: 13px; border-radius: 50%; background: #ffb627; box-shadow: 0 0 14px rgba(255,182,39,.9);"></span>
+                  <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(180deg, #aeb8c0, #8e9aa4);"></span>
+                  <span style="position: absolute; bottom: 6px; left: 50%; width: 44%; height: 19px; background: #1b2431; clip-path: polygon(0 0, 100% 58%, 100% 100%, 0 100%);"></span>
+                  <span style="position: absolute; bottom: 24px; left: 50%; margin-left: -5px; width: 10px; height: 40px; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #e2b67d, #b3843f);"></span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ notSawA }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; align-items: center; justify-content: center; height: 92px; border-radius: 12px; background: rgba(7,13,21,.6); border: 2px dashed rgba(255,255,255,.16); font-size: 13px; font-weight: 800; color: #5a6775; text-align: center; padding: 0 8px;">Visit A with the light on</div>
+              </sc-if>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 12px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: #66ccff;">Light at E</span>
+              <sc-if value="{{ sawE }}">
+                <div style="position: relative; height: 92px; border-radius: 12px; overflow: hidden; background: #0e1925; border: 1px solid rgba(102,204,255,.45); animation: clFadeIn 320ms ease-out;">
+                  <span style="position: absolute; top: 12px; right: 11px; width: 13px; height: 13px; border-radius: 50%; background: #ffb627; box-shadow: 0 0 14px rgba(255,182,39,.9);"></span>
+                  <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(180deg, #aeb8c0, #8e9aa4);"></span>
+                  <span style="position: absolute; bottom: 6px; right: 50%; width: 44%; height: 19px; background: #1b2431; clip-path: polygon(0 58%, 100% 0, 100% 100%, 0 100%);"></span>
+                  <span style="position: absolute; bottom: 24px; left: 50%; margin-left: -5px; width: 10px; height: 40px; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #e2b67d, #b3843f);"></span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ notSawE }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; align-items: center; justify-content: center; height: 92px; border-radius: 12px; background: rgba(7,13,21,.6); border: 2px dashed rgba(255,255,255,.16); font-size: 13px; font-weight: 800; color: #5a6775; text-align: center; padding: 0 8px;">Visit E with the light on</div>
+              </sc-if>
+            </div>
+
+          </div>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showChart }}">
+        <div style="order: 2; width: 100%;">
+        <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Panel" title="Length of shadow" accent="yellow" hint-size="100%,330px">
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; height: 158px;">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="5">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; min-height: 0;">
+                <span style="{{ b.valCss }}">{{ b.val }}</span>
+                <div style="position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; border-radius: 7px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);">
+                  <div style="{{ b.fill }}"></div>
+                </div>
+                <span style="{{ b.letterCss }}">{{ b.letter }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top: 6px; text-align: center; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #8a98a6;">Position of the light</div>
+
+          <sc-if value="{{ showSentences }}">
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1); display: grid; gap: 10px; animation: clFadeIn 300ms ease-out;">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 700; color: #d6dee6;">From A to C the shadow gets</span>
+                <sc-for list="{{ sent1 }}" as="o" hint-placeholder-count="2">
+                  <div style="{{ o.ring }}"><button onClick="{{ o.pick }}" style="{{ o.css }}">{{ o.label }}</button></div>
+                </sc-for>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 700; color: #d6dee6;">From C to E the shadow gets</span>
+                <sc-for list="{{ sent2 }}" as="o" hint-placeholder-count="2">
+                  <div style="{{ o.ring }}"><button onClick="{{ o.pick }}" style="{{ o.css }}">{{ o.label }}</button></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </x-import>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showCallout }}">
+        <div style="{{ calloutCss }}">
+          <span style="{{ calloutTagCss }}">{{ calloutTag }}</span>
+          <span style="font-size: 15px; font-weight: 700; line-height: 1.45; color: #e9f1f7; text-wrap: pretty;">{{ calloutText }}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNav }}">
+        <div style="display: flex; gap: 10px; order: 4;">
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="ghost" onClick="{{ back }}" hint-size="100%,44px">← Back</x-import>
+          <x-import component-from-global-scope="ScienceClawDesignSystem_0049d4.Button" variant="primary" onClick="{{ next }}" hint-size="100%,44px">{{ nextLabel }}</x-import>
+        </div>
+      </sc-if>
+
+    </aside>
+
+    <section style="flex: 1; position: relative; min-width: 0; background: #05090f;">
+      <x-import component-from-global-scope="shadow-arc-scene" from="./shadow-arc-scene.js" experiment="{{ experiment }}" on="{{ onAttr }}" angle="{{ angle }}" rays="{{ raysAttr }}" measure="{{ measureAttr }}" view="{{ view }}" curtain="{{ curtainAttr }}" hint-size="100%,100%" style="position: absolute; inset: 0;"></x-import>
+
+      <div style="position: absolute; top: 14px; left: 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; pointer-events: none;">
+        <div style="display: flex; gap: 8px; align-items: center; padding: 7px 14px; border-radius: 999px; background: rgba(7,13,21,.8); border: 1px solid rgba(255,255,255,.14); font-size: 13px; color: #8a98a6; font-weight: 700; white-space: nowrap;">
+          <span>🖱️ Drag to orbit · scroll to zoom</span>
+        </div>
+        <div style="{{ capCss }}">{{ capText }}</div>
+        <sc-if value="{{ showSafety }}">
+          <div style="display: flex; gap: 8px; align-items: center; padding: 7px 14px; border-radius: 999px; background: rgba(255,182,39,.12); border: 1px solid rgba(255,182,39,.45); font-size: 13px; color: #ffb627; font-weight: 800; white-space: nowrap;">
+            <span>⚠️ Never shine a light into anyone's eyes.</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ showPredChip }}">
+        <button onClick="{{ expandPanel }}" style="{{ predChipCss }}">
+          <span style="font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #ffb627;">My prediction</span>
+          <span style="font-size: 15px; font-weight: 800; line-height: 1.35;">{{ predLabel }}</span>
+          <span style="font-size: 12px; font-weight: 700; color: #8a98a6;">Tap to change it or see the steps</span>
+        </button>
+      </sc-if>
+
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 14px 14px; pointer-events: none;">
+
+        <sc-if value="{{ showPredChipBottom }}">
+          <button onClick="{{ expandPanel }}" style="display: flex; align-items: center; gap: 12px; max-width: 540px; padding: 10px 16px; border-radius: 14px; background: rgba(7,13,21,.92); border: 2px solid rgba(255,182,39,.6); box-shadow: 0 0 18px rgba(255,182,39,.3); color: #fff; font-family: inherit; cursor: pointer; pointer-events: auto;">
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #ffb627; white-space: nowrap;">My prediction</span>
+            <span style="font-size: 15px; font-weight: 800; line-height: 1.3; text-align: left;">{{ predLabel }}</span>
+          </button>
+        </sc-if>
+
+        <sc-if value="{{ showSwitch }}">
+          <button onClick="{{ startExperiment }}" style="padding: 14px 26px; border-radius: 14px; background: linear-gradient(180deg, #49d16a, #2ea24d); border: none; box-shadow: 0 2px 0 #1c6e34, 0 0 22px rgba(63,195,95,.45); color: #06230f; font-family: inherit; font-size: 17px; font-weight: 900; white-space: nowrap; cursor: pointer; pointer-events: auto;">Close the curtain, start the experiment!</button>
+        </sc-if>
+
+        <sc-if value="{{ showRail }}">
+          <div style="display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 20px; background: rgba(7,13,21,.9); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 10px 30px rgba(0,0,0,.55); pointer-events: auto;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <span style="font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #8a98a6;">Light on the arc</span>
+              <div style="display: flex; gap: 8px;">
+                <sc-for list="{{ posButtons }}" as="p" hint-placeholder-count="5">
+                  <div style="{{ p.ring }}">
+                    <button onClick="{{ p.pick }}" style="{{ p.css }}">
+                      <span style="{{ p.arc }}"><span style="{{ p.dot }}"></span></span>
+                      <span>{{ p.label }}</span>
+                    </button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ showMeasureBtn }}">
+              <div style="width: 1px; align-self: stretch; background: rgba(255,255,255,.14);"></div>
+              <div style="display: flex; flex-direction: column; gap: 5px; align-items: stretch;">
+                <span style="font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #8a98a6;">{{ measureCount }}</span>
+                <button onClick="{{ doMeasure }}" style="{{ measureCss }}">{{ measureLabel }}</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <sc-if value="{{ showHint }}">
+        <div style="{{ hintWrap }}">
+          <span style="{{ hintArrow }}">{{ hintGlyph }}</span>
+          <span style="padding: 10px 16px; border-radius: 14px; background: rgba(255,182,39,.94); color: #10161f; font-size: 15px; font-weight: 800; line-height: 1.35; box-shadow: 0 6px 22px rgba(0,0,0,.45);">{{ hintText }}</span>
+        </div>
+      </sc-if>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 900}, &quot;creditsPerCorrect&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 3, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 1, &quot;max&quot;: 10, &quot;section&quot;: &quot;Lesson&quot;}, &quot;showCredits&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;sound&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Lesson&quot;}, &quot;startPosition&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;, &quot;E&quot;], &quot;default&quot;: &quot;A&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Experiment&quot;}, &quot;defaultView&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;apparatus&quot;, &quot;top&quot;, &quot;both&quot;], &quot;default&quot;: &quot;apparatus&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;3D&quot;}}">
+const STEPS = [
+  { id: 'intro', label: 'Intro' },
+  { id: 'position', label: '↔ Which side?' },
+  { id: 'length', label: '📏 How long?' },
+  { id: 'quiz', label: '🏆 Challenge' },
+  { id: 'done', label: 'Wrap-up' }
+];
+
+const POS = [
+  { k: 'A', a: 20 },
+  { k: 'B', a: 55 },
+  { k: 'C', a: 90 },
+  { k: 'D', a: 125 },
+  { k: 'E', a: 160 }
+];
+const ANG = { A: 20, B: 55, C: 90, D: 125, E: 160 };
+const CHART_MAX = 26;
+
+const PREDS = {
+  position: [
+    { v: 'same', text: 'The left, the same side as the light' },
+    { v: 'opposite', text: 'The right, the opposite side' },
+    { v: 'around', text: 'All around the figure' }
+  ],
+  length: [
+    { v: 'side', text: 'A or E, light low at the side' },
+    { v: 'above', text: 'C, light directly above' },
+    { v: 'same', text: 'The same everywhere' }
+  ]
+};
+
+const NEXT_LABELS = {
+  position: 'Next: how long? →',
+  length: 'Next: the challenge →'
+};
+
+const NOTES = {
+  position: 'The shadow is always on the opposite side from the light, because the figure blocks the light that would have landed there. Move the light and the shadow moves the other way.',
+  length: 'Light from the side, low down: the longest shadow. Light from directly above: the shortest. Think of your own shadow early in the morning and at midday.'
+};
+
+const SENTENCES = [
+  { id: 's1', good: 'shorter', options: ['shorter', 'longer'] },
+  { id: 's2', good: 'longer', options: ['longer', 'shorter'] }
+];
+
+const QUESTIONS = [
+  {
+    topic: 'Shadows outdoors',
+    text: 'Late in the afternoon the sun is low in the west. Which way does a lamppost\u2019s shadow fall?',
+    options: [
+      'To the east \u2014 the opposite side from the sun.',
+      'To the west \u2014 the same side as the sun.',
+      'Straight down, in a small ring around its base.',
+      'It keeps swapping sides every few minutes.'
+    ],
+    answer: 0,
+    why: 'A shadow always forms on the opposite side from the light. The lamppost blocks the sunlight coming from the west, so the dark patch lies away from the sun, to the east.'
+  },
+  {
+    topic: 'Shadows outdoors',
+    text: 'At what time of day is your own shadow shortest?',
+    options: [
+      'Early in the morning, when the sun is low.',
+      'In the evening, when the sun is low in the west.',
+      'Around the middle of the day, when the sun is highest.',
+      'It is the same length all day long.'
+    ],
+    answer: 2,
+    why: 'Light from directly above makes the shortest shadow. The sun is highest near the middle of the day, so your shadow shrinks to a small pool near your feet.'
+  },
+  {
+    topic: 'Position of the light',
+    text: 'Your shadow points to your right. What is the one thing you must change to make it point to your left?',
+    options: [
+      'Turn round on the spot so you face the other way.',
+      'Move the light to the other side of you.',
+      'Stand up taller, and the shadow will swing round.',
+      'Make the light brighter.'
+    ],
+    answer: 1,
+    why: 'Only the position of the source of light decides which side the shadow falls on. Turning round, standing taller or turning the light up does not move the light, so the shadow stays where it is.'
+  },
+  {
+    topic: 'Length of a shadow',
+    text: 'The light on the arc can sit at A, at C or at E. Which position gives the longest shadow?',
+    options: [
+      'C, with the light directly above.',
+      'A or E, with the light low at the side.',
+      'All three give a shadow of the same length.',
+      'Whichever position is nearest the figure.'
+    ],
+    answer: 1,
+    why: 'Light from low at the side skims past the figure, so the patch of floor it cannot reach stretches a long way. From directly above, that patch is only a small pool at the feet.'
+  },
+  {
+    topic: 'Length of a shadow',
+    text: 'You slide the light from A up towards C. Why does the shadow get shorter?',
+    options: [
+      'The light comes from more directly above, so the strip of floor the figure blocks is shorter.',
+      'The figure gets shorter as the light rises above it.',
+      'The light gets weaker as it rises, so the shadow shrinks.',
+      'The shadow\u2019s length never really changes \u2014 it only looks shorter.'
+    ],
+    answer: 0,
+    why: 'Nothing about the figure changes. As the light rises, its light comes down more steeply, so the strip of floor the figure gets in the way of gets shorter.'
+  },
+  {
+    topic: 'What changes',
+    text: 'You move the light from A all the way round to E. What stays the same, and what changes?',
+    options: [
+      'Both the figure and its shadow stay exactly the same.',
+      'The figure changes shape; the shadow stays the same.',
+      'The shadow stays on the same side; only its length changes.',
+      'The figure stays the same; the shadow\u2019s side and its length both change.'
+    ],
+    answer: 3,
+    why: 'Moving the light does not touch the figure at all. What changes is the shadow: it swings to the opposite side, and it stretches or shrinks.'
+  }
+];
+
+function unlockedIds() {
+  let raw = null;
+  try { raw = new URLSearchParams(location.search).get('unlock'); } catch (e) { raw = null; }
+  if (raw === null || raw === undefined) return STEPS.map(s => s.id);
+  raw = String(raw).trim();
+  if (raw.toLowerCase() === 'all') return STEPS.map(s => s.id);
+  const list = raw.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+  if (list.indexOf('intro') < 0) list.push('intro');
+  return list;
+}
+
+/* the same model the bench is built from, so the chart and the readings agree
+   with the shadow on screen even before the scene has loaded */
+const FIG_H = 8.5, MIN_LEN = 1.2, DEAD = 5;
+function model(angleDeg) {
+  const angle = Math.max(0, Math.min(180, isFinite(angleDeg) ? +angleDeg : 90));
+  const elev = 90 - Math.abs(angle - 90);
+  const t = Math.tan(Math.max(4, elev) * Math.PI / 180);
+  const length = Math.max(MIN_LEN, FIG_H / t);
+  const side = angle < 90 - DEAD ? 'right' : angle > 90 + DEAD ? 'left' : 'underneath';
+  return { angle, elev, side, length: Math.round(length * 10) / 10 };
+}
+const nearestLetter = (a) => {
+  let best = '', bd = 1e9;
+  POS.forEach(p => { const d = Math.abs(p.a - a); if (d < bd) { bd = d; best = p.k; } });
+  return bd <= 3 ? best : '';
+};
+const betweenLabel = (a) => {
+  for (let i = 0; i < POS.length - 1; i++) if (a > POS[i].a && a < POS[i + 1].a) return 'between ' + POS[i].k + ' and ' + POS[i + 1].k;
+  return a <= POS[0].a ? 'A' : 'E';
+};
+
+class Component extends DCLogic {
+  unlocked = unlockedIds();
+
+  startAngle() { return ANG[this.props.startPosition] || 20; }
+
+  state = {
+    step: 0,
+    on: false,
+    angle: ANG[this.props.startPosition] || 20,
+    rays: false,
+    curtain: 'open',
+    measuring: false,
+    measured: {},
+    visited: {},
+    sent: {},
+    view: null,
+    pred: {},
+    expanded: false,
+    rd: model(ANG[this.props.startPosition] || 20),
+    qi: 0, picked: null, score: 0, credits: 0,
+    lockMsg: false, idle: false, hintBox: null
+  };
+
+  componentDidMount() {
+    this._onRead = (e) => {
+      const d = e.detail;
+      if (!d) return;
+      const r = this.state.rd;
+      const k = nearestLetter(d.angle);
+      const p = {};
+      if (d.angle !== r.angle || d.length !== r.length || d.side !== r.side) p.rd = d;
+      if (this.state.on && (k === 'A' || k === 'E') && !this.state.visited[k]) {
+        p.visited = Object.assign({}, this.state.visited, { [k]: true });
+      }
+      if (Object.keys(p).length) this.setState(p);
+    };
+    this._onMeasured = (e) => {
+      const d = e.detail;
+      if (!d || !d.position) return;
+      if (this.state.measured[d.position] === d.length) return;
+      this.cue('correct');
+      this.setState({ measured: Object.assign({}, this.state.measured, { [d.position]: d.length }) });
+    };
+    /* tapping the ? plate on the shadow itself asks for the reading */
+    this._onReveal = () => {
+      if (this.state.measuring) return;
+      this.cue('select');
+      this.setState({ measuring: true });
+    };
+    addEventListener('shadowarc', this._onRead);
+    addEventListener('shadowarc-measured', this._onMeasured);
+    addEventListener('shadowarc-reveal', this._onReveal);
+
+    this._unlockAudio = () => {
+      if (this._ac) return;
+      try { this._ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this._ac = null; }
+    };
+    addEventListener('pointerdown', this._unlockAudio, true);
+    addEventListener('keydown', this._unlockAudio, true);
+
+    this._lastAct = Date.now();
+    this._bump = () => {
+      this._lastAct = Date.now();
+      if (this.state.idle) this.setState({ idle: false });
+    };
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(t => addEventListener(t, this._bump, true));
+    this._idleTimer = setInterval(() => {
+      const idle = Date.now() - this._lastAct > 11000;
+      if (idle !== this.state.idle) this.setState({ idle, hintBox: idle ? this.measureHint() : null });
+      else if (idle) {
+        const b = this.measureHint();
+        const cur = this.state.hintBox;
+        if (!b) { if (cur) this.setState({ hintBox: null }); }
+        else if (!cur || Math.abs(b.y - cur.y) > 4 || Math.abs(b.x - cur.x) > 4) this.setState({ hintBox: b });
+      }
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    removeEventListener('shadowarc', this._onRead);
+    removeEventListener('shadowarc-measured', this._onMeasured);
+    removeEventListener('shadowarc-reveal', this._onReveal);
+    removeEventListener('shadowarc-reveal', this._onReveal);
+    removeEventListener('pointerdown', this._unlockAudio, true);
+    removeEventListener('keydown', this._unlockAudio, true);
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(t => removeEventListener(t, this._bump, true));
+    clearInterval(this._idleTimer);
+    clearTimeout(this._lockT);
+    clearTimeout(this._mt);
+  }
+
+  cue(kind) {
+    if (this.props.sound === false) return;
+    const ac = this._ac;
+    if (!ac) return;
+    if (ac.state === 'suspended') ac.resume();
+    const t0 = ac.currentTime;
+    const beep = (f, at, dur, type, vol) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type;
+      o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.exponentialRampToValueAtTime(vol, t0 + at + 0.014);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + dur);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0 + at); o.stop(t0 + at + dur + 0.03);
+    };
+    if (kind === 'click') beep(320, 0, 0.07, 'square', 0.05);
+    else if (kind === 'select') beep(560, 0, 0.1, 'triangle', 0.06);
+    else if (kind === 'correct') [523, 659, 784].forEach((f, i) => beep(f, i * 0.075, 0.15, 'triangle', 0.07));
+    else if (kind === 'wrong') { beep(208, 0, 0.2, 'sine', 0.07); beep(165, 0.1, 0.24, 'sine', 0.055); }
+  }
+
+  stepId() { return STEPS[this.state.step].id; }
+  isOpen(id) { return this.unlocked.indexOf(id) >= 0; }
+
+  experiment() { return this.stepId() === 'length' ? 'length' : 'position'; }
+
+  view() {
+    const v = this.state.view || this.props.defaultView || 'apparatus';
+    return v === 'top' || v === 'both' ? v : 'apparatus';
+  }
+
+  goStep(n) {
+    const st = STEPS[n];
+    if (!st) return;
+    if (!this.isOpen(st.id)) {
+      this.cue('wrong');
+      clearTimeout(this._lockT);
+      this.setState({ lockMsg: true });
+      this._lockT = setTimeout(() => this.setState({ lockMsg: false }), 3000);
+      return;
+    }
+    this.cue('click');
+    this.setState({
+      step: n,
+      on: false,
+      angle: this.startAngle(),
+      rays: false,
+      curtain: 'open',
+      measuring: false,
+      picked: null,
+      expanded: false,
+      lockMsg: false,
+      hintBox: null
+    });
+  }
+
+  ring(on, radius) {
+    const r = radius || 16;
+    return 'display:block;padding:3px;border-radius:' + r + 'px;' + (on
+      ? 'background:linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f);background-size:300% 100%;animation:clRainbow 2.4s linear infinite;box-shadow:0 0 16px rgba(255,255,255,.28);'
+      : 'background:transparent;');
+  }
+
+  /* the answer marking lives on a wrapper, so it can never land on the wrong option */
+  markRing(tone) {
+    const base = 'display:block;padding:3px;border-radius:19px;';
+    if (!tone) return base + 'background:transparent;';
+    return tone === 'good'
+      ? base + 'background:#5ee07a;box-shadow:0 0 16px rgba(63,195,95,.55);'
+      : base + 'background:#e8493f;box-shadow:0 0 16px rgba(232,73,63,.5);';
+  }
+
+  measureHint() {
+    const id = this.stepId(), s = this.state;
+    const pick = (root, re) => [...document.querySelectorAll(root)].find(b => re.test((b.textContent || '').trim()));
+    if (id === 'done') return null;
+    let el = null;
+    if (id === 'intro') el = pick('aside button', /Go to the bench/);
+    else if (id === 'quiz') el = s.picked !== null
+      ? pick('aside button', /Next question|See my results/)
+      : document.querySelector('aside button');
+    else if (s.pred[id] && !s.expanded) {
+      /* point at the control the pupil has not used yet, never one already done */
+      if (id === 'length') {
+        const nextPos = POS.find(p => !s.measured[p.k]);
+        el = pick('section button', /Close the curtain/)
+          || (nextPos && nearestLetter(s.angle) !== nextPos.k ? pick('section button', new RegExp('^' + nextPos.k + '$')) : null)
+          || pick('section button', /Measure/);
+      } else {
+        el = pick('section button', /Close the curtain/)
+          || (!s.visited.A ? pick('section button', /^A$/) : null)
+          || (!s.visited.E ? pick('section button', /^E$/) : null)
+          || document.querySelector('aside input[type=range]');
+      }
+      el = el || document.querySelector('aside button');
+    } else el = document.querySelector('aside button');
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    /* anything on the bench gets the hint above it, so it never covers its neighbours */
+    if (el.closest && el.closest('section')) {
+      const w = typeof innerWidth === 'number' ? innerWidth : 1440;
+      return { x: Math.max(170, Math.min(w - 170, r.left + r.width / 2)), y: r.top - 10, above: true };
+    }
+    return { x: r.right + 12, y: r.top + r.height / 2, above: false };
+  }
+
+  renderVals() {
+    const s = this.state, id = this.stepId();
+    const q = QUESTIONS[Math.min(s.qi, QUESTIONS.length - 1)];
+    const answered = s.picked !== null;
+    const correct = answered && s.picked === q.answer;
+    const perCorrect = this.props.creditsPerCorrect ?? 3;
+    const showCredits = this.props.showCredits ?? true;
+
+    const isPredStep = id === 'position' || id === 'length';
+    const chosen = (PREDS[id] || []).find(o => o.v === s.pred[id]);
+    const collapsed = isPredStep && !!chosen && !s.expanded;
+
+    const live = model(s.angle);
+    const letter = nearestLetter(s.angle);
+    const measuredCount = POS.filter(p => s.measured[p.k] !== undefined).length;
+    const allMeasured = measuredCount === POS.length;
+    const sawBoth = !!(s.visited.A && s.visited.E);
+
+    const pillBase = 'padding:8px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:800;transition:all 120ms ease-out;';
+    const steps = STEPS.map((st, i) => {
+      const open = this.isOpen(st.id);
+      return {
+        label: (open ? '' : '🔒 ') + st.label,
+        go: () => this.goStep(i),
+        pill: pillBase + (i === s.step
+          ? 'background:#2f6fd6;color:#fff;border:2px solid #6aa9f0;box-shadow:0 0 16px rgba(74,144,226,.5);'
+          : 'background:#2b3340;color:#d6dee6;border:1px solid rgba(255,255,255,.14);')
+          + (open ? 'cursor:pointer;' : 'opacity:.38;cursor:not-allowed;')
+      };
+    });
+
+    const predOptions = (PREDS[id] || []).map(o => ({
+      text: o.text,
+      ring: this.ring(s.pred[id] === o.v, 15),
+      pick: () => {
+        this.cue('select');
+        this.setState({ pred: Object.assign({}, s.pred, { [id]: o.v }), expanded: false });
+      }
+    }));
+
+    const activeView = this.view();
+    const viewButtons = [
+      { v: 'apparatus', label: 'Stage' },
+      { v: 'top', label: 'Top' },
+      { v: 'both', label: 'Both' }
+    ].map(o => ({
+      label: o.label,
+      active: activeView === o.v,
+      ring: this.ring(activeView === o.v, 15),
+      pick: () => { this.cue('click'); this.setState({ view: o.v }); }
+    }));
+
+    const qOptions = q.options.map((text, i) => ({
+      text,
+      ring: this.markRing(answered ? (i === q.answer ? 'good' : (i === s.picked ? 'bad' : null)) : null),
+      pick: () => {
+        if (s.picked !== null) return;
+        const good = i === q.answer;
+        this.cue(good ? 'correct' : 'wrong');
+        this.setState({ picked: i, score: s.score + (good ? 1 : 0), credits: s.credits + (good ? perCorrect : 0) });
+      }
+    }));
+
+    /* the five marked positions, each with a little picture of where the light sits */
+    const posButtons = POS.map(p => {
+      const active = letter === p.k;
+      const done = s.measured[p.k] !== undefined;
+      return {
+        label: p.k,
+        ring: this.ring(active, 15),
+        arc: 'position:relative;display:block;width:32px;height:17px;border-bottom:1.5px solid rgba(255,255,255,.28);border-radius:0 0 2px 2px;',
+        dot: 'position:absolute;width:7px;height:7px;margin:-3.5px 0 -3.5px -3.5px;border-radius:50%;left:'
+          + (50 - 50 * Math.cos(p.a * Math.PI / 180)).toFixed(1) + '%;bottom:'
+          + (100 * Math.sin(p.a * Math.PI / 180)).toFixed(1) + '%;background:'
+          + (active ? '#ffb627' : done ? '#5ee07a' : '#7d8b99')
+          + ';box-shadow:' + (active ? '0 0 10px rgba(255,182,39,.9)' : 'none') + ';transition:all 120ms ease-out;',
+        css: 'display:flex;flex-direction:column;align-items:center;gap:4px;width:48px;padding:7px 4px 6px;border-radius:13px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;transition:all 120ms ease-out;'
+          + (active ? 'background:#2f6fd6;color:#fff;border:2px solid #6aa9f0;'
+            : done ? 'background:rgba(94,224,122,.12);color:#d6dee6;border:1px solid rgba(94,224,122,.45);'
+              : 'background:#2b3340;color:#d6dee6;border:1px solid rgba(255,255,255,.16);'),
+        pick: () => {
+          this.cue('click');
+          this.setState({ angle: p.a, measuring: false });
+        }
+      };
+    });
+
+    const tickLetters = POS.map(p => ({
+      ch: p.k,
+      css: 'font-size:12px;font-weight:900;transition:color 120ms ease-out;color:' + (letter === p.k ? '#ffb627' : '#5a6775') + ';'
+    }));
+
+    /* the bar chart fills in one reading at a time */
+    const bars = POS.map(p => {
+      const v = s.measured[p.k];
+      const has = v !== undefined;
+      const pct = has ? Math.max(3, Math.min(100, (v / CHART_MAX) * 100)) : 0;
+      const tone = p.k === 'C' ? '#66ccff' : p.k === 'B' || p.k === 'D' ? '#cd7bf5' : '#ffb627';
+      return {
+        letter: p.k,
+        val: has ? v.toFixed(1) : '—',
+        valCss: 'font-size:13px;font-weight:900;white-space:nowrap;color:' + (has ? tone : '#5a6775') + ';',
+        letterCss: 'font-size:14px;font-weight:900;color:' + (letter === p.k ? '#ffb627' : has ? '#d6dee6' : '#5a6775') + ';',
+        fill: 'width:100%;height:' + pct.toFixed(1) + '%;border-radius:6px;transition:height 280ms ease-out;background:linear-gradient(180deg,'
+          + tone + ',' + tone + '99);box-shadow:0 0 14px ' + tone + '55;'
+      };
+    });
+
+    const sentRows = SENTENCES.map(sen => sen.options.map(opt => {
+      const pickedV = s.sent[sen.id];
+      const isPicked = pickedV === opt;
+      const good = opt === sen.good;
+      return {
+        label: opt,
+        ring: this.ring(false, 12),
+        css: 'padding:6px 13px;border-radius:11px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;transition:all 120ms ease-out;'
+          + (isPicked
+            ? (good ? 'background:#3fc35f;color:#06230f;border:2px solid #5ee07a;box-shadow:0 0 14px rgba(94,224,122,.5);'
+              : 'background:#e8493f;color:#fff;border:2px solid #ff8a80;box-shadow:0 0 14px rgba(232,73,63,.45);')
+            : (pickedV && good ? 'background:rgba(94,224,122,.16);color:#5ee07a;border:2px solid rgba(94,224,122,.6);'
+              : 'background:#2b3340;color:#d6dee6;border:1px solid rgba(255,255,255,.16);')),
+        pick: () => {
+          if (s.sent[sen.id]) return;
+          this.cue(good ? 'correct' : 'wrong');
+          this.setState({ sent: Object.assign({}, s.sent, { [sen.id]: opt }) });
+        }
+      };
+    }));
+
+    const capMap = {
+      apparatus: ['Apparatus', '#8a98a6', 'rgba(255,255,255,.14)'],
+      top: ['Top view', '#66ccff', 'rgba(102,204,255,.45)'],
+      both: ['Stage + top view', '#cd7bf5', 'rgba(205,123,245,.45)']
+    };
+    const cap = capMap[activeView] || capMap.apparatus;
+
+    const sideWord = live.side === 'underneath' ? 'underneath' : live.side;
+    const benchHint = id === 'position'
+      ? (!s.on ? 'Close the curtain to start, then slide the light along the arc from A to E.'
+        : live.side === 'underneath' ? 'The light is directly above. The shadow is a small pool at the figure\u2019s feet.'
+          : 'The light is on the ' + (live.side === 'right' ? 'left' : 'right') + ', so the shadow lies to the '
+            + live.side + ' \u2014 the opposite side.')
+      : (!s.on ? 'Close the curtain to start, then snap the light to A.'
+        : allMeasured ? 'All five measured. Look at the shape of the chart: longest at A and E, shortest at C.'
+          : !letter ? 'Snap the light onto a marked position \u2014 A, B, C, D or E.'
+            : s.measured[letter] === undefined ? 'Press \ud83d\udccf Measure to lay the string along the shadow and read the tape.'
+              : 'Measured at ' + letter + '. Now move the light to the next letter.');
+
+    const learn = id === 'position' && s.on && collapsed && live.side !== 'underneath' && !sawBoth;
+    const noteOn = collapsed && ((id === 'position' && sawBoth) || (id === 'length' && allMeasured));
+    const noteTone = id === 'position' ? '#5ee07a' : '#ffb627';
+
+    return {
+      steps, lockMsg: s.lockMsg,
+      isIntro: id === 'intro', isQuiz: id === 'quiz', isDone: id === 'done',
+      isPosition: id === 'position', isLength: id === 'length',
+      showPositionPanel: id === 'position' && !collapsed,
+      showLengthPanel: id === 'length' && !collapsed,
+      showControls: collapsed,
+      showReadings: collapsed,
+      showSketches: collapsed && id === 'position',
+      showChart: collapsed && id === 'length',
+      showSentences: measuredCount >= 2,
+      showPredChip: collapsed && activeView !== 'top',
+      showPredChipBottom: collapsed && activeView === 'top',
+      predChipCss: 'position:absolute;top:14px;right:14px;max-width:320px;display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 16px;border-radius:16px;background:rgba(7,13,21,.9);border:2px solid rgba(255,182,39,.6);box-shadow:0 0 18px rgba(255,182,39,.3);color:#fff;font-family:inherit;cursor:pointer;',
+      showNav: collapsed,
+      showSafety: isPredStep,
+      nextLabel: NEXT_LABELS[id] || 'Next →',
+      predLabel: chosen ? chosen.text : '',
+      expandPanel: () => { this.cue('click'); this.setState({ expanded: true }); },
+
+      experiment: this.experiment(),
+      view: activeView,
+      onAttr: s.on ? 'yes' : 'no',
+      raysAttr: s.rays ? 'yes' : 'no',
+      measureAttr: s.measuring ? 'yes' : 'no',
+      angle: s.angle,
+
+      capText: cap[0],
+      capCss: 'padding:5px 12px;border-radius:999px;background:rgba(7,13,21,.78);border:1px solid ' + cap[2]
+        + ';color:' + cap[1] + ';font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;',
+
+      showRail: collapsed,
+      posButtons, tickLetters, bars,
+      sent1: sentRows[0], sent2: sentRows[1],
+
+      showMeasureBtn: id === 'length',
+      measureCount: 'Measured ' + measuredCount + ' of 5',
+      measureLabel: !letter ? '📏 Snap to a letter'
+        : s.measured[letter] !== undefined ? '📏 Measure again'
+          : '📏 Measure',
+      measureCss: 'padding:10px 18px;border-radius:13px;font-family:inherit;font-size:15px;font-weight:900;white-space:nowrap;transition:all 120ms ease-out;'
+        + (s.on && letter
+          ? 'background:linear-gradient(180deg,#49d16a,#2ea24d);border:none;box-shadow:0 2px 0 #1c6e34,0 0 18px rgba(63,195,95,.4);color:#06230f;cursor:pointer;'
+          : 'background:#2b3340;border:1px solid rgba(255,255,255,.16);color:#8a98a6;cursor:not-allowed;'),
+      doMeasure: () => {
+        if (!s.on || !letter) { this.cue('wrong'); return; }
+        this.cue('select');
+        clearTimeout(this._mt);
+        if (s.measuring) {
+          this.setState({ measuring: false });
+          this._mt = setTimeout(() => this.setState({ measuring: true }), 80);
+        } else this.setState({ measuring: true });
+      },
+
+      showSwitch: collapsed && !s.on,
+      onLabel: s.on ? '⏻\u00a0Off' : '💡\u00a0On',
+      toggleOn: () => {
+        this.cue(s.on ? 'click' : 'select');
+        this.setState({ on: !s.on, measuring: false });
+      },
+      curtainAttr: s.curtain === 'closed' ? 'closed' : 'open',
+      curtainShut: s.curtain === 'closed',
+      curtainLabel: s.curtain === 'closed' ? '🪟 Curtain closed' : '🪟 Curtain open',
+      curtainRing: this.ring(s.curtain === 'closed', 15),
+      toggleCurtain: () => {
+        this.cue('click');
+        this.setState({ curtain: s.curtain === 'closed' ? 'open' : 'closed' });
+      },
+      startExperiment: () => {
+        this.cue('select');
+        this.setState({ curtain: 'closed', on: true, measuring: false });
+      },
+      angleStr: letter || Math.round(s.angle) + '°',
+      setAngle: (e) => this.setState({ angle: parseFloat(e.target.value), measuring: false }),
+      arcNote: letter
+        ? 'The light is resting on position ' + letter + '.'
+        : 'Slide the light between the marked positions, or tap a letter below the stage.',
+      raysOn: s.rays,
+      raysRing: this.ring(s.rays, 15),
+      toggleRays: () => { this.cue('click'); this.setState({ rays: !s.rays }); },
+      resetBench: () => {
+        this.cue('click');
+        this.setState({
+          on: false, angle: this.startAngle(), rays: false, curtain: 'open', measuring: false,
+          measured: {}, visited: {}, sent: {}
+        });
+      },
+      viewButtons,
+
+      rAt: letter || betweenLabel(s.angle),
+      rSide: sideWord,
+      rSideC: live.side === 'right' ? '#66ccff' : live.side === 'left' ? '#cd7bf5' : '#5ee07a',
+      rLen: s.on ? live.length.toFixed(1) + ' cm' : '—',
+      rCount: measuredCount + ' of 5',
+      benchHint,
+
+      sawA: !!s.visited.A, notSawA: !s.visited.A,
+      sawE: !!s.visited.E, notSawE: !s.visited.E,
+
+      showCallout: noteOn || learn,
+      calloutTag: noteOn ? (id === 'position' ? 'What happened' : 'Results · all five measured') : 'Learning point',
+      calloutText: noteOn
+        ? (NOTES[id] || '')
+        : 'The figure blocks the light, so the dark patch appears on the far side of it \u2014 never on the same side as the light.',
+      calloutCss: 'display:flex;flex-direction:column;gap:9px;order:3;padding:13px 15px;border-radius:16px;animation:clFadeIn 280ms ease-out;'
+        + 'background:rgba(7,13,21,.94);border:2px solid ' + (noteOn ? noteTone : '#ffb627') + '99;'
+        + 'box-shadow:0 0 20px ' + (noteOn ? noteTone : '#ffb627') + '2e, 0 8px 26px rgba(0,0,0,.5);',
+      calloutTagCss: 'font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:' + (noteOn ? noteTone : '#ffb627') + ';',
+
+      predOptions,
+
+      qTopic: q.topic,
+      qCounter: 'Question ' + (s.qi + 1) + ' of ' + QUESTIONS.length,
+      qText: q.text,
+      qOptions,
+      qAnswered: answered,
+      qVerdict: correct
+        ? (showCredits ? 'Correct! +' + perCorrect + ' credits' : 'Correct!')
+        : 'Not quite — here is why',
+      qWhy: q.why,
+      qNextLabel: s.qi < QUESTIONS.length - 1 ? 'Next question →' : 'See my results →',
+      nextQ: () => {
+        this.cue('click');
+        if (s.qi < QUESTIONS.length - 1) this.setState({ qi: s.qi + 1, picked: null });
+        else this.goStep(STEPS.length - 1);
+      },
+      score: s.score,
+      scoreLine: s.score + ' out of ' + QUESTIONS.length + ' correct'
+        + (showCredits ? ' — ' + s.credits + ' credits earned.' : '.'),
+      scoreLabel: Math.round((s.score / QUESTIONS.length) * 100) + '% correct',
+
+      showHint: s.idle && !!s.hintBox,
+      hintText: id === 'intro' ? 'Tap here to go to the bench'
+        : id === 'quiz' ? (answered ? 'Read the answer, then continue here' : 'Choose an answer here')
+          : isPredStep && !collapsed ? 'Make your prediction here first'
+            : !s.on ? 'Close the curtain here to start'
+              : id === 'length' ? (allMeasured ? 'All five done \u2014 move on when you are ready' : (s.measured[letter] === undefined && letter ? 'Press Measure here' : 'Move the light to the next letter'))
+                : !s.visited.A ? 'Put the light at A, low on the left'
+                  : !s.visited.E ? 'Now try E, low on the right'
+                    : 'Slide the light and watch the shadow swing',
+      hintWrap: 'position: fixed; z-index: 60; display: flex; gap: 6px; max-width: 300px; animation: clFadeIn 300ms ease-out; pointer-events: none;'
+        + (s.hintBox
+          ? (s.hintBox.above
+            ? 'flex-direction: column-reverse; align-items: center; left: ' + Math.round(s.hintBox.x) + 'px; top: ' + Math.round(s.hintBox.y) + 'px; transform: translate(-50%, -100%);'
+            : 'align-items: center; left: ' + Math.round(s.hintBox.x) + 'px; top: ' + Math.round(s.hintBox.y) + 'px; transform: translateY(-50%);')
+          : 'align-items: center; left: 50%; top: 50%;'),
+      hintGlyph: s.hintBox && s.hintBox.above ? '▼' : '◀',
+      hintArrow: 'font-size: ' + (s.hintBox && s.hintBox.above ? '20px' : '26px') + '; color: #ffb627; animation: '
+        + (s.hintBox && s.hintBox.above ? 'clNudgeY' : 'clNudge') + ' 1.1s ease-in-out infinite;',
+
+      next: () => this.goStep(Math.min(STEPS.length - 1, s.step + 1)),
+      back: () => this.goStep(Math.max(0, s.step - 1)),
+      goPosition: () => this.goStep(1),
+      restart: () => {
+        this.cue('click');
+        this.setState({
+          step: 0, on: false, angle: this.startAngle(), rays: false, curtain: 'open', measuring: false,
+          measured: {}, visited: {}, sent: {},
+          pred: {}, expanded: false,
+          qi: 0, picked: null, score: 0, credits: 0
+        });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
