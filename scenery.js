@@ -63,8 +63,8 @@
       [0.50, [125, 190, 255], [220, 240, 255], 0.22],   // noon
       [0.85, [140, 190, 240], [255, 215, 170], 0.26],   // late afternoon
       [1.00, [255, 140, 110], [255, 205, 150], 0.34],   // sunset
-      [1.12, [40, 50, 100], [90, 80, 130], 0.42],       // dusk
-      [1.30, [12, 18, 44], [30, 40, 80], 0.50],         // night
+      [1.12, [40, 50, 100], [90, 80, 130], 0.30],       // dusk
+      [1.30, [12, 18, 44], [30, 40, 80], 0.32],         // night
     ];
     let a = K[0], b = K[K.length - 1];
     for (let i = 0; i < K.length - 1; i++) if (p >= K[i][0] && p <= K[i + 1][0]) { a = K[i]; b = K[i + 1]; break; }
@@ -138,9 +138,12 @@
       const glow = ctx.createRadialGradient(x, y, 10, x, y, 80);
       glow.addColorStop(0, 'rgba(230,235,255,.35)'); glow.addColorStop(1, 'rgba(230,235,255,0)');
       ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, 80, 0, 6.283); ctx.fill();
-      ctx.fillStyle = '#f2f3fa'; ctx.beginPath(); ctx.arc(x, y, 22, 0, 6.283); ctx.fill();
-      ctx.fillStyle = dark() ? '#141a27' : `rgb(${skyColors(p).top.join(',')})`;
-      ctx.globalAlpha = 0.9; ctx.beginPath(); ctx.arc(x - 9, y - 4, 19, 0, 6.283); ctx.fill(); ctx.globalAlpha = 1;
+      // a crescent: draw the disc, then cut the shadow out so the sky shows through
+      ctx.save(); ctx.beginPath(); ctx.arc(x, y, 22, 0, 6.283); ctx.clip();
+      ctx.fillStyle = '#f2f3fa'; ctx.fillRect(x - 24, y - 24, 48, 48);
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath(); ctx.arc(x - 10, y - 5, 19, 0, 6.283); ctx.fill();
+      ctx.restore();
     }
   }
 
