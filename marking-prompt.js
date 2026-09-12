@@ -277,6 +277,5 @@ export function buildMcqUser(questionText, syllabusTopics, exclusions) {
     '  correct option is correct. Everyday words only.',
     '',
     NO_DIAGRAM_SPEC,
-    'Most Booklet A questions carry a diagram. Include one unless the question is purely verbal.',
   ].join('\n');
 }
