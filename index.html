@@ -1217,6 +1217,7 @@
   <button data-v="mist"><b>◷</b>Mistakes</button>
   <button data-v="prac"><b>↻</b>Recall<span class="cnt" id="nav-due" hidden>0</span></button>
 </nav>
+<script src="syllabus-map.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const KEY = 'sm-subs-v1', PKEY = 'sm-recall-v1';
@@ -4215,8 +4216,22 @@ function topicStats(){
   const topics = [...map.values()].map(t => { const items = [...t.qs.values()].sort((a, b) => a.last - b.last); const scored = items.filter(q => q.best != null);
     return { ...t, items, n: items.length, mean: scored.length ? scored.reduce((a, q) => a + q.best, 0) / scored.length : null }; });
   const names = topics.map(t => t.label).sort();
-  topics.forEach(t => { t.hue = HUES[names.indexOf(t.label) % HUES.length]; t.code = codeOf(t.label); t.weak = t.items.filter(q => q.best == null || q.best < .75).map(q => q.qi); });
+  topics.forEach(t => {
+    const th = (typeof SYLLABUS !== 'undefined') ? SYLLABUS.themeOf(t.label) : null, ch = (typeof SYLLABUS !== 'undefined') ? SYLLABUS.chapterOf(t.label) : null;
+    t.theme = th ? th.key : 'Other'; t.icon = th ? th.icon : '📘'; t.chapter = ch ? ch.name : '';
+    t.hue = th ? th.col : HUES[names.indexOf(t.label) % HUES.length]; t.code = codeOf(t.label);
+    t.weak = t.items.filter(q => q.best == null || q.best < .75).map(q => q.qi);
+  });
   return topics.sort((a, b) => (a.mean == null ? 2 : a.mean) - (b.mean == null ? 2 : b.mean));
+}
+// The five syllabus themes, each summed over the topics that fall under it.
+function themeStats(topics){
+  if (typeof SYLLABUS === 'undefined') return [];
+  return SYLLABUS.themes.map(th => {
+    const mine = topics.filter(t => t.theme === th.key), scored = mine.filter(t => t.mean != null);
+    const items = mine.reduce((a, t) => a + t.n, 0), scoredN = scored.reduce((a, t) => a + t.n, 0);
+    return { ...th, topics: mine, n: items, mean: scoredN ? scored.reduce((a, t) => a + t.mean * t.n, 0) / scoredN : null };
+  });
 }
 function slipList(topics){
   const m = new Map();
@@ -4240,10 +4255,17 @@ function topicsHtml(){
   const gap = topics.find(t => t.n >= 2 && t.mean != null && t.mean < .5);
   if (gap) h += '<div class="box2"><span style="font-size:16px;line-height:1.2">⚠️</span><div><b>Work on this first</b><div style="margin-top:4px;font:400 12px/1.45 var(--body);color:var(--scsoft)">' + esc(gap.label) + ' is at ' + pctStr(gap.mean) + ' across ' + gap.n + ' questions. A short round on it today will lift everything else.</div><button class="scbtn" data-topic="' + esc(gap.label) + '">Practise ' + esc(gap.label) + '</button></div></div>';
   else if (topics.every(t => t.mean == null || t.mean >= .75)) h += '<div class="box2 good"><span style="font-size:16px;line-height:1.2">✅</span><div><b>No gaps showing</b><div style="margin-top:4px;font:400 12px/1.45 var(--body);color:var(--scsoft)">Every topic you have tried is strong. Keep the recall rounds going so it stays that way.</div></div></div>';
+  // the five themes of the syllabus
+  const themes = themeStats(topics);
+  if (themes.length){
+    h += '<div class="pn"><div class="pt g">Syllabus themes</div><div class="blurb">The five themes of primary science. Every topic you answer falls under one of them.</div><div class="sbars">' +
+      themes.map(th => { const tn = tone(th.mean); return '<div class="sbar" title="' + esc(th.blurb) + '"><div class="scol" style="height:40px"><i style="height:' + (th.mean == null ? 6 : Math.max(6, Math.round(th.mean * 100))) + '%;background:' + (th.n ? tn.fill : 'rgba(255,255,255,.12)') + '"></i></div>' +
+        '<small style="color:' + th.col + ';font-size:10px">' + th.icon + ' ' + esc(th.key) + '</small><small style="color:' + (th.n ? tn.col : 'var(--scfaint)') + '">' + (th.n ? pctStr(th.mean) + ' · ' + th.n + (th.n === 1 ? ' q' : ' qs') : 'not yet') + '</small></div>'; }).join('') + '</div></div>';
+  }
   // topics, weakest first
   h += '<div class="pn"><div class="pt y">Topics — weakest first</div><div class="blurb">One bar for each question you have answered in the topic; its height is your best score. Tap a topic\'s button to practise the questions that are not yet strong.</div><div class="grid2">';
   topics.forEach(t => { const tn = tone(t.mean);
-    h += '<div><div class="srow"><span class="scode" style="background:' + t.hue + '">' + esc(t.code) + '</span><span class="slbl">' + esc(t.label) + '</span><span class="spct" style="color:' + tn.col + '">' + pctStr(t.mean) + '</span><span class="stag" style="color:' + tn.col + '">' + tn.tag + '</span></div>' +
+    h += '<div><div class="srow"><span class="scode" style="background:' + t.hue + '">' + esc(t.code) + '</span><span class="slbl">' + esc(t.label) + '<span class="tiny" style="display:block;font-weight:400;margin-top:2px">' + t.icon + ' ' + esc(t.theme) + (t.chapter && t.chapter.toLowerCase() !== String(t.label).toLowerCase() ? ' · ' + esc(t.chapter) : '') + '</span></span><span class="spct" style="color:' + tn.col + '">' + pctStr(t.mean) + '</span><span class="stag" style="color:' + tn.col + '">' + tn.tag + '</span></div>' +
       '<div class="sbars">' + t.items.slice(-8).map((q, i) => { const qt = tone(q.best); return '<div class="sbar" title="' + esc(q.q) + '"><div class="scol"><i style="height:' + (q.best == null ? 8 : Math.max(6, Math.round(q.best * 100))) + '%;background:' + qt.fill + '"></i></div><small>' + (i + 1) + '</small></div>'; }).join('') + '</div>' +
       (t.weak.length ? '<button class="scbtn ghost" data-topic="' + esc(t.label) + '">Practise ' + t.weak.length + (t.weak.length === 1 ? ' question' : ' questions') + '</button>' : '<div class="tiny" style="margin-top:8px">All strong here.</div>') + '</div>';
   });
