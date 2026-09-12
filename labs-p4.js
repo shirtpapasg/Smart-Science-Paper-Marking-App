@@ -426,7 +426,7 @@ export const LABS = [
   ],
 },
 {
-  id: 'p4-6-1', level: 'P4', chapter: 'Heat', code: '6.1', minutes: 35, kind: 'lab3d', status: 'review',
+  id: 'p4-6-1', level: 'P4', chapter: 'Heat', code: '6.1', minutes: 35, kind: 'lab3d', status: 'ready',
   title: 'Touch or thermometer?',
   cc21: ['Information Skills', 'Critical Thinking'],
   skills: ['Analysing Data', 'Communicating with Evidence'],
