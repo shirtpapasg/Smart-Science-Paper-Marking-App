@@ -482,6 +482,15 @@
     opacity:0;transform:translateY(12px) scale(.9);transform-origin:100% 50%;
     transition:opacity .26s,transform .34s cubic-bezier(.2,1.3,.3,1)}
   #pip-menu button span{font-size:17px;line-height:1}
+  /* Something is waiting in the admin view, so the entry turns amber. It goes back
+     to black by itself once the last one has been dealt with. */
+  #pip-menu button#pm-admin.to-review{background:var(--warn);border-color:var(--warn);color:#fff}
+  html[data-theme="dark"] #pip-menu button#pm-admin.to-review{color:#17202f}
+  /* A drawing the app made is a draft an admin judges, never finished work. Only an
+     admin sees one at all, and it says so above itself. */
+  .dgm.draft::before{content:'Draft drawing \00b7 admin only';display:block;margin:0 0 8px;
+    font-family:var(--round);font-size:11px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--warn)}
   #pip-menu.on{pointer-events:auto}
   #pip-menu.on button{opacity:1;transform:none}
   #pip-menu.on button:nth-child(1){transition-delay:.04s}
@@ -2075,13 +2084,15 @@ async function handlePhoto(files){
 }
 
 /* ── diagrams ──────────────────────────────────────────
-   Generated drawings are off. The model is told not to describe one, and this is
-   the second lock, so a question saved earlier with shapes in it does not draw
-   either. Turn DRAW_DIAGRAMS back on only when the drawings are good enough to
-   sit beside a real paper. */
-const DRAW_DIAGRAMS = false;
+   Generated drawings are not good enough to sit beside a real paper, so a pupil or
+   a parent never sees one. The model is told not to describe one either
+   (marking-prompt.js); this is the second lock, so a question saved before that,
+   or any drawing made while testing, stays inside the admin view. */
+function diagramsVisible(){
+  try { return typeof isSiteAdmin === 'function' && isSiteAdmin(); } catch(e){ return false; }
+}
 function svgFor(d){
-  if (!DRAW_DIAGRAMS) return String();
+  if (!diagramsVisible()) return String();
   if (!d || !Array.isArray(d.shapes) || !d.shapes.length) return '';
   const vb = d.viewBox || '0 0 320 200';
   const ink = 'var(--ink)', mid = 'var(--mid)';
@@ -2192,7 +2203,7 @@ function svgFor(d){
   if (usedArrow) defs += '<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="'+ink+'"/></marker>';
   if (usedHatch) defs += '<pattern id="ht" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="'+mid+'" stroke-width="2"/></pattern>';
 
-  return '<div class="dgm"><svg viewBox="'+vb+'" role="img" aria-label="'+
+  return '<div class="dgm draft"><svg viewBox="'+vb+'" role="img" aria-label="'+
     String(d.caption||'Diagram').replace(/"/g,'')+'">'+(defs?'<defs>'+defs+'</defs>':'')+out+'</svg>'+
     (d.caption ? '<div class="dgm-cap">'+String(d.caption).replace(/[<>]/g,'')+'</div>' : '')+'</div>';
 }
@@ -2207,6 +2218,7 @@ function pmOpen(on){
   if (!m) return;
   m.classList.toggle('on', on);
   if (pip) pip.classList.toggle('open', on);
+  if (on && typeof refreshReview === 'function') refreshReview();
 }
 const pmIsOpen = () => $('pip-menu') && $('pip-menu').classList.contains('on');
 
@@ -2244,12 +2256,42 @@ $('pm-lab').onclick   = e => { e.stopPropagation(); location.href = 'lab.html'; 
 const ADMIN_ON = 'sm-admin-v1';
 const ADMIN_FP = '6a93db1e49bd29e2f2c8e4c5a5a79c4ede9723cc0c5a296e2bd221e77aa8886d';
 const isSiteAdmin = () => { try { return localStorage.getItem(ADMIN_ON) === '1'; } catch(e){ return false; } };
+/* What is waiting for an admin: a page that was photographed and has not been
+   released as practice yet, and any question carrying a drawing the app made,
+   which is now held back as a draft. */
+let reviewCount = 0;
+async function countAwaitingReview(){
+  try {
+    const src = load(SRC), released = new Set(load(TWN).map(t => t.sourceId));
+    const waiting = new Set();
+    (await SCANS.all()).forEach(r => {
+      const q = src.find(x => x.id === r.id);
+      if (q && !released.has(q.id)) waiting.add(q.id);
+    });
+    src.forEach(q => {
+      const d = q.scheme && q.scheme.diagram;
+      if (d && Array.isArray(d.shapes) && d.shapes.length) waiting.add(q.id);
+    });
+    return waiting.size;
+  } catch(e){ return 0; }
+}
+async function refreshReview(){
+  reviewCount = await countAwaitingReview();
+  renderAdminItem();
+}
 function renderAdminItem(){
   const m = $('pm-admin'); if (!m) return;
-  m.innerHTML = isSiteAdmin() ? '<span>⚙</span>Admin logout' : '<span>⚙</span>Admin login';
+  const waiting = reviewCount > 0;
+  m.innerHTML = '<span>⚙</span>' + (isSiteAdmin() ? 'Admin logout' : 'Admin login')
+    + (waiting ? ' · ' + reviewCount : '');
+  m.classList.toggle('to-review', waiting);
+  m.title = waiting
+    ? reviewCount + (reviewCount === 1 ? ' item is' : ' items are') + ' waiting in the admin view'
+    : '';
 }
 function adminChanged(){
   renderAdminItem();
+  if (typeof refreshReview === 'function') refreshReview();
   if (typeof renderAdmBar === 'function') renderAdmBar();
   if (typeof renderQs === 'function') renderQs();
 }
@@ -4255,6 +4297,7 @@ document.addEventListener('click', e => {
 }, true);
 
 armIdle();   // last: idleT and curView must exist before the first timer
+refreshReview();
 </script>
 <script src="scenery.js"></script>
 </body>
