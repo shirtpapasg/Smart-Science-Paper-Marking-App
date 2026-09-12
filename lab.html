@@ -211,6 +211,7 @@ async function boot(){
   try {
     const d = await api('/api/access', { action:'session' });
     gateLocked = !!d.locked;
+    if (d.locked && d.ok) LSYNC.pull();
     if (d.locked && !d.ok) return gateOpen();
   } catch(e){ if (!sessionToken()) { /* server unreachable: let the list call say so */ } }
   $('gate').classList.remove('on');
@@ -245,7 +246,36 @@ addEventListener('pagehide', () => LOG.end(true));
 /* ── progress on this device ── */
 const PK = 'sm-lab-progress-v1';
 const prog = () => { try { return JSON.parse(localStorage.getItem(PK) || '{}'); } catch(e){ return {}; } };
-const setProg = (id, key, val) => { const p = prog(); p[id] = p[id] || {}; p[id][key] = val; try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){} };
+const setProg = (id, key, val) => { const p = prog(); p[id] = p[id] || {}; p[id][key] = val; try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){} LSYNC.touch(); };
+/* Progress and badges follow the pupil: while signed in, this key is kept on
+   the account too and merged on arrival (a badge earned anywhere is earned). */
+const LSYNC = {
+  timer: null, dirty: false,
+  on(){ return gateLocked && !!sessionToken(); },
+  touch(){ if (!this.on()) return; this.dirty = true; clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), 2500); },
+  async push(){ if (!this.on() || !this.dirty) return; this.dirty = false; try { await api('/api/access', { action: 'store-put', items: [{ key: PK, v: JSON.stringify(prog()), t: Date.now() }] }); } catch(e){ this.dirty = true; } },
+  flush(){ if (!this.on() || !this.dirty) return; this.dirty = false; try { fetch('/api/access', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'store-put', items: [{ key: PK, v: JSON.stringify(prog()), t: Date.now() }], session: sessionToken() }) }); } catch(e){} },
+  async pull(){
+    if (!this.on()) return;
+    try {
+      const d = await api('/api/access', { action: 'store-get' });
+      const r = d && d.store && d.store[PK]; if (!r || !r.v) { this.dirty = true; this.push(); return; }
+      let R = {}; try { R = JSON.parse(r.v) || {}; } catch(e){ return; }
+      const L = prog(), out = {};
+      new Set([...Object.keys(L), ...Object.keys(R)]).forEach(id => {
+        const x = L[id] || {}, y = R[id] || {}, o = { ...y, ...x };
+        if (y.badge && !x.badge) o.badge = y.badge;
+        if (x.badge && y.badge) o.badge = ((x.badge.ts || 0) <= (y.badge.ts || 0)) ? x.badge : y.badge;
+        ['tested', 'done', 'cdone'].forEach(f => { if (x[f] || y[f]) o[f] = x[f] || y[f]; });
+        out[id] = o;
+      });
+      const merged = JSON.stringify(out);
+      if (merged !== JSON.stringify(L)) { try { localStorage.setItem(PK, merged); } catch(e){} if (A) renderActivity(A); else if (!$('list').classList.contains('hide')) renderList(); }
+      if (merged !== r.v) { this.dirty = true; this.push(); }
+    } catch(e){ /* the device copy stands */ }
+  },
+};
+addEventListener('pagehide', () => LSYNC.flush());
 const getProg = (id, key) => ((prog()[id] || {})[key]);
 
 /* ── router ── */
@@ -448,7 +478,7 @@ const achHtml = a => '<div class="ach"><div class="ico">' + a.badge.icon + '</di
   '<div style="font-size:15px">' + esc(a.badge.line) + ' The whole 3D lab is now open — challenge included.</div></div></div>';
 function checkAchievement(a){
   if (getProg(a.id, 'badge') || !allDone(a)) return;
-  setProg(a.id, 'badge', { ts: Date.now() }); setProg(a.id, 'done', true);
+  setProg(a.id, 'badge', { ts: Date.now(), icon: a.badge ? a.badge.icon : '🏅', name: a.badge ? a.badge.name : a.title, code: a.code }); setProg(a.id, 'done', true);
   if ($('ach') && a.badge) $('ach').innerHTML = achHtml(a);
   refreshGates(a); celebrate();
   $('ach') && $('ach').scrollIntoView({ behavior:'smooth', block:'center' });
@@ -542,6 +572,7 @@ function wireActivity(a){
     const p = prog(); const badge = (p[a.id] || {}).badge;
     p[a.id] = badge ? { badge } : {};
     try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){}
+    LSYNC.touch();
     LOG.event('lab', { code: a.code, what: 'started again' });
     renderActivity(a);
   });

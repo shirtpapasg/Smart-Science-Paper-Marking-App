@@ -1,4 +1,4 @@
-import { guard, lockOn, normEmail, getMember, putMember, sendLink, redeemLink, requestMember, kv } from './_shared.js';
+import { guard, lockOn, normEmail, getMember, putMember, sendLink, redeemLink, requestMember, readSession, kv } from './_shared.js';
 
 // The three things a browser can do before it is signed in.
 //   session — is the lock on, and does this browser hold a valid session?
@@ -6,9 +6,59 @@ import { guard, lockOn, normEmail, getMember, putMember, sendLink, redeemLink, r
 //   link    — post a fresh sign-in link to a registered email
 // Every reply about an email is the same whether or not it is registered, so
 // the endpoint cannot be used to discover who the members are.
+// ── the pupil's saved work ──
+// store:<email> is a hash of the app's own sm-* keys → {v, t}. The page keeps
+// working from its own copy and pushes changes within a few seconds; on
+// sign-in it pulls this and merges, so the notebook, the recall schedule, the
+// profile and the lab badges follow the pupil to any device. Saving is exempt
+// from the general per-IP limit (a busy pupil saves often) but every key must
+// be one of the app's, and no single key may exceed the size cap.
+const STORE_KEY_OK = /^sm-[a-z0-9-]{2,40}$/;
+const STORE_MAX_VALUE = 400000, STORE_MAX_KEYS = 40;
+async function memberFromReq(req, body) {
+  let who = await requestMember(req);
+  if (!who && body.session) {
+    const e = readSession(String(body.session));
+    if (e) { const m = await getMember(e).catch(() => null); if (m && m.active) who = e; }
+  }
+  return who;
+}
+
 export default async function handler(req, res) {
-  if (!(await guard(req, res, { open: true }))) return;
+  const storing = /^store-/.test(String((req.body || {}).action || ''));
+  if (!(await guard(req, res, { open: true, light: storing }))) return;
   const { action, token, email } = req.body || {};
+
+  if (storing) {
+    if (!lockOn()) return res.status(200).json({ locked: false, ok: true, store: {} });
+    const who = await memberFromReq(req, req.body || {});
+    if (!who) return res.status(401).json({ error: 'Please sign in to use Science Marking.', signIn: true });
+    const hk = 'store:' + who;
+    try {
+      if (action === 'store-get') {
+        const flat = (await kv('HGETALL', hk)) || [];
+        const store = {};
+        for (let i = 0; i + 1 < flat.length; i += 2) { try { store[flat[i]] = JSON.parse(flat[i + 1]); } catch (e) { /* skip a bad row */ } }
+        return res.status(200).json({ ok: true, store, at: Date.now() });
+      }
+      if (action === 'store-put') {
+        const items = Array.isArray(req.body.items) ? req.body.items.slice(0, STORE_MAX_KEYS) : [];
+        const args = [];
+        for (const it of items) {
+          if (!it || !STORE_KEY_OK.test(String(it.key || ''))) continue;
+          const v = typeof it.v === 'string' ? it.v : JSON.stringify(it.v == null ? null : it.v);
+          if (v.length > STORE_MAX_VALUE) return res.status(413).json({ error: 'That is too much to save at once.', key: it.key });
+          args.push(it.key, JSON.stringify({ v, t: Number(it.t) || Date.now() }));
+        }
+        if (args.length) await kv('HSET', hk, ...args);
+        return res.status(200).json({ ok: true, saved: args.length / 2, at: Date.now() });
+      }
+    } catch (e) {
+      console.error('store:', e.message);
+      return res.status(500).json({ error: 'Your work could not be saved to your account just now. It is still safe on this device.' });
+    }
+    return res.status(400).json({ error: 'Unknown action' });
+  }
 
   try {
     if (action === 'session') {

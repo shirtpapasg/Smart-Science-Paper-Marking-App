@@ -370,6 +370,21 @@
     background-size:400% 100%;animation:rainbow-slide 4.5s linear infinite;
     box-shadow:0 0 0 1px rgba(255,255,255,.3), 0 2px 14px rgba(120,140,255,.32)}
   .nav b{display:block;line-height:1.15;margin-bottom:2px}
+  .nav button{position:relative}
+  .nav .cnt{position:absolute;top:4px;right:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+    background:#e2646a;color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;font-family:var(--round)}
+  .nav .cnt[hidden]{display:none}
+  .syncpill{margin-left:auto;font-size:12.5px;color:var(--faint);white-space:nowrap}
+  .syncpill.ok{color:var(--accent)} .syncpill.err{color:var(--warn)}
+  .hd{display:flex;align-items:baseline;gap:10px}
+  .box{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;
+    background:var(--surface);color:var(--mid);border:1px solid var(--rule);margin-left:8px;vertical-align:middle}
+  .box.due{background:var(--hl-soft);color:var(--hl-ink);border-color:transparent}
+  .box.fixed{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+  button.small{width:auto;min-height:36px;font-size:14px;padding:6px 12px;margin:10px 0 0}
+  #p-reveal button.suggest{outline:3px solid var(--hl);outline-offset:2px}
+  .bdg-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .bdg-row .bdg{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--hl-soft);color:var(--hl-ink);font-family:var(--round);font-weight:700;font-size:15px}
   .wrap{padding-bottom:calc(var(--nav-h, 96px) + 28px)}
   .stat{display:flex;margin-top:20px;border:1.5px solid var(--rule);border-radius:12px;overflow:hidden;background:#fff}
   .stat div{flex:1;padding:15px 12px;border-left:1px solid var(--rule)}
@@ -843,10 +858,11 @@
 
 <!-- ══ MISTAKES ══ -->
 <section id="v-mist" class="hide">
-  <div class="hd"><span class="eyebrow">Your notebook</span></div>
+  <div class="hd"><span class="eyebrow">Your notebook</span><span class="syncpill" data-sync></span></div>
   <div class="chips" style="margin-top:0;margin-bottom:20px">
     <span class="chip on" data-f="all">All</span>
     <span class="chip" data-f="twice">Still tricky</span>
+    <span class="chip" data-f="mix">Mix-ups</span>
     <span class="chip" data-f="recent">Last 30 days</span>
   </div>
   <h1>Everything you've<br>worked on.</h1>
@@ -862,11 +878,12 @@
 
 <!-- ══ PRACTICE ══ -->
 <section id="v-prac" class="hide">
-  <div class="hd"><span class="eyebrow">Quick practice</span></div>
+  <div class="hd"><span class="eyebrow">Quick practice</span><span class="syncpill" data-sync></span></div>
   <div id="p-idle">
     <h1>Let me help you<br>remember.</h1>
-    <p class="muted">Three questions you found tricky. Say each answer out loud first. Saying it helps you remember it.</p>
-    <div id="p-weak" style="margin-top:24px"></div>
+    <p class="muted">Questions you found tricky come back on a schedule: tomorrow, then in three days, a week, a fortnight, a month. Say each answer out loud first. Saying it helps you remember it.</p>
+    <p id="p-status" class="muted" style="font-family:var(--round);font-weight:700;color:var(--ink);margin-top:14px"></p>
+    <div id="p-weak" style="margin-top:16px"></div>
     <button class="primary" id="p-start">Start a round</button>
     <div id="p-none" class="empty hide">Answer a few questions first. Recall is built from the ones you got wrong.</div>
   </div>
@@ -880,7 +897,8 @@
     <div id="p-reveal" class="hide">
       <div class="card" style="margin-top:20px"><span class="eyebrow" style="color:var(--mid)">A full answer</span>
         <div id="p-model" style="margin-top:8px;font-family:var(--round);font-weight:700;font-size:18px"></div></div>
-      <p class="muted" style="margin-top:20px">Honestly, how did that feel?</p>
+      <div id="p-fb" class="card hide" style="margin-top:12px"><span class="eyebrow" style="color:var(--mid)">How you did</span><div id="p-fb-txt" style="margin-top:6px"></div></div>
+      <p class="muted" style="margin-top:20px">Honestly, how did that feel? <span id="p-hint" class="muted" style="font-size:14px"></span></p>
       <div style="display:flex;gap:10px;margin-top:12px">
         <button class="primary" data-g="smooth" style="margin:0;text-align:center;padding:16px 8px">Smooth</button>
         <button class="secondary" data-g="hesitant" style="margin:0;text-align:center;padding:16px 8px">Hesitant</button>
@@ -919,6 +937,10 @@
       </div>
       <div id="rep-msg" class="muted" style="margin-top:8px;font-size:13.5px"></div>
     </div>
+  </div>
+  <div class="card" id="badge-box" style="margin-top:0;margin-bottom:16px">
+    <div style="display:flex;align-items:baseline;gap:10px"><span class="eyebrow" style="color:var(--mid)">Your lab badges</span><span class="syncpill" data-sync></span></div>
+    <div id="badge-list" class="muted" style="margin-top:8px;font-size:14px"></div>
   </div>
   <div class="card" id="prof-box" style="margin-top:0;margin-bottom:28px">
     <div style="display:flex;align-items:baseline;gap:10px">
@@ -1157,7 +1179,7 @@
   <button class="on" data-v="qs"><b>▤</b>Questions</button>
   <button data-v="mark"><b>✎</b>Answer</button>
   <button data-v="mist"><b>◷</b>Mistakes</button>
-  <button data-v="prac"><b>↻</b>Recall</button>
+  <button data-v="prac"><b>↻</b>Recall<span class="cnt" id="nav-due" hidden>0</span></button>
 </nav>
 <script>
 const $ = id => document.getElementById(id);
@@ -1248,6 +1270,7 @@ const DB = {
     this.dirty.add(k);
     if (this.onSync) this.onSync(this.dirty.size);
     this.push(k, raw).catch(() => {});   // local write already stands
+    if (window.SYNC) SYNC.touch(k);      // and to the account, when signed in
   },
 
   get(k, fallback){
@@ -1415,7 +1438,7 @@ function gateOpen(){
   try { localStorage.removeItem(SESS); } catch(e){}
   $('gate').classList.add('on');
 }
-function gateClose(){ $('gate').classList.remove('on'); gateResolve(); }
+function gateClose(){ $('gate').classList.remove('on'); gateResolve(); if (window.SYNC) SYNC.pull(); }
 
 async function gateBoot(){
   const url = new URL(location.href);
@@ -1455,6 +1478,7 @@ $('g-form').onsubmit = async e => {
   $('g-go').disabled = false; $('g-go').textContent = 'Send me a sign-in link';
 };
 gateBoot();
+try { updateRecallBadge(); SYNC.paint(); } catch(e){}
 
 /* ── the session record ─────────────────────────────────
    While the lock is on, everything a member does in one sitting is recorded
@@ -3991,6 +4015,147 @@ async function buildSheet(){
 $('export-oe').onclick = buildSheet;
 $('export-mcq').onclick = buildSheet;
 
+/* ── saved to your account ─────────────────────────────
+   While the lock is on and the pupil is signed in, the notebook, the recall
+   schedule, the profile, the question bank and the lab badges live on the
+   server as well as on this device, so they follow the pupil to any device
+   they sign in on. Local first: every write lands here at once, then is
+   pushed within a few seconds. On sign-in the two copies are merged key by
+   key — lists by union, progress by "earned wins", the rest by newest. Keys
+   that belong to the device (session, codes, theme, scenery, the photographed
+   pages) never leave it. */
+const SYNC = {
+  META: 'sm-meta-v1',
+  deny: ['sm-session-v1', 'sm-adm-v1', 'sm-adm-open', 'sm-admin-v1', 'sm-theme-v1', 'sm-scenery-v1', 'sm-tts-slow-v1', 'sm-sid', 'sm-scans', 'sm-meta-v1'],
+  timer: null, dirty: new Set(), state: 'off', last: 0, pulled: false, busy: false,
+  syncable(k){ return /^sm-/.test(k) && !this.deny.includes(k); },
+  meta(){ try { return JSON.parse(localStorage.getItem(this.META) || '{}'); } catch(e){ return {}; } },
+  setMeta(m){ try { localStorage.setItem(this.META, JSON.stringify(m)); } catch(e){} },
+  on(){ return gateLocked && !!sessionToken(); },
+  touch(k){
+    if (!this.syncable(k)) return;
+    const m = this.meta(); m[k] = Date.now(); this.setMeta(m);
+    if (!this.on()) { this.state = 'local'; this.paint(); return; }
+    this.dirty.add(k); this.schedule();
+  },
+  schedule(){ clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), 2500); this.state = 'saving'; this.paint(); },
+  items(){
+    const m = this.meta();
+    return [...this.dirty].map(k => ({ key: k, v: DB.raw(k), t: m[k] || Date.now() })).filter(i => i.v != null && i.v.length <= 380000);
+  },
+  async push(){
+    if (!this.on() || !this.dirty.size || this.busy) return;
+    const items = this.items(); this.dirty.clear(); this.busy = true;
+    try { await callApi('/api/access', { action: 'store-put', items }); this.last = Date.now(); this.state = 'saved'; }
+    catch(e){ items.forEach(i => this.dirty.add(i.key)); this.state = 'error'; }
+    this.busy = false; this.paint();
+  },
+  flush(){
+    // the tab is closing: one last save that survives the page going away
+    if (!this.on() || !this.dirty.size) return;
+    const body = JSON.stringify({ action: 'store-put', items: this.items(), session: sessionToken() });
+    try { fetch('/api/access', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body }); } catch(e){}
+    this.dirty.clear();
+  },
+  async pull(){
+    if (!this.on()) { this.state = 'local'; this.paint(); return; }
+    try {
+      const d = await callApi('/api/access', { action: 'store-get' });
+      if (!d.store) return;
+      const m = this.meta(); let changed = false;
+      Object.entries(d.store).forEach(([k, r]) => {
+        if (!this.syncable(k) || !r) return;
+        const local = DB.raw(k), lt = m[k] || 0;
+        const out = mergeKey(k, local, r.v, lt, r.t || 0);
+        if (out.local !== local) { DB.mirror[k] = out.local; try { localStorage.setItem(k, out.local); } catch(e){} changed = true; }
+        if (out.pushBack) { this.dirty.add(k); m[k] = Date.now(); } else if (!m[k]) m[k] = r.t || Date.now();
+      });
+      Object.keys(DB.mirror).forEach(k => { if (this.syncable(k) && !d.store[k] && DB.mirror[k] != null) { this.dirty.add(k); if (!m[k]) m[k] = Date.now(); } });
+      this.setMeta(m); this.pulled = true; this.last = Date.now(); this.state = 'saved';
+      if (this.dirty.size) this.schedule();
+      if (changed) rerenderView();
+      this.paint();
+    } catch(e){ this.state = 'error'; this.paint(); }
+  },
+  paint(){
+    const txt = { off: '', local: 'On this device only', saving: '☁ Saving…', saved: '☁ Saved to your account', error: 'Could not save to your account — will retry' }[this.state] || '';
+    document.querySelectorAll('[data-sync]').forEach(el => { el.textContent = txt; el.classList.toggle('ok', this.state === 'saved'); el.classList.toggle('err', this.state === 'error'); });
+  },
+};
+addEventListener('pagehide', () => SYNC.flush());
+document.addEventListener('visibilitychange', () => { if (document.hidden) SYNC.flush(); });
+
+// How two copies of one key come together.
+function mergeKey(k, localRaw, remoteRaw, lt, rt){
+  if (localRaw == null) return { local: remoteRaw, pushBack: false };
+  if (remoteRaw == null || localRaw === remoteRaw) return { local: localRaw, pushBack: remoteRaw == null };
+  let L, R; try { L = JSON.parse(localRaw); R = JSON.parse(remoteRaw); } catch(e){ return rt > lt ? { local: remoteRaw, pushBack: false } : { local: localRaw, pushBack: true }; }
+  const ident = { 'sm-subs-v1': [400, x => x.ts + '|' + x.qi], 'sm-recall-v1': [300, x => x.ts + '|' + x.qi] }[k];
+  if (ident && Array.isArray(L) && Array.isArray(R)){
+    const seen = new Set(), out = [];
+    [...L, ...R].forEach(x => { const id = ident[1](x); if (!seen.has(id)) { seen.add(id); out.push(x); } });
+    out.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+    const merged = JSON.stringify(out.slice(0, ident[0]));
+    return { local: merged, pushBack: merged !== remoteRaw };
+  }
+  if (k === 'sm-srs-v1' && L && R && typeof L === 'object' && typeof R === 'object'){
+    const out = { ...R };
+    Object.entries(L).forEach(([qi, c]) => { const r = R[qi]; out[qi] = (!r || (c.last || 0) >= (r.last || 0)) ? c : r; });
+    const merged = JSON.stringify(out); return { local: merged, pushBack: merged !== remoteRaw };
+  }
+  if (k === 'sm-lab-progress-v1' && L && R && typeof L === 'object' && typeof R === 'object'){
+    const merged = JSON.stringify(mergeLab(L, R)); return { local: merged, pushBack: merged !== remoteRaw };
+  }
+  return rt > lt ? { local: remoteRaw, pushBack: false } : { local: localRaw, pushBack: true };
+}
+// Lab progress: an activity keeps everything either copy has; a badge earned anywhere is earned.
+function mergeLab(a, b){
+  const out = {};
+  new Set([...Object.keys(a || {}), ...Object.keys(b || {})]).forEach(id => {
+    const x = (a || {})[id] || {}, y = (b || {})[id] || {}, o = { ...y, ...x };
+    if (y.badge && !x.badge) o.badge = y.badge;
+    if (x.badge && y.badge) o.badge = ((x.badge.ts || 0) <= (y.badge.ts || 0)) ? x.badge : y.badge;
+    ['tested', 'done', 'cdone'].forEach(f => { if (x[f] || y[f]) o[f] = x[f] || y[f]; });
+    out[id] = o;
+  });
+  return out;
+}
+function rerenderView(){
+  if (curView === 'mist') renderMistakes(); else if (curView === 'prac') renderPractice(); else if (curView === 'stats') renderStats(); else if (curView === 'qs') renderQs();
+  updateRecallBadge();
+}
+
+/* ── spaced repetition ──────────────────────────────────
+   Every tricky question is a card in a box. Smooth recall moves it up a box
+   and it comes back later: tomorrow, three days, a week, a fortnight, a
+   month. Hesitant keeps it where it is. Blank sends it back to the start.
+   A card in the fortnight box or beyond counts as fixed. */
+const SRS = 'sm-srs-v1', SRS_DAYS = [1, 3, 7, 14, 30];
+const srs = () => { const v = DB.get(SRS, {}); return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; };
+const boxLabel = b => ['New', 'Day 3', 'Week 1', 'Fortnight', 'Month'][Math.min(4, b || 0)];
+const fixedByRecall = qi => ((srs()[qi] || {}).box || 0) >= 3;
+function srsCards(){
+  const m = srs(), now = Date.now();
+  return weakQuestions().map(w => { const c = m[w.qi] || { box: 0, due: 0, seen: 0, last: 0 }; return { ...w, box: c.box || 0, due: c.due || 0, seen: c.seen || 0, last: c.last || 0, isDue: (c.due || 0) <= now }; });
+}
+function srsGrade(qi, grade){
+  const m = srs(), c = m[qi] || { box: 0, due: 0, seen: 0, last: 0 };
+  let box = c.box || 0;
+  if (grade === 'smooth') box = Math.min(SRS_DAYS.length - 1, box + 1);
+  else if (grade === 'blank') box = 0;
+  c.box = box; c.seen = (c.seen || 0) + 1; c.last = Date.now(); c.lastGrade = grade;
+  c.due = Date.now() + SRS_DAYS[box] * 864e5;
+  m[qi] = c; DB.set(SRS, m);
+  return c;
+}
+const dueCards = () => srsCards().filter(c => c.isDue).sort((a, b) => (a.due - b.due) || (b.score - a.score));
+function updateRecallBadge(){
+  const n = dueCards().length, el = $('nav-due');
+  if (!el) return; el.textContent = n > 9 ? '9+' : String(n); el.hidden = n === 0;
+}
+const niceDay = ts => { const d = new Date(ts), t = new Date(); t.setHours(0,0,0,0); const days = Math.round((d.setHours(0,0,0,0) - t) / 864e5);
+  return days <= 0 ? 'today' : days === 1 ? 'tomorrow' : new Date(ts).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); };
+
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-mist .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -4001,14 +4166,28 @@ function renderMistakes(){
   const all = subs();
   $('m-total').textContent = all.length;
   $('m-twice').textContent = all.filter(s => (s.missed2||[]).length > 0).length;
-  $('m-secure').textContent = all.filter(s => s.recovered).length;
+  $('m-secure').textContent = all.filter(s => s.recovered || fixedByRecall(s.qi)).length;
+  SYNC.paint();
 
   const cut = Date.now() - 30*864e5;
   let rows = all;
-  if (filter === 'twice') rows = all.filter(s => (s.missed2||[]).length > 0);
+  if (filter === 'twice') rows = all.filter(s => (s.missed2||[]).length > 0 && !fixedByRecall(s.qi));
   if (filter === 'recent') rows = all.filter(s => s.ts > cut);
 
   const el = $('m-list');
+  if (filter === 'mix'){
+    // the same wrong idea, wherever it showed up
+    const groups = new Map();
+    all.forEach(s => { if (!s.mix) return; const g = groups.get(s.mix) || { belief: s.mix, qis: new Set(), n: 0, last: 0 }; g.n++; g.qis.add(s.qi); g.last = Math.max(g.last, s.ts); groups.set(s.mix, g); });
+    const gs = [...groups.values()].sort((a, b) => b.n - a.n);
+    el.innerHTML = gs.length ? gs.map((g, i) => '<div class="item flag"><span class="eyebrow" style="color:var(--warn)">Mix-up · seen ' + g.n + (g.n === 1 ? ' time' : ' times') + '</span>' +
+      '<div style="margin-top:6px;font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + esc(g.belief) + '</div>' +
+      '<div class="muted" style="margin-top:6px;font-size:14px">' + g.qis.size + (g.qis.size === 1 ? ' question' : ' questions') + ' · last ' + niceDay(g.last) + '</div>' +
+      '<button class="ghost small" data-prac-mix="' + i + '">Practise these</button></div>').join('')
+      : '<div class="empty">No mix-ups spotted yet. When an answer shows a common wrong idea, it is collected here so you can practise it away.</div>';
+    el.querySelectorAll('[data-prac-mix]').forEach(b => b.onclick = () => startRound([...gs[+b.dataset.pracMix].qis]));
+    return;
+  }
   if (!rows.length){
     el.innerHTML = '<div class="empty">' + (all.length ? 'Nothing here with that filter.'
       : 'Nothing yet. Answer a question and it appears here, dated.') + '</div>';
@@ -4018,17 +4197,21 @@ function renderMistakes(){
   rows.forEach(s => {
     const d = new Date(s.ts).toLocaleDateString('en-GB', { day:'numeric', month:'long' });
     if (d !== lastDay){ out += '<div class="day">' + d + '</div>'; lastDay = d; }
-    const stillWrong = (s.missed2||[]).length > 0;
-    const note = stillWrong ? 'Still missing ' + s.missed2.length + ' point' + (s.missed2.length>1?'s':'')
+    const fixed = fixedByRecall(s.qi), c = srs()[s.qi];
+    const stillWrong = (s.missed2||[]).length > 0 && !fixed;
+    const note = fixed ? 'Fixed through recall' : (s.missed2||[]).length > 0 ? 'Still missing ' + s.missed2.length + ' point' + (s.missed2.length>1?'s':'')
       : s.recovered ? 'Fixed on the second try' : 'Correct first time';
+    const recall = c ? '<span class="box' + (fixed ? ' fixed' : c.due <= Date.now() ? ' due' : '') + '">' + (fixed ? '✓ ' : '') + boxLabel(c.box) + (c.due <= Date.now() && !fixed ? ' · due now' : '') + '</span>' : '';
     out += '<div class="item' + (stillWrong ? ' flag' : '') + '">' +
-      '<div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + s.q + '</div>' +
-      '<div class="muted" style="margin-top:6px;font-size:14px">' + s.level + ' ' + s.chapter + ' · ' + note +
-      (s.peeked ? ' · answer requested early' : '') + '</div>' +
-      (s.mix ? '<div class="muted" style="margin-top:6px;font-size:14px;color:var(--accent)">' + s.mix + '</div>' : '') +
+      '<div style="font-family:var(--round);font-weight:700;font-size:17px;line-height:1.4">' + esc(s.q) + recall + '</div>' +
+      '<div class="muted" style="margin-top:6px;font-size:14px">' + esc(s.level) + ' ' + esc(s.chapter) + ' · ' + note +
+      (s.peeked ? ' · answer requested early' : '') + (c && !fixed && c.due > Date.now() ? ' · back ' + niceDay(c.due) : '') + '</div>' +
+      (s.mix ? '<div class="muted" style="margin-top:6px;font-size:14px;color:var(--accent)">' + esc(s.mix) + '</div>' : '') +
+      ((stillWrong || s.peeked) && !fixed ? '<button class="ghost small" data-prac="' + esc(s.qi) + '">Practise this now</button>' : '') +
       '</div>';
   });
   el.innerHTML = out;
+  el.querySelectorAll('[data-prac]').forEach(b => b.onclick = () => startRound([b.dataset.prac]));
 }
 
 /* ── recall practice ───────────────────────────────────── */
@@ -4044,58 +4227,111 @@ function weakQuestions(){
 }
 
 function renderPractice(){
-  const weak = weakQuestions();
+  const cards = srsCards(), due = dueCards();
+  SYNC.paint(); updateRecallBadge();
   $('p-run').classList.add('hide'); $('p-done').classList.add('hide'); $('p-idle').classList.remove('hide');
-  $('p-none').classList.toggle('hide', weak.length > 0);
-  $('p-start').classList.toggle('hide', weak.length === 0);
-  $('p-weak').classList.toggle('hide', weak.length === 0);
-  $('p-weak').innerHTML = weak.slice(0,5).map(w =>
-    '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' + w.q + '</div>' +
-    '<div class="muted" style="margin-top:5px;font-size:14px">' + w.level + ' ' + w.chapter + '</div></div>').join('');
+  $('p-none').classList.toggle('hide', cards.length > 0);
+  $('p-start').classList.toggle('hide', cards.length === 0);
+  $('p-weak').classList.toggle('hide', cards.length === 0);
+  const next = cards.filter(c => !c.isDue).sort((a, b) => a.due - b.due)[0];
+  $('p-status').textContent = !cards.length ? '' : due.length ? due.length + (due.length === 1 ? ' question is' : ' questions are') + ' due today.'
+    : 'All caught up. ' + (next ? 'The next one comes back ' + niceDay(next.due) + '.' : '');
+  $('p-start').textContent = due.length ? 'Start a round · ' + Math.min(3, due.length) + (due.length === 1 ? ' question' : ' questions') : 'Practise anyway';
+  const show = (due.length ? due : cards.slice().sort((a, b) => a.due - b.due)).slice(0, 5);
+  $('p-weak').innerHTML = show.map(w =>
+    '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' + esc(w.q) +
+    '<span class="box' + (w.box >= 3 ? ' fixed' : w.isDue ? ' due' : '') + '">' + boxLabel(w.box) + '</span></div>' +
+    '<div class="muted" style="margin-top:5px;font-size:14px">' + esc(w.level) + ' ' + esc(w.chapter) + (w.isDue ? ' · due now' : ' · back ' + niceDay(w.due)) + '</div></div>').join('');
 }
 
-$('p-start').onclick = () => {
-  queue = weakQuestions().slice(0,3); qIdx = 0; graded = [];
-  if (!queue.length) return;
-  $('p-idle').classList.add('hide'); $('p-run').classList.remove('hide');
+// A round: what is due first, then anything not yet practised, three at a time.
+function startRound(qis){
+  const cards = srsCards();
+  if (qis && qis.length){ queue = qis.map(qi => cards.find(c => String(c.qi) === String(qi))).filter(Boolean); }
+  else { const due = dueCards(); queue = (due.length ? due : cards.slice().sort((a, b) => (a.seen - b.seen) || (a.due - b.due))).slice(0, 3); }
+  qIdx = 0; graded = [];
+  if (!queue.length) return renderPractice();
+  goView('prac');
+  $('p-idle').classList.add('hide'); $('p-done').classList.add('hide'); $('p-run').classList.remove('hide');
   showRecall();
-};
+}
+$('p-start').onclick = () => startRound();
 
+let lastMarks = null;
 function showRecall(){
   const w = queue[qIdx];
   [1,2,3].forEach(n => $('ps'+n).classList.toggle('on', n <= qIdx + 1));
-  $('p-topic').textContent = w.level + ' · ' + w.chapter;
+  $('p-topic').textContent = w.level + ' · ' + w.chapter + ' · ' + boxLabel(w.box);
   $('p-q').textContent = w.q;
   $('p-a').value = '';
-  $('p-reveal').classList.add('hide');
-  $('p-check').classList.remove('hide');
+  $('p-reveal').classList.add('hide'); $('p-fb').classList.add('hide'); $('p-hint').textContent = '';
+  document.querySelectorAll('#p-reveal button').forEach(b => b.classList.remove('suggest'));
+  $('p-check').classList.remove('hide'); $('p-check').disabled = false; $('p-check').textContent = 'Show me how I did';
+  lastMarks = null;
   window.scrollTo(0,0);
 }
 
-$('p-check').onclick = () => {
-  $('p-model').textContent = queue[qIdx].model || 'I do not have a full answer saved for this one yet.';
+// The answer is marked for real when the question is still in the bank, so the
+// pupil sees which points came back. The three buttons stay theirs to press;
+// the marking only suggests one.
+$('p-check').onclick = async () => {
+  const w = queue[qIdx], ans = $('p-a').value.trim();
+  const row = QS.find(x => String(x.i) === String(w.qi));
+  let r = null;
+  if (row && ans){
+    $('p-check').disabled = true; $('p-check').textContent = 'Checking…';
+    try { r = await post({ ...row, meta: undefined, answer: ans, attempt: 2, firstAnswer: '' }); } catch(e){ r = null; }
+    if (r && r.deflect) r = null;
+  }
+  $('p-model').textContent = (r && r.modelAnswer) || w.model || 'I do not have a full answer saved for this one yet.';
+  let suggest = null;
+  if (r && Array.isArray(r.keywords) && r.keywords.length){
+    const hit = r.keywords.filter(k => k.hit).length, n = r.keywords.length, missed = r.keywords.filter(k => !k.hit).map(k => k.phrase);
+    $('p-fb-txt').innerHTML = '<b>' + hit + ' of ' + n + ' marking point' + (n === 1 ? '' : 's') + ' came back.</b>' +
+      (missed.length ? '<div class="muted" style="margin-top:4px;font-size:14px">Still to say: ' + missed.map(esc).join(' · ') + '</div>' : '<div class="muted" style="margin-top:4px;font-size:14px">Everything that matters was there.</div>');
+    $('p-fb').classList.remove('hide');
+    suggest = hit === n ? 'smooth' : hit > 0 ? 'hesitant' : 'blank';
+    lastMarks = { hit, n };
+  } else if (!ans){
+    $('p-fb-txt').textContent = 'Nothing typed this time. Read the full answer, then say it out loud.'; $('p-fb').classList.remove('hide'); suggest = 'blank';
+  }
+  if (suggest){ const b = document.querySelector('#p-reveal button[data-g="' + suggest + '"]'); if (b) b.classList.add('suggest'); $('p-hint').textContent = 'My guess: ' + suggest + '. You decide.'; }
   $('p-reveal').classList.remove('hide');
   $('p-check').classList.add('hide');
 };
 
 document.querySelectorAll('#p-reveal button').forEach(b => b.onclick = () => {
-  graded.push({ qi: queue[qIdx].qi, grade: b.dataset.g, ts: Date.now() });
+  const w = queue[qIdx], grade = b.dataset.g;
+  const c = srsGrade(w.qi, grade);
+  graded.push({ qi: w.qi, grade, ts: Date.now(), marks: lastMarks, box: c.box, due: c.due });
+  LOG.event('recall', { q: w.q, grade, marks: lastMarks, box: c.box });
   qIdx++;
   if (qIdx < queue.length) return showRecall();
   const rec = load(PKEY).concat(graded);
   save(PKEY, rec.slice(-300));
-  const smooth = graded.filter(g=>g.grade==='smooth').length;
+  const smooth = graded.filter(g => g.grade === 'smooth').length, up = graded.filter(g => g.box >= 3).length;
+  const soonest = graded.slice().sort((a, b) => a.due - b.due)[0];
   $('p-run').classList.add('hide'); $('p-done').classList.remove('hide');
-  $('p-summary').textContent = smooth + ' of ' + graded.length +
-    ' came back smoothly. I will bring the others round again tomorrow.';
+  $('p-summary').textContent = smooth + ' of ' + graded.length + ' came back smoothly' + (up ? ', and ' + up + (up === 1 ? ' is' : ' are') + ' now in the fortnight box or beyond' : '') +
+    '. ' + (soonest ? 'The first of these comes back ' + niceDay(soonest.due) + '.' : '') + (dueCards().length ? ' ' + dueCards().length + ' more due today.' : '');
+  updateRecallBadge();
   window.scrollTo(0,0);
 });
 
 $('p-again').onclick = renderPractice;
 
 /* ── class statistics ──────────────────────────────────── */
+function renderBadges(){
+  const el = $('badge-list'); if (!el) return;
+  const prog = DB.get('sm-lab-progress-v1', {}) || {};
+  const earned = Object.values(prog).filter(p => p && p.badge && typeof p.badge === 'object').sort((a, b) => (a.badge.ts || 0) - (b.badge.ts || 0));
+  SYNC.paint();
+  if (!earned.length){ el.innerHTML = 'No lab badges yet. Finish an experiment in the <a href="lab.html">members\' lab</a> and its badge appears here.'; return; }
+  el.innerHTML = '<div class="bdg-row">' + earned.map(p => '<span class="bdg">' + (p.badge.icon || '🏅') + ' ' + esc(p.badge.name || 'Badge') + '</span>').join('') + '</div>' +
+    '<div class="muted" style="margin-top:8px;font-size:13.5px">' + earned.length + ' of the lab badges earned' + (earned.length ? ' · latest ' + niceDay(earned[earned.length - 1].badge.ts || Date.now()) : '') + '</div>';
+}
 function renderStats(){
-  renderProfile();
+  renderProfile(); renderBadges();
   const all = subs();
   $('st-n').textContent = all.length;
   ['st-kw-box','st-rec-box','st-topic-box'].forEach(id => $(id).classList.toggle('hide', all.length < 2));
