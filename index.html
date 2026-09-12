@@ -65,7 +65,7 @@
      background, and off-palette in light. Both themes redefine --accent. */
   a{color:var(--accent)}
   a:hover{color:var(--ink)}
-  .wrap{max-width:640px;margin:0 auto;padding:24px 20px 64px}
+  .wrap{max-width:864px;margin:0 auto;padding:24px 20px 64px}
   :root{--pair-h:430px}
   h1{font-family:var(--round);font-weight:700;font-size:26px;line-height:1.2;margin:0}
   h2{font-family:var(--round);font-weight:700;font-size:22px;line-height:1.25;margin:0}
@@ -603,8 +603,40 @@
   button.mic.on{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 3px 0 var(--pen-dark)}
   button.mic.on span{animation:rbGlow 1.2s ease-in-out infinite}
   .mic-hint{font-size:13px;line-height:1.5;margin-top:6px;color:var(--mid)}
+  /* ── the room around the app ───────────────────────────────────────
+     The same treatment as the Ultimate Lab: a wider column on a laptop, a
+     slow wash of colour behind the paper, and the things on a science desk
+     standing in the space either side, different for each tab. Decoration
+     only: aria-hidden, never clickable, gone below 1180px, out of the way
+     while a full-screen panel is up, still for prefers-reduced-motion. */
+  #bg{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+  #bg i{position:absolute;display:block;border-radius:50%;filter:blur(46px)}
+  #bg i.one{width:46vw;height:46vw;left:-12vw;top:-10vw;background:var(--accent);opacity:.13;animation:wash1 34s ease-in-out infinite alternate}
+  #bg i.two{width:40vw;height:40vw;right:-10vw;top:22vh;background:var(--hl);opacity:.16;animation:wash2 42s ease-in-out infinite alternate}
+  #bg i.three{width:34vw;height:34vw;left:24vw;bottom:-14vw;background:var(--warn);opacity:.10;animation:wash3 50s ease-in-out infinite alternate}
+  @keyframes wash1{to{transform:translate3d(6vw,7vh,0) scale(1.12)}}
+  @keyframes wash2{to{transform:translate3d(-7vw,-5vh,0) scale(1.08)}}
+  @keyframes wash3{to{transform:translate3d(5vw,-6vh,0) scale(1.15)}}
+  #rails{position:fixed;inset:0;z-index:-1;pointer-events:none;display:none}
+  .rail{position:absolute;top:0;bottom:0;width:calc((100vw - 880px) / 2)}
+  .rail.l{left:0} .rail.r{right:0}
+  .prop{position:absolute;display:block;width:var(--w,120px);opacity:.42;
+    animation:bobprop var(--t,9s) ease-in-out var(--d,0s) infinite alternate}
+  .prop svg{width:100%;height:auto;display:block}
+  .prop .ln{stroke:var(--mid);stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .prop .fill{fill:var(--surface)}
+  @keyframes bobprop{to{transform:translateY(-14px) rotate(var(--r,2deg))}}
+  html[data-theme="dark"] .prop{opacity:.5}
+  body.sheet-open #bg,body.sheet-open #rails{display:none !important}
+  @media (min-width:1180px){ #rails{display:block} }
+  @media (min-width:1500px){ .prop{--w:150px} }
+  @media (prefers-reduced-motion:reduce){ #bg i, .prop{animation:none} }
+  @media print{ #bg,#rails{display:none !important} }
 </style>
-</head><body>
+</head>
+<div id="bg" aria-hidden="true"><i class="one"></i><i class="two"></i><i class="three"></i></div>
+<div id="rails" aria-hidden="true"><div class="rail l" id="rail-l"></div><div class="rail r" id="rail-r"></div></div>
+<body>
 <div class="wrap">
 
 <!-- ══ MARK ══ -->
@@ -1365,6 +1397,67 @@ function goView(v){
 
 document.querySelectorAll('.nav button[data-v]').forEach(b =>
   b.onclick = () => goView(b.dataset.v));
+
+
+/* ── the desk around the page ───────────────────────────────────────────
+   Same idea as the Ultimate Lab: on a laptop the space either side holds the
+   things you would have beside you for that tab — an exercise book and a
+   paperclip for the questions, a pencil and a green tick for answering, an
+   eraser and a bulb for mistakes. Decoration only: aria-hidden, never
+   clickable, hidden under 1180px, and out of the way while a full-screen
+   panel is open. */
+const DESK = {
+  pencil: '<svg viewBox="0 0 64 64"><rect class="ln" x="26" y="6" width="12" height="38" rx="2" fill="var(--hl)"/><path class="ln" d="M26 44h12l-6 12z" fill="var(--surface)"/><path class="ln" d="M26 14h12" opacity=".6"/><rect class="ln" x="26" y="4" width="12" height="6" rx="2" fill="var(--margin)"/></svg>',
+  ruler: '<svg viewBox="0 0 64 64"><rect class="ln" x="10" y="22" width="44" height="18" rx="3" fill="var(--hl)" opacity=".7"/><rect class="ln" x="10" y="22" width="44" height="18" rx="3"/><path class="ln" d="M18 22v6M26 22v9M34 22v6M42 22v9M50 22v6" opacity=".7"/></svg>',
+  eraser: '<svg viewBox="0 0 64 64"><rect class="ln" x="10" y="24" width="44" height="18" rx="4" fill="var(--card)"/><path class="ln" d="M32 24v18" opacity=".5"/><rect x="10" y="24" width="22" height="18" rx="4" fill="#8fd3f4" opacity=".45"/></svg>',
+  paperclip: '<svg viewBox="0 0 64 64"><path class="ln" d="M22 18v22a10 10 0 0 0 20 0V16a7 7 0 0 0-14 0v24a4 4 0 0 0 8 0V20" stroke-width="3"/></svg>',
+  book: '<svg viewBox="0 0 64 64"><rect class="ln fill" x="12" y="10" width="40" height="44" rx="4"/><path class="ln" d="M20 10v44" opacity=".6"/><path class="ln" d="M26 22h18M26 30h18M26 38h12" opacity=".55"/></svg>',
+  clipboard: '<svg viewBox="0 0 64 64"><rect class="ln fill" x="14" y="12" width="36" height="44" rx="5"/><rect class="ln fill" x="24" y="7" width="16" height="9" rx="3"/><path class="ln" d="M22 28h20M22 36h20M22 44h12" opacity=".7"/></svg>',
+  tick: '<svg viewBox="0 0 64 64"><path d="M12 34l12 12 26-28" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  lightbulb: '<svg viewBox="0 0 64 64"><path class="ln" d="M32 8a16 16 0 0 1 10 28c-2 2-2 4-2 6H24c0-2 0-4-2-6A16 16 0 0 1 32 8z" fill="var(--hl)" opacity=".75"/><path class="ln" d="M32 8a16 16 0 0 1 10 28c-2 2-2 4-2 6H24c0-2 0-4-2-6A16 16 0 0 1 32 8z"/><path class="ln" d="M25 48h14M27 54h10"/></svg>',
+  stopwatch: '<svg viewBox="0 0 64 64"><circle class="ln fill" cx="32" cy="36" r="20"/><path class="ln" d="M32 24v12l8 6"/><path class="ln" d="M26 10h12M32 10v6M48 20l4-4"/></svg>',
+  medal: '<svg viewBox="0 0 64 64"><path class="ln" d="M22 6l8 18M42 6l-8 18" /><circle class="ln" cx="32" cy="40" r="16" fill="var(--hl)" opacity=".8"/><circle class="ln" cx="32" cy="40" r="16" fill="none"/><path d="M32 31l3 6 6 1-4 5 1 6-6-3-6 3 1-6-4-5 6-1z" fill="var(--card)"/></svg>',
+  star: '<svg viewBox="0 0 64 64"><path class="ln" d="M32 8l7 15 17 2-12 12 3 17-15-8-15 8 3-17L8 25l17-2z" fill="var(--hl)" opacity=".75"/><path class="ln" d="M32 8l7 15 17 2-12 12 3 17-15-8-15 8 3-17L8 25l17-2z" fill="none"/></svg>',
+  cards: '<svg viewBox="0 0 64 64"><rect class="ln fill" x="8" y="18" width="30" height="38" rx="4" transform="rotate(-8 23 37)"/><rect class="ln fill" x="24" y="14" width="30" height="38" rx="4" transform="rotate(7 39 33)"/><path class="ln" d="M32 26h14M32 34h14M32 42h9" opacity=".55"/></svg>'
+};
+/* name, side, top %, width px */
+const DESK_SET = {
+  qs:    [['book','l',13,124],['paperclip','l',47,86],['clipboard','l',78,104],['pencil','r',14,96],['ruler','r',48,128],['star','r',78,96]],
+  mark:  [['pencil','l',13,100],['book','l',47,124],['eraser','l',78,116],['tick','r',15,104],['ruler','r',48,128],['stopwatch','r',78,100]],
+  mist:  [['eraser','l',14,116],['lightbulb','l',47,104],['clipboard','l',78,104],['pencil','r',13,96],['tick','r',48,100],['paperclip','r',78,84]],
+  prac:  [['cards','l',13,128],['stopwatch','l',47,104],['lightbulb','l',78,104],['star','r',14,98],['book','r',47,120],['pencil','r',78,96]],
+  stats: [['medal','l',13,116],['star','l',47,98],['book','l',78,120],['tick','r',14,102],['stopwatch','r',47,104],['clipboard','r',78,102]]
+};
+function setDesk(view){
+  const set = DESK_SET[view] || DESK_SET.qs, L = $('rail-l'), R = $('rail-r');
+  if (!L || !R) return;
+  L.innerHTML = ''; R.innerHTML = '';
+  set.forEach(function(row, i){
+    const svg = DESK[row[0]]; if (!svg) return;
+    const el = document.createElement('span');
+    el.className = 'prop';
+    el.style.cssText = 'top:' + row[2] + '%;--w:' + row[3] + 'px;--t:' + (8 + (i % 4) * 1.7).toFixed(1) + 's;--d:' + (i * 0.9).toFixed(1) + 's;--r:' + (i % 2 ? 2.5 : -2.5) + 'deg;' + (row[1] === 'l' ? 'right:8%' : 'left:8%');
+    el.innerHTML = svg;
+    (row[1] === 'l' ? L : R).appendChild(el);
+  });
+}
+/* Every view change goes through goView, including the pet's shortcut to progress. */
+const goViewPlain = goView;
+goView = function(v){ goViewPlain(v); setDesk(v); };
+/* A full-screen panel gets the space to itself. */
+(function watchPanels(){
+  const rails = $('rails'), watched = ['tour','gate','adm-win'].map(function(id){ return $(id); });
+  const sync = function(){
+    const hide = document.body.classList.contains('sheet-open') ||
+      watched.some(function(el){ return el && el.classList.contains('on'); });
+    if (rails) rails.style.visibility = hide ? 'hidden' : '';
+  };
+  watched.concat([document.body]).forEach(function(el){
+    if (el) new MutationObserver(sync).observe(el, { attributes:true, attributeFilter:['class'] });
+  });
+  sync();
+})();
+setDesk(typeof curView === 'string' && curView ? curView : 'qs');
 
 // The Ultimate Lab is a page of its own, so this tab navigates instead of switching view.
 $('nav-lab').onclick = () => { location.href = 'lab.html'; };
