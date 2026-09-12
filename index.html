@@ -384,6 +384,40 @@
   button.small{width:auto;min-height:36px;font-size:14px;padding:6px 12px;margin:10px 0 0}
   #p-reveal button.suggest{outline:3px solid var(--hl);outline-offset:2px}
   .bdg-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  /* The progress panels share their look with the teacher's Pair Lab: a dark
+     cabinet, glass panels, one neon hue per topic, bars per question. */
+  .sc{--scbg:#070d15;--scglass:rgba(10,19,32,.96);--scline:rgba(255,255,255,.12);--scsoft:#d6dee6;--scmuted:#8a98a6;--scfaint:#5a6775;
+    background:var(--scbg);border-radius:20px;padding:14px;margin-top:16px;color:var(--scsoft);font-family:var(--round);box-shadow:0 10px 30px rgba(7,13,21,.25)}
+  .sc .pn{background:var(--scglass);border:1px solid var(--scline);border-radius:16px;padding:12px 14px;margin-top:10px}
+  .sc .pn:first-child{margin-top:0}
+  .sc .pt{font:800 11px/1 var(--round);letter-spacing:.1em;text-transform:uppercase;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--scline)}
+  .sc .pt.y{color:#ffb627}.sc .pt.r{color:#ff6a5e}.sc .pt.g{color:#5ee07a}.sc .pt.b{color:#6aa9f0}.sc .pt.c{color:#66ccff}
+  .sc .who{display:flex;align-items:center;gap:12px;background:var(--scglass);border:1px solid var(--scline);border-radius:18px;padding:13px}
+  .sc .ava{flex:none;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 18px/1 var(--round);color:#08131f}
+  .sc .big{font:900 24px/1 var(--round)} .sc .cap{font:600 9.5px/1 var(--body);color:var(--scfaint);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+  .sc .code{flex:none;font:900 10.5px/1 var(--round);letter-spacing:.04em;padding:5px 7px;border-radius:6px;color:#08131f}
+  .sc .row{display:flex;align-items:center;gap:8px}
+  .sc .lbl{flex:1;min-width:0;font:800 13px/1.2 var(--round);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sc .pct{flex:none;font:900 15px/1 var(--round)}
+  .sc .tag{flex:none;font:700 9px/1 var(--round);letter-spacing:.08em;text-transform:uppercase;width:56px;text-align:right}
+  .sc .bars{margin-top:7px;display:flex;gap:4px}
+  .sc .bar{flex:1;min-width:0;text-align:center}
+  .sc .bar .col{height:34px;border-radius:6px;display:flex;align-items:flex-end;overflow:hidden;background:rgba(255,255,255,.06)}
+  .sc .bar .col i{display:block;width:100%}
+  .sc .bar small{display:block;margin-top:3px;font:700 8.5px/1 var(--round);color:var(--scfaint)}
+  .sc .hbar{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}.sc .hbar i{display:block;height:100%;border-radius:999px}
+  .sc .box2{display:flex;gap:10px;align-items:flex-start;background:rgba(232,73,63,.12);border:1px solid rgba(232,73,63,.45);border-radius:14px;padding:11px 12px;margin-top:10px}
+  .sc .box2.good{background:rgba(63,195,95,.12);border-color:rgba(94,224,122,.45)}
+  .sc .box2 b{display:block;font:800 12.5px/1.2 var(--round);letter-spacing:.03em;text-transform:uppercase;color:#ff6a5e}
+  .sc .box2.good b{color:#5ee07a}
+  .sc .blurb{font:400 12px/1.45 var(--body);color:var(--scmuted);margin:-2px 0 10px}
+  .sc .tiny{font:400 11px/1.3 var(--body);color:var(--scfaint)}
+  .sc button.scbtn{width:auto;min-height:34px;font-size:13px;padding:6px 12px;margin:8px 0 0;background:#34b14d;color:#08131f;border-radius:10px;font-weight:800;border:none}
+  .sc button.scbtn.ghost{background:transparent;color:#6aa9f0;border:1px solid rgba(106,169,240,.5)}
+  .sc .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+  @media (max-width:560px){.sc .grid2{grid-template-columns:1fr}}
+  .sc .chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .sc .chips2 button{width:auto;min-height:30px;margin:0;padding:4px 10px;border-radius:999px;font:800 11px/1 var(--round);letter-spacing:.04em;color:#08131f;border:none}
   .bdg-row .bdg{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--hl-soft);color:var(--hl-ink);font-family:var(--round);font-weight:700;font-size:15px}
   .wrap{padding-bottom:calc(var(--nav-h, 96px) + 28px)}
   .stat{display:flex;margin-top:20px;border:1.5px solid var(--rule);border-radius:12px;overflow:hidden;background:#fff}
@@ -861,6 +895,7 @@
   <div class="hd"><span class="eyebrow">Your notebook</span><span class="syncpill" data-sync></span></div>
   <div class="chips" style="margin-top:0;margin-bottom:20px">
     <span class="chip on" data-f="all">All</span>
+    <span class="chip" data-f="topics">Topics</span>
     <span class="chip" data-f="twice">Still tricky</span>
     <span class="chip" data-f="mix">Mix-ups</span>
     <span class="chip" data-f="recent">Last 30 days</span>
@@ -885,6 +920,7 @@
     <p id="p-status" class="muted" style="font-family:var(--round);font-weight:700;color:var(--ink);margin-top:14px"></p>
     <div id="p-weak" style="margin-top:16px"></div>
     <button class="primary" id="p-start">Start a round</button>
+    <div id="p-sc"></div>
     <div id="p-none" class="empty hide">Answer a few questions first. Recall is built from the ones you got wrong.</div>
   </div>
   <div id="p-run" class="hide">
@@ -4156,6 +4192,86 @@ function updateRecallBadge(){
 function niceDay(ts){ const d = new Date(ts), t = new Date(); t.setHours(0,0,0,0); const days = Math.round((d.setHours(0,0,0,0) - t) / 864e5);
   return days <= 0 ? 'today' : days === 1 ? 'tomorrow' : new Date(ts).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
 
+/* ── topics and learning points ─────────────────────────
+   Every marked answer belongs to a topic (its chapter) and tests a few learning
+   points (the marking points). Best score per question, mean per topic, the
+   points that slip most often, and one clear "work on this first". Thresholds
+   as in the teacher's Pair Lab: 75 % and above is strong, under 50 % is a gap. */
+var HUES = ['#66ccff', '#3fc35f', '#b557e6', '#e8493f', '#ffb627', '#6aa9f0', '#f06fff', '#58e066', '#ff5a5a', '#ffd400'];
+function codeOf(label){ const w = String(label || '').replace(/\(.*?\)/g, '').split(/[^A-Za-z0-9]+/).filter(x => x && !/^(and|of|the|in|&)$/i.test(x)); return (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || 'T').slice(0, 2)).toUpperCase(); }
+function entryPct(s){ const max = +s.maxMarks || 0; if (!max) return null; const m = Math.max(+s.marks1 || 0, s.marks2 == null ? 0 : +s.marks2); return Math.max(0, Math.min(1, m / max)); }
+const tone = p => p == null ? { fill: 'rgba(255,255,255,.18)', tag: 'NEW', col: '#8a98a6' } : p >= .75 ? { fill: '#3fc35f', tag: 'STRONG', col: '#5ee07a' } : p >= .5 ? { fill: '#ffb627', tag: 'GROWING', col: '#ffd06b' } : { fill: '#e8493f', tag: 'GAP', col: '#ff6a5e' };
+function topicStats(){
+  const map = new Map();
+  subs().forEach(s => {
+    const ch = s.chapter || 'Other';
+    const t = map.get(ch) || { label: ch, level: s.level || '', qs: new Map() };
+    const q = t.qs.get(s.qi) || { qi: s.qi, q: s.q, tries: 0, best: null, last: 0, missed: new Set() };
+    q.tries++; const p = entryPct(s); if (p != null) q.best = q.best == null ? p : Math.max(q.best, p);
+    if (fixedByRecall(s.qi)) q.best = Math.max(q.best == null ? 0 : q.best, 1);
+    q.last = Math.max(q.last, s.ts); (s.missed2 || []).forEach(m => q.missed.add(m));
+    t.qs.set(s.qi, q); map.set(ch, t);
+  });
+  const topics = [...map.values()].map(t => { const items = [...t.qs.values()].sort((a, b) => a.last - b.last); const scored = items.filter(q => q.best != null);
+    return { ...t, items, n: items.length, mean: scored.length ? scored.reduce((a, q) => a + q.best, 0) / scored.length : null }; });
+  const names = topics.map(t => t.label).sort();
+  topics.forEach(t => { t.hue = HUES[names.indexOf(t.label) % HUES.length]; t.code = codeOf(t.label); t.weak = t.items.filter(q => q.best == null || q.best < .75).map(q => q.qi); });
+  return topics.sort((a, b) => (a.mean == null ? 2 : a.mean) - (b.mean == null ? 2 : b.mean));
+}
+function slipList(topics){
+  const m = new Map();
+  subs().forEach(s => (s.missed2 || []).forEach(ph => { const k = ph.toLowerCase(); const r = m.get(k) || { phrase: ph, n: 0, last: 0, chapter: s.chapter || 'Other', qis: new Set() }; r.n++; r.last = Math.max(r.last, s.ts); r.qis.add(s.qi); m.set(k, r); }));
+  const rows = [...m.values()].sort((a, b) => b.n - a.n || b.last - a.last).slice(0, 6);
+  rows.forEach(r => { const t = topics.find(x => x.label === r.chapter); r.hue = t ? t.hue : '#8a98a6'; r.code = t ? t.code : '—'; });
+  return rows;
+}
+const pctStr = p => p == null ? '—' : Math.round(p * 100) + '%';
+function topicsHtml(){
+  const topics = topicStats(), all = subs();
+  if (!all.length) return '<div class="empty">Answer a question and your topics appear here, strongest to weakest.</div>';
+  const scored = all.map(entryPct).filter(p => p != null), overall = scored.length ? scored.reduce((a, b) => a + b, 0) / scored.length : null;
+  const w = who() || {}, name = w.nick || w.name || 'You', init = name.trim()[0] ? name.trim()[0].toUpperCase() : '★';
+  const tOverall = tone(overall);
+  let h = '<div class="sc">';
+  h += '<div class="who"><div class="ava" style="background:' + tOverall.fill + ';box-shadow:0 0 18px ' + tOverall.fill + '66">' + esc(init) + '</div>' +
+    '<div style="flex:1;min-width:0"><div style="font:900 18px/1.1 var(--round);color:#fff">' + esc(name) + '</div><div class="tiny" style="margin-top:3px">' + all.length + ' answers · ' + topics.length + (topics.length === 1 ? ' topic' : ' topics') + ' · ' + all.filter(s => s.recovered || fixedByRecall(s.qi)).length + ' fixed</div></div>' +
+    '<div style="text-align:right"><div class="big" style="color:' + tOverall.col + '">' + pctStr(overall) + '</div><div class="cap">Overall</div></div></div>';
+  // work on this first
+  const gap = topics.find(t => t.n >= 2 && t.mean != null && t.mean < .5);
+  if (gap) h += '<div class="box2"><span style="font-size:16px;line-height:1.2">⚠️</span><div><b>Work on this first</b><div style="margin-top:4px;font:400 12px/1.45 var(--body);color:var(--scsoft)">' + esc(gap.label) + ' is at ' + pctStr(gap.mean) + ' across ' + gap.n + ' questions. A short round on it today will lift everything else.</div><button class="scbtn" data-topic="' + esc(gap.label) + '">Practise ' + esc(gap.label) + '</button></div></div>';
+  else if (topics.every(t => t.mean == null || t.mean >= .75)) h += '<div class="box2 good"><span style="font-size:16px;line-height:1.2">✅</span><div><b>No gaps showing</b><div style="margin-top:4px;font:400 12px/1.45 var(--body);color:var(--scsoft)">Every topic you have tried is strong. Keep the recall rounds going so it stays that way.</div></div></div>';
+  // topics, weakest first
+  h += '<div class="pn"><div class="pt y">Topics — weakest first</div><div class="blurb">One bar for each question you have answered in the topic; its height is your best score. Tap a topic\'s button to practise the questions that are not yet strong.</div><div class="grid2">';
+  topics.forEach(t => { const tn = tone(t.mean);
+    h += '<div><div class="row"><span class="code" style="background:' + t.hue + '">' + esc(t.code) + '</span><span class="lbl">' + esc(t.label) + '</span><span class="pct" style="color:' + tn.col + '">' + pctStr(t.mean) + '</span><span class="tag" style="color:' + tn.col + '">' + tn.tag + '</span></div>' +
+      '<div class="bars">' + t.items.slice(-8).map((q, i) => { const qt = tone(q.best); return '<div class="bar" title="' + esc(q.q) + '"><div class="col"><i style="height:' + (q.best == null ? 8 : Math.max(6, Math.round(q.best * 100))) + '%;background:' + qt.fill + '"></i></div><small>' + (i + 1) + '</small></div>'; }).join('') + '</div>' +
+      (t.weak.length ? '<button class="scbtn ghost" data-topic="' + esc(t.label) + '">Practise ' + t.weak.length + (t.weak.length === 1 ? ' question' : ' questions') + '</button>' : '<div class="tiny" style="margin-top:8px">All strong here.</div>') + '</div>';
+  });
+  h += '</div></div>';
+  // learning points that slip
+  const slips = slipList(topics);
+  h += '<div class="pn"><div class="pt r">Learning points that slip most</div><div class="blurb">The marking points still missing after your second try, most often first.</div>';
+  h += slips.length ? slips.map(r => '<div class="row" style="margin-top:8px"><span class="code" style="background:' + r.hue + '">' + esc(r.code) + '</span><span class="lbl" style="font-weight:700;color:var(--scsoft)">' + esc(r.phrase) + '</span><div class="hbar"><i style="width:' + Math.round(100 * r.n / slips[0].n) + '%;background:' + (r.n >= 3 ? '#e8493f' : '#ffb627') + '"></i></div><span class="pct" style="color:' + (r.n >= 3 ? '#ff6a5e' : '#ffd06b') + ';width:28px;text-align:right">' + r.n + '×</span><span class="tiny" style="width:64px;text-align:right">' + niceDay(r.last) + '</span></div>').join('')
+    : '<div class="tiny">Nothing is slipping on the second try. Good sign.</div>';
+  h += '</div></div>';
+  return h;
+}
+function wireTopics(el){
+  el.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { const t = topicStats().find(x => x.label === b.dataset.topic); if (t && t.weak.length) startRound(t.weak.slice(0, 3)); });
+}
+// The recall side of the same picture: where every card sits, and which topics are due.
+function recallPanelHtml(){
+  const cards = srsCards(); if (!cards.length) return '';
+  const counts = [0, 0, 0, 0, 0]; cards.forEach(c => counts[Math.min(4, c.box)]++);
+  const labels = ['New', 'Day 3', 'Week 1', 'Fortnight', 'Month'], hues = ['#e8493f', '#ffb627', '#ffd06b', '#3fc35f', '#5ee07a'];
+  const max = Math.max(1, ...counts), topics = topicStats();
+  let h = '<div class="sc"><div class="pn"><div class="pt b">Where your recall stands</div><div class="blurb">Each card moves right when it comes back smoothly. The fortnight box and beyond count as fixed.</div><div class="bars">' +
+    counts.map((n, i) => '<div class="bar"><div class="col" style="height:44px"><i style="height:' + Math.round(100 * n / max) + '%;background:' + hues[i] + '"></i></div><small style="color:' + hues[i] + '">' + n + '</small><small>' + labels[i] + '</small></div>').join('') + '</div></div>';
+  const byTopic = topics.map(t => ({ t, due: cards.filter(c => c.isDue && t.items.some(q => q.qi === c.qi)).length, all: cards.filter(c => t.items.some(q => q.qi === c.qi)) })).filter(x => x.all.length);
+  if (byTopic.length) h += '<div class="pn"><div class="pt c">Practise a topic</div><div class="chips2">' + byTopic.map(x => '<button data-rtopic="' + esc(x.t.label) + '" style="background:' + x.t.hue + '">' + esc(x.t.code) + ' · ' + esc(x.t.label) + (x.due ? ' · ' + x.due + ' due' : '') + '</button>').join('') + '</div></div>';
+  return h + '</div>';
+}
+
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-mist .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -4175,6 +4291,7 @@ function renderMistakes(){
   if (filter === 'recent') rows = all.filter(s => s.ts > cut);
 
   const el = $('m-list');
+  if (filter === 'topics'){ el.innerHTML = topicsHtml(); wireTopics(el); return; }
   if (filter === 'mix'){
     // the same wrong idea, wherever it showed up
     const groups = new Map();
@@ -4242,6 +4359,8 @@ function renderPractice(){
     '<div class="item"><div style="font-family:var(--round);font-weight:700;font-size:16px;line-height:1.4">' + esc(w.q) +
     '<span class="box' + (w.box >= 3 ? ' fixed' : w.isDue ? ' due' : '') + '">' + boxLabel(w.box) + '</span></div>' +
     '<div class="muted" style="margin-top:5px;font-size:14px">' + esc(w.level) + ' ' + esc(w.chapter) + (w.isDue ? ' · due now' : ' · back ' + niceDay(w.due)) + '</div></div>').join('');
+  $('p-sc').innerHTML = recallPanelHtml();
+  $('p-sc').querySelectorAll('[data-rtopic]').forEach(b => b.onclick = () => { const t = topicStats().find(x => x.label === b.dataset.rtopic); if (!t) return; const cards = srsCards().filter(c => t.items.some(q => q.qi === c.qi)); const due = cards.filter(c => c.isDue); startRound((due.length ? due : cards).slice(0, 3).map(c => c.qi)); });
 }
 
 // A round: what is due first, then anything not yet practised, three at a time.
