@@ -1270,7 +1270,7 @@ const DB = {
     this.dirty.add(k);
     if (this.onSync) this.onSync(this.dirty.size);
     this.push(k, raw).catch(() => {});   // local write already stands
-    if (typeof SYNC !== 'undefined') SYNC.touch(k);   // and to the account, when signed in
+    if (SYNC) SYNC.touch(k);             // and to the account, once the sync layer exists
   },
 
   get(k, fallback){
@@ -1438,7 +1438,7 @@ function gateOpen(){
   try { localStorage.removeItem(SESS); } catch(e){}
   $('gate').classList.add('on');
 }
-function gateClose(){ $('gate').classList.remove('on'); gateResolve(); if (typeof SYNC !== 'undefined') SYNC.pull(); }
+function gateClose(){ $('gate').classList.remove('on'); gateResolve(); if (SYNC) SYNC.pull(); else addEventListener('load', () => SYNC && SYNC.pull(), { once: true }); }
 
 async function gateBoot(){
   const url = new URL(location.href);
@@ -1478,7 +1478,6 @@ $('g-form').onsubmit = async e => {
   $('g-go').disabled = false; $('g-go').textContent = 'Send me a sign-in link';
 };
 gateBoot();
-try { updateRecallBadge(); SYNC.paint(); } catch(e){}
 
 /* ── the session record ─────────────────────────────────
    While the lock is on, everything a member does in one sitting is recorded
@@ -4025,7 +4024,7 @@ $('export-mcq').onclick = buildSheet;
    key — lists by union, progress by "earned wins", the rest by newest. Keys
    that belong to the device (session, codes, theme, scenery, the photographed
    pages) never leave it. */
-const SYNC = {
+var SYNC = {
   META: 'sm-meta-v1',
   deny: ['sm-session-v1', 'sm-adm-v1', 'sm-adm-open', 'sm-admin-v1', 'sm-theme-v1', 'sm-scenery-v1', 'sm-tts-slow-v1', 'sm-sid', 'sm-scans', 'sm-meta-v1'],
   timer: null, dirty: new Set(), state: 'off', last: 0, pulled: false, busy: false,
@@ -4131,10 +4130,10 @@ function rerenderView(){
    and it comes back later: tomorrow, three days, a week, a fortnight, a
    month. Hesitant keeps it where it is. Blank sends it back to the start.
    A card in the fortnight box or beyond counts as fixed. */
-const SRS = 'sm-srs-v1', SRS_DAYS = [1, 3, 7, 14, 30];
-const srs = () => { const v = DB.get(SRS, {}); return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; };
-const boxLabel = b => ['New', 'Day 3', 'Week 1', 'Fortnight', 'Month'][Math.min(4, b || 0)];
-const fixedByRecall = qi => ((srs()[qi] || {}).box || 0) >= 3;
+var SRS = 'sm-srs-v1', SRS_DAYS = [1, 3, 7, 14, 30];
+function srs(){ const v = DB.get(SRS, {}); return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+function boxLabel(b){ return ['New', 'Day 3', 'Week 1', 'Fortnight', 'Month'][Math.min(4, b || 0)]; }
+function fixedByRecall(qi){ return ((srs()[qi] || {}).box || 0) >= 3; }
 function srsCards(){
   const m = srs(), now = Date.now();
   return weakQuestions().map(w => { const c = m[w.qi] || { box: 0, due: 0, seen: 0, last: 0 }; return { ...w, box: c.box || 0, due: c.due || 0, seen: c.seen || 0, last: c.last || 0, isDue: (c.due || 0) <= now }; });
@@ -4149,13 +4148,13 @@ function srsGrade(qi, grade){
   m[qi] = c; DB.set(SRS, m);
   return c;
 }
-const dueCards = () => srsCards().filter(c => c.isDue).sort((a, b) => (a.due - b.due) || (b.score - a.score));
+function dueCards(){ return srsCards().filter(c => c.isDue).sort((a, b) => (a.due - b.due) || (b.score - a.score)); }
 function updateRecallBadge(){
   const n = dueCards().length, el = $('nav-due');
   if (!el) return; el.textContent = n > 9 ? '9+' : String(n); el.hidden = n === 0;
 }
-const niceDay = ts => { const d = new Date(ts), t = new Date(); t.setHours(0,0,0,0); const days = Math.round((d.setHours(0,0,0,0) - t) / 864e5);
-  return days <= 0 ? 'today' : days === 1 ? 'tomorrow' : new Date(ts).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); };
+function niceDay(ts){ const d = new Date(ts), t = new Date(); t.setHours(0,0,0,0); const days = Math.round((d.setHours(0,0,0,0) - t) / 864e5);
+  return days <= 0 ? 'today' : days === 1 ? 'tomorrow' : new Date(ts).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
 
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
@@ -4486,6 +4485,9 @@ document.addEventListener('click', e => {
 }, true);
 
 armIdle();   // last: idleT and curView must exist before the first timer
+
+// last: the due count on the nav and the account pill, now that everything above exists
+try { updateRecallBadge(); SYNC.paint(); if (SYNC.on()) SYNC.pull(); } catch(e){}
 </script>
 <script src="scenery.js"></script>
 </body>
