@@ -44,7 +44,7 @@
 
   /* sight line from the eye, through the top of the liquid, onto the scale
      plate 6.8 mm behind it — that is the whole parallax error */
-  const PLATE = 0.0068, EYE_DIST = 0.17, PER_DEG = 0.126 / TMAX, HEAD_RANGE = 0.105;
+  const PLATE = 0.0038, EYE_DIST = 0.16, PER_DEG = 0.126 / TMAX, HEAD_RANGE = 0.105;
   function parallax(head, dist) {
     const dy = (clamp(isFinite(head) ? head : 0, -100, 100) / 100) * HEAD_RANGE;
     const d = isFinite(dist) && dist > 0.02 ? dist : EYE_DIST;
@@ -116,7 +116,6 @@
       }
       if (n === 'eye' && this.cfg.eye !== was) {
         this.elTarget = this.cfg.eye === 'above' ? 0.68 : this.cfg.eye === 'below' ? -0.04 : 0.16;
-        this.head = this.cfg.eye === 'above' ? 100 : this.cfg.eye === 'below' ? -100 : 0;
       }
     }
 
@@ -174,7 +173,7 @@
         cupGlass: new THREE.MeshStandardMaterial({ name: 'cup_glass', color: 0xcfe6f5, metalness: 0, roughness: 0.08, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }),
         water: new THREE.MeshStandardMaterial({ name: 'cup_water', color: 0x3f86cf, roughness: 0.16, transparent: true, opacity: 0.74 }),
         tubeGlass: new THREE.MeshStandardMaterial({ name: 'tube_glass', color: 0xdff1ff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }),
-        dye: new THREE.MeshStandardMaterial({ name: 'coloured_liquid', color: 0xff6a5e, roughness: 0.3, emissive: 0x6e1a12, emissiveIntensity: 0.75 }),
+        dye: new THREE.MeshStandardMaterial({ name: 'coloured_liquid', color: 0xd8342a, roughness: 0.28, emissive: 0x5a120c, emissiveIntensity: 0.34 }),
         skin: new THREE.MeshStandardMaterial({ name: 'hand', color: 0xe8b489, roughness: 0.72, emissive: 0x2e1a0c, emissiveIntensity: 0.6 }),
         board: new THREE.MeshStandardMaterial({ name: 'magnetic_board', color: 0x101b28, roughness: 0.9 }),
         tile: new THREE.MeshStandardMaterial({ name: 'letter_tile', color: 0x22303f, roughness: 0.7 })
@@ -188,7 +187,7 @@
 
       this.camA = new THREE.PerspectiveCamera(38, 1, 0.02, 12);
       this.camZ = new THREE.PerspectiveCamera(40, 1, 0.02, 12);
-      this.camE = new THREE.PerspectiveCamera(25, 1, 0.004, 8);
+      this.camE = new THREE.PerspectiveCamera(22, 1, 0.004, 8);
       this.zAngle = 0;
       this.ray = new THREE.Raycaster();
 
@@ -271,25 +270,28 @@
     scaleTex() {
       const T = this.THREE;
       const cv = document.createElement('canvas');
-      cv.width = 320; cv.height = 1600;
+      cv.width = 192; cv.height = 1600;
       const cx = cv.getContext('2d');
       cx.scale(2, 2);
-      cx.fillStyle = '#e8eef4'; cx.fillRect(0, 0, 160, 800);
-      cx.fillStyle = 'rgba(10,19,32,.09)'; cx.fillRect(96, 0, 64, 800);
+      cx.fillStyle = '#f4f1e8'; cx.fillRect(0, 0, 96, 800);
+      cx.fillStyle = 'rgba(10,19,32,.06)'; cx.fillRect(0, 0, 8, 800);
       const y = (t) => 800 - (t / TMAX) * 786 - 7;
-      cx.strokeStyle = '#2a3a4b';
+      cx.strokeStyle = '#1d2a36';
       for (let t = 0; t <= TMAX; t += 2) {
         const major = t % 10 === 0;
-        cx.lineWidth = major ? 5 : 2.5;
+        cx.lineWidth = major ? 4 : 2;
         cx.beginPath();
-        cx.moveTo(major ? 8 : 34, y(t));
-        cx.lineTo(major ? 66 : 58, y(t));
+        cx.moveTo(6, y(t));
+        cx.lineTo(major ? 40 : 26, y(t));
         cx.stroke();
       }
-      cx.fillStyle = '#16232f';
+      cx.fillStyle = '#14202b';
       cx.textAlign = 'left'; cx.textBaseline = 'middle';
-      cx.font = '900 40px Nunito, system-ui, sans-serif';
-      for (let t = 0; t <= TMAX; t += 10) cx.fillText(String(t), 76, y(t));
+      cx.font = '800 34px Nunito, system-ui, sans-serif';
+      for (let t = 0; t <= TMAX; t += 10) cx.fillText(String(t), 46, y(t));
+      cx.font = '900 24px Nunito, system-ui, sans-serif';
+      cx.fillStyle = '#8a3a33';
+      cx.fillText('°C', 44, 22);
       const tex = new T.CanvasTexture(cv);
       tex.colorSpace = T.SRGBColorSpace;
       return tex;
@@ -375,6 +377,7 @@
         board.add(face);
       });
       this.sA.add(board);
+      this.board = board;
 
       /* the thermometer and its stand */
       const stand = new T.Group(); stand.name = 'thermometer_stand';
@@ -388,21 +391,26 @@
       s.add(stand);
 
       const th = new T.Group(); th.name = 'thermometer';
-      const bulb = new T.Mesh(new T.SphereGeometry(0.009, 20, 16), M.dye);
-      bulb.name = 'bulb'; th.add(bulb);
-      const tube = new T.Mesh(new T.CylinderGeometry(0.005, 0.005, 0.15, 20, 1, true), M.tubeGlass);
-      tube.name = 'tube'; tube.position.y = 0.078; th.add(tube);
-      const cap = new T.Mesh(new T.SphereGeometry(0.0052, 14, 10), M.tubeGlass);
-      cap.name = 'tube_cap'; cap.position.y = 0.153; th.add(cap);
-      const col = new T.Mesh(new T.CylinderGeometry(0.0034, 0.0034, 1, 16), M.dye);
-      col.name = 'liquid_column'; col.position.y = 0.004; th.add(col);
-      const plate = new T.Mesh(new T.PlaneGeometry(0.028, 0.128), new T.MeshStandardMaterial({
-        name: 'scale_plate', map: this.scaleTex(), roughness: 0.6, side: T.DoubleSide
+      const bulb = new T.Mesh(new T.SphereGeometry(0.0092, 20, 16), M.dye);
+      bulb.name = 'bulb'; bulb.scale.set(1, 1.25, 1); th.add(bulb);
+      const neck = new T.Mesh(new T.CylinderGeometry(0.0079, 0.0092, 0.012, 20, 1, true), M.tubeGlass);
+      neck.name = 'bulb_neck'; neck.position.y = 0.011; neck.scale.z = 0.58; th.add(neck);
+      /* an oval glass stem, like a real lab thermometer */
+      const tube = new T.Mesh(new T.CylinderGeometry(0.0079, 0.0079, 0.148, 24, 1, true), M.tubeGlass);
+      tube.name = 'tube'; tube.position.y = 0.081; tube.scale.z = 0.58; th.add(tube);
+      const cap = new T.Mesh(new T.SphereGeometry(0.0079, 18, 12), M.tubeGlass);
+      cap.name = 'tube_cap'; cap.position.y = 0.155; cap.scale.set(1, 0.8, 0.58); th.add(cap);
+      /* the scale is printed on the back wall of the stem, PLATE behind the
+         capillary — that gap is exactly what makes an off-eye reading wrong */
+      const plate = new T.Mesh(new T.PlaneGeometry(0.0142, 0.128), new T.MeshStandardMaterial({
+        name: 'scale_plate', map: this.scaleTex(), roughness: 0.55, side: T.DoubleSide
       }));
-      plate.name = 'scale_plate'; plate.position.set(0, 0.07, -0.0068); th.add(plate);
+      plate.name = 'scale_plate'; plate.position.set(0, 0.07, -PLATE); th.add(plate);
+      const col = new T.Mesh(new T.CylinderGeometry(0.0024, 0.0024, 1, 16), M.dye);
+      col.name = 'liquid_column'; col.position.y = 0.004; th.add(col);
       th.position.set(0.24, 0.075, 0.07);
       s.add(th);
-      const sight = new T.Mesh(new T.BoxGeometry(0.058, 0.0011, 0.0008), new T.MeshBasicMaterial({
+      const sight = new T.Mesh(new T.BoxGeometry(0.021, 0.0009, 0.0006), new T.MeshBasicMaterial({
         name: 'sight_line', color: 0xffb627, transparent: true, opacity: 0.96,
         depthTest: false, depthWrite: false, toneMapped: false, fog: false
       }));
@@ -509,7 +517,7 @@
       el.addEventListener('wheel', e => {
         e.preventDefault();
         const k = 1 + Math.sign(e.deltaY) * 0.08;
-        if (this.view() === 'eyeline') this.eyeDist = clamp(this.eyeDist * k, 0.075, 0.46);
+        if (this.view() === 'eyeline') this.eyeDist = clamp(this.eyeDist * k, 0.055, 0.34);
         else this.cam.dist = clamp(this.cam.dist * k, 0.3, 1.7);
       }, { passive: false });
     }
@@ -557,16 +565,16 @@
       /* covers lift off the active cup */
       IDS.forEach(id => {
         const c = this.cups[id], on = id === cup;
-        /* in the first-person view the cover is set down behind the cup and the
-           letter chips step aside, so nothing crosses the scale */
-        /* set the cover down flat on the bench behind the cup */
-        const ty = on ? (eyeOn ? 0.006 : 0.128) : 0.072;
-        const tz = on ? (eyeOn ? -0.085 : 0.055) : 0;
-        const tx = on && eyeOn ? -0.075 : 0;
+        /* an open cup's cover is set down flat on the bench behind it, so it
+           never crosses the thermometer; the letter chips step aside in the
+           first-person view */
+        const ty = on ? 0.005 : 0.072;
+        const tz = on ? -0.088 : 0;
+        const tx = on ? -0.052 : 0;
         c.cover.position.x = lerp(c.cover.position.x, tx, 0.12);
         c.cover.position.y = lerp(c.cover.position.y, ty, 0.12);
         c.cover.position.z = lerp(c.cover.position.z, tz, 0.12);
-        c.cover.rotation.x = lerp(c.cover.rotation.x, on && !eyeOn ? 0.7 : 0, 0.12);
+        c.cover.rotation.x = lerp(c.cover.rotation.x, 0, 0.12);
         const lit = on ? 1 : 0;
         c.chip.material.opacity = lerp(c.chip.material.opacity, eyeOn ? 0 : 0.8 + 0.2 * lit, 0.12);
         c.grp.position.y = lerp(c.grp.position.y, on ? 0.004 : 0, 0.12);
@@ -665,6 +673,7 @@
       this.parOff = parallax(this.head, this.eyeDist);
       const hitY = mY + this.parOff * PER_DEG;
       this.sight.visible = eyeOn;
+      if (this.board) this.board.visible = !eyeOn;
       if (eyeOn) {
         this.sight.position.set(thp.x, hitY, thp.z - PLATE + 0.0007);
         this.sight.material.color.setHex(Math.abs(this.head) <= 25 ? 0x5ee07a : 0xffb627);

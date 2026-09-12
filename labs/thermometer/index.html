@@ -646,7 +646,7 @@ class Component extends DCLogic {
         if ((s.view || this.props.defaultView || 'both') !== 'eyeline') return;
         e.preventDefault();
         const d = e.key === 'ArrowUp' ? 12 : -12;
-        this.setState({ head: Math.max(-100, Math.min(100, s.head + d)) });
+        this.setState(st => ({ head: Math.max(-100, Math.min(100, st.head + d)) }));
       }
     };
     addEventListener('keydown', this._onKey);
