@@ -581,6 +581,37 @@
   .wrap{position:relative;z-index:1;padding-left:44px;padding-right:22px}
   /* The scenery lives behind everything, in the margins. scenery.js draws it. */
   #sky{position:fixed;inset:0;z-index:0;pointer-events:none;display:none}
+  /* The door of the lab in the grass. The drawing is on the canvas; this is the
+     button over it, so it has a cursor, a focus ring and a name. */
+  #lab-door{position:fixed;z-index:2;display:none;margin:0;padding:0;min-height:0;border:none;
+    background:transparent;border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #lab-door:hover{background:radial-gradient(circle at 50% 82%, rgba(255,214,140,.42), rgba(255,214,140,0) 62%)}
+  #lab-door:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+  /* Going in: the light of the open door spreads over the screen while the page
+     you are leaving moves away from you. */
+  #lab-zoom{position:fixed;inset:0;z-index:90;pointer-events:none;
+    background:radial-gradient(circle at var(--cx) var(--cy), #fff6e0 0%, #f4e5c4 38%, #c9a978 100%);
+    clip-path:circle(0px at var(--cx) var(--cy));
+    transition:clip-path .56s cubic-bezier(.45,0,.3,1)}
+  #lab-zoom.go{clip-path:circle(145% at var(--cx) var(--cy))}
+  /* The slab that grows is the door itself: a round window near the top, the
+     way the one on the building has. */
+  #lab-zoom .lz-door{position:absolute;border-radius:14px;
+    background:radial-gradient(circle at 50% 24%, rgba(255,246,224,.92) 0 7%, rgba(255,246,224,0) 7.6%),
+    linear-gradient(#a9763f,#875a2f);
+    box-shadow:0 0 0 2px rgba(255,240,210,.55), 0 18px 60px rgba(0,0,0,.28);
+    transition:transform .56s cubic-bezier(.45,0,.3,1),opacity .5s ease-in}
+  #lab-zoom.go .lz-door{transform:scale(7);opacity:0}
+  body.lab-zooming .wrap,body.lab-zooming .nav,body.lab-zooming #pip,body.lab-zooming #sky{
+    transition:transform .56s cubic-bezier(.45,0,.3,1),opacity .4s ease-in;transform:scale(1.09);opacity:0}
+  @media (prefers-reduced-motion:reduce){
+    #lab-zoom,#lab-zoom .lz-door,body.lab-zooming .wrap,body.lab-zooming .nav{transition:none}
+  }
+  /* The lab is a place, not a view, so its tab carries the door rather than a
+     panel of its own. The name is long for a tab, hence the smaller type. */
+  #nav-lab{font-size:10.5px;letter-spacing:-.03em}
+  #nav-lab b{display:flex;justify-content:center;height:17px;align-items:center}
+  @media (max-width:360px){ #nav-lab{font-size:9.5px} }
   body.sheet-open #sky{display:none !important}
   .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;
     background:var(--margin);opacity:.55;pointer-events:none}
@@ -1202,7 +1233,6 @@
   <button id="pm-music"><span>♪</span>Study music</button>
   <button id="pm-notes"><span>✎</span>My notes</button>
   <button id="pm-theme"><span>◐</span>Dark mode</button>
-  <button id="pm-lab"><span>⚗</span>Members' lab</button>
   <button id="pm-admin"><span>⚙</span>Admin login</button>
   <button id="pm-help"><span>?</span>Help me</button>
 </div>
@@ -1216,6 +1246,14 @@
   <button data-v="mark"><b>✎</b>Answer</button>
   <button data-v="mist"><b>◷</b>Mistakes</button>
   <button data-v="prac"><b>↻</b>Recall<span class="cnt" id="nav-due" hidden>0</span></button>
+  <!-- The tab carries the building itself, so the way in looks the same on a
+       phone, where there is no margin to put the lab in. -->
+  <button id="nav-lab" title="Members’ lab"><b><svg viewBox="0 0 20 16" width="19" height="15" aria-hidden="true" focusable="false">
+    <path d="M1.8 8.4 10 2.2l8.2 6.2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="4.4" y="8.2" width="11.2" height="6.4" rx="1.1" fill="none" stroke="currentColor" stroke-width="1.4"/>
+    <rect x="8.8" y="10.6" width="2.4" height="4" rx="1.2" fill="currentColor"/>
+    <rect x="13.4" y="2.6" width="1.8" height="2.6" rx=".6" fill="currentColor"/>
+  </svg></b>Members’ lab</button>
 </nav>
 <script src="syllabus-map.js"></script>
 <script>
@@ -1413,7 +1451,7 @@ addEventListener('orientationchange', () => setTimeout(syncNavHeight, 250));
 // work from either place.
 function goView(v){
   $('sheet').classList.add('hide'); document.body.classList.remove('sheet-open');
-  document.querySelectorAll('.nav button').forEach(x =>
+  document.querySelectorAll('.nav button[data-v]').forEach(x =>
     x.classList.toggle('on', x.dataset.v === v));
   ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
@@ -1424,8 +1462,38 @@ function goView(v){
   if (v === 'stats'){ renderStats(); renderBuddyPick(); renderReport(); renderReportTo(); }
 }
 
-document.querySelectorAll('.nav button').forEach(b =>
+document.querySelectorAll('.nav button[data-v]').forEach(b =>
   b.onclick = () => goView(b.dataset.v));
+
+/* Going into the lab. The door of the building in the grass and the tab in the
+   bottom bar both come through here, so walking in looks the same either way:
+   the light of the open door spreads from whatever was tapped until it fills
+   the screen, and the lab page opens inside it. Reduced motion goes straight
+   there. */
+window.enterLab = function (from) {
+  const go = () => { try { sessionStorage.setItem('sm-lab-enter', '1'); } catch(e){} location.href = 'lab.html'; };
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still || !from) return go();
+  const r = from.getBoundingClientRect ? from.getBoundingClientRect() : from;
+  const cx = r.left + r.width / 2, cy = r.top + r.height * 0.72;
+  const ov = document.createElement('div');
+  ov.id = 'lab-zoom';
+  ov.style.setProperty('--cx', cx + 'px');
+  ov.style.setProperty('--cy', cy + 'px');
+  const d = document.createElement('div');
+  d.className = 'lz-door';
+  d.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
+  ov.appendChild(d);
+  document.body.appendChild(ov);
+  document.body.classList.add('lab-zooming');
+  // A frame callback never arrives in a tab that is not on screen, so the move
+  // also starts on a timer and cannot be left half done.
+  const start = () => ov.classList.add('go');
+  requestAnimationFrame(() => requestAnimationFrame(start));
+  setTimeout(start, 60);
+  setTimeout(go, 600);
+};
+$('nav-lab').onclick = () => window.enterLab($('nav-lab'));
 
 /* ── marking flow ──────────────────────────────────────── */
 function showDeflect(msg){
@@ -2291,7 +2359,6 @@ $('pm-music').onclick = e => { e.stopPropagation(); pmTap('m-fab'); };
 $('pm-notes').onclick = e => { e.stopPropagation(); pmTap('n-fab'); };
 $('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
 $('pm-help').onclick  = e => { e.stopPropagation(); pmTap('h-fab'); };
-$('pm-lab').onclick   = e => { e.stopPropagation(); location.href = 'lab.html'; };
 
 /* ── admin login, for testing ───────────────────────────── */
 // Admin mode: the site owner, logged in from the buddy menu to test the app.
