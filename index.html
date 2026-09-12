@@ -2074,8 +2074,14 @@ async function handlePhoto(files){
   }
 }
 
-/* ── diagrams: the model sends shapes, we draw them ────── */
+/* ── diagrams ──────────────────────────────────────────
+   Generated drawings are off. The model is told not to describe one, and this is
+   the second lock, so a question saved earlier with shapes in it does not draw
+   either. Turn DRAW_DIAGRAMS back on only when the drawings are good enough to
+   sit beside a real paper. */
+const DRAW_DIAGRAMS = false;
 function svgFor(d){
+  if (!DRAW_DIAGRAMS) return String();
   if (!d || !Array.isArray(d.shapes) || !d.shapes.length) return '';
   const vb = d.viewBox || '0 0 320 200';
   const ink = 'var(--ink)', mid = 'var(--mid)';
