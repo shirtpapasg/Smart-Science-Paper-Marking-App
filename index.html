@@ -1270,7 +1270,7 @@ const DB = {
     this.dirty.add(k);
     if (this.onSync) this.onSync(this.dirty.size);
     this.push(k, raw).catch(() => {});   // local write already stands
-    if (window.SYNC) SYNC.touch(k);      // and to the account, when signed in
+    if (typeof SYNC !== 'undefined') SYNC.touch(k);   // and to the account, when signed in
   },
 
   get(k, fallback){
@@ -1438,7 +1438,7 @@ function gateOpen(){
   try { localStorage.removeItem(SESS); } catch(e){}
   $('gate').classList.add('on');
 }
-function gateClose(){ $('gate').classList.remove('on'); gateResolve(); if (window.SYNC) SYNC.pull(); }
+function gateClose(){ $('gate').classList.remove('on'); gateResolve(); if (typeof SYNC !== 'undefined') SYNC.pull(); }
 
 async function gateBoot(){
   const url = new URL(location.href);
@@ -1772,6 +1772,7 @@ function renderDone(r2, first, peeked, a2){
     mix: r2.misconception ? r2.misconception.belief : null,
   });
   save(KEY, all.slice(0, 400));
+  updateRecallBadge();
   show('done');
 }
 
