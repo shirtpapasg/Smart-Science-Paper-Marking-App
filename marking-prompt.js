@@ -100,25 +100,22 @@ export function buildUserFromScheme(scheme, answer, attempt, firstAnswer, mcList
   ].filter(Boolean).join('\n');
 }
 
-// Diagram vocabulary. The model describes shapes; the app draws them. It never
-// generates a picture, so nothing can resemble the source artwork.
-export const DIAGRAM_SPEC = [
-  'DIAGRAM. Most PSLE Science questions carry one. Include a diagram whenever the',
-  'situation has objects with a physical arrangement — containers, apparatus, set-ups',
-  'being compared, light or heat travelling, circuits, plants. Omit it only for a pure',
-  'definition question.',
-  'Use a viewBox of "0 0 320 200" and only these shapes:',
-  '  {"type":"rect","x":,"y":,"w":,"h":,"dashed":false,"fill":"none|light|dark"}',
-  '  {"type":"circle","cx":,"cy":,"r":,"fill":"none|light|dark"}',
-  '  {"type":"line","x1":,"y1":,"x2":,"y2":,"dashed":false,"arrow":false}',
-  '  {"type":"arc","x1":,"y1":,"x2":,"y2":,"bulge":20}',
-  '  {"type":"water","x":,"y":,"w":,"h":}   a wavy liquid surface inside a container',
-  '  {"type":"hatch","x":,"y":,"w":,"h":}   a shaded or solid region',
-  'Labels sit outside the drawing with a leader line to what they name:',
-  '  {"text":"metal spoon","x":,"y":,"leaderTo":[x,y]}',
-  'Rules: keep every coordinate inside the viewBox. Put labels in the margins, never',
-  'over a shape. Where two set-ups are compared, draw both side by side and label them',
-  'A and B. Eight to sixteen shapes is right — enough to be clear, never decorative.',
+// No generated pictures. The shape vocabulary that used to live here produced
+// drawings that were not good enough to put in front of a pupil or a parent, so
+// the model no longer describes one and the app no longer draws one. A question
+// must work from its words alone. Bring this back only when the drawings can sit
+// beside a real paper without embarrassment.
+export const NO_DIAGRAM_SPEC = [
+  'NO PICTURES. Never return a diagram, figure, drawing, SVG, shapes or coordinates.',
+  'Always set "diagram" to null.',
+  'Write so the question can be answered from its words alone:',
+  '- Put the set-up into one or two sentences: what the objects are, how they are',
+  '  arranged, what is the same and what is different, which one is A and which is B.',
+  '- Never write "the diagram below", "the figure shows", "as shown", "tick the boxes',
+  '  in the diagram", or "label the parts" — there is no picture to look at.',
+  '- Keep the same learning outcome and the same ways of thinking and doing as the',
+  '  question you started from. A question that leaned on a picture becomes one that',
+  '  describes the same set-up in words and asks for the same reasoning.',
 ].join('\n');
 
 // ── Deriving a scheme for a question the guide has never seen ──
@@ -157,9 +154,8 @@ export function buildDeriveUser(questionText, syllabusTopics, exclusions) {
     '"plainWhy":"",',
     '"diagram":null}',
     '',
-    'If the question describes a physical set-up, reconstruct it as a diagram using the',
-    'vocabulary below. If the question is purely verbal, set diagram to null.',
-    DIAGRAM_SPEC,
+    NO_DIAGRAM_SPEC,
+    'The pupil keeps their own photograph of the question, so never redraw it.',
     'modelAnswer: the full answer written out, in the order the marking points require.',
     'outOfSyllabus: a short sentence if the question demands an excluded term, otherwise null.',
     'cecl: the model answer broken into its four parts — Choice, Evidence from the',
@@ -211,10 +207,9 @@ export function buildTwinUser(scheme, exclusions, avoid, library) {
     '{"stem":"","object":"a short label for the everyday situation","marks":3,',
     '"cecl":{"choice":"","evidence":"","concept":"","link":""},',
     '"markingPoints":[{"point":"","marks":1}],"modelAnswer":"",',
-    '"diagram":{"viewBox":"0 0 320 200","caption":"","shapes":[],"labels":[]}}',
+    '"diagram":null}',
     '',
-    DIAGRAM_SPEC,
-    'Set diagram to null only for a pure definition question.',
+    NO_DIAGRAM_SPEC,
   ].filter(Boolean).join('\n');
 }
 
@@ -281,7 +276,7 @@ export function buildMcqUser(questionText, syllabusTopics, exclusions) {
     'plainWhy: two or three sentences for the same parent, explaining why the',
     '  correct option is correct. Everyday words only.',
     '',
-    DIAGRAM_SPEC,
+    NO_DIAGRAM_SPEC,
     'Most Booklet A questions carry a diagram. Include one unless the question is purely verbal.',
   ].join('\n');
 }
