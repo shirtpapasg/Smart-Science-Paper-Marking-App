@@ -91,8 +91,12 @@
     if (!w) { content = { l: W / 2 - 320, r: W / 2 + 320 }; return; }
     const r = w.getBoundingClientRect();
     content = { l: r.left - 6, r: r.right + 6 };
+    const nav = document.querySelector('.nav');
+    navTop = nav && nav.offsetParent !== null ? nav.getBoundingClientRect().top : H;
   }
-  const groundY = () => H - Math.min(150, H * 0.16);
+  // the hills sit above the fixed bottom bar, so nothing lives behind it
+  let navTop = 0;
+  const groundY = () => (navTop || H) - Math.min(150, H * 0.16);
   const inMargin = x => x < content.l || x > content.r;
 
   function apply() {
