@@ -238,9 +238,9 @@
   }
   function launchStar(x, y) { shooting.push({ x, y, vx: (x < W / 2 ? 1 : -1) * 520, vy: 200, life: 1 }); }
 
-  function frame(ts) {
+  function frame(ts, once) {
     if (!on) { running = false; return; }
-    if (document.hidden) { running = false; return; }
+    if (document.hidden && !once) { running = false; return; }
     const dt = Math.min(0.05, (ts - last) / 1000); last = ts;
     const now = ts, p = phase(now), night = isNight(p);
 
@@ -296,7 +296,7 @@
     });
     ctx.restore();
 
-    requestAnimationFrame(frame);
+    if (!once) requestAnimationFrame(frame);
   }
 
   /* ── the pupil joins in: taps and holds on the empty margins only ── */
@@ -358,5 +358,8 @@
     b.onclick = e => { e.stopPropagation(); setEnabled(!enabled()); if (typeof pmOpen === 'function') pmOpen(false); };
   }
   seed(); resize();
-  window.SCENERY = { setEnabled, enabled, phase: () => phase(performance.now()) };
+  // for checking the scene by hand: draw one frame, or jump the day to a phase
+  window.SCENERY = { setEnabled, enabled, phase: () => phase(performance.now()),
+    frame: () => { last = performance.now() - 16; frame(performance.now(), true); },
+    setPhase: p => { t0 = performance.now() - p * DAY_MS; } };
 })();
