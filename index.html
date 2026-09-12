@@ -529,7 +529,10 @@
     background-size:28px 28px;background-attachment:fixed}
 
   /* The red margin rule, as on the site. Content clears it. */
-  .wrap{position:relative;padding-left:44px;padding-right:22px}
+  .wrap{position:relative;z-index:1;padding-left:44px;padding-right:22px}
+  /* The scenery lives behind everything, in the margins. scenery.js draws it. */
+  #sky{position:fixed;inset:0;z-index:0;pointer-events:none;display:none}
+  body.sheet-open #sky{display:none !important}
   .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;
     background:var(--margin);opacity:.55;pointer-events:none}
   @media (max-width:400px){ .wrap{padding-left:34px} .wrap::before{left:15px} }
@@ -4247,5 +4250,6 @@ document.addEventListener('click', e => {
 
 armIdle();   // last: idleT and curView must exist before the first timer
 </script>
+<script src="scenery.js"></script>
 </body>
 </html>
