@@ -9,8 +9,8 @@
    The pupil can join in: tap an empty part of the page and a bird takes off
    (a shooting star at night); press and hold on the grass and a flower grows;
    press and hold in the sky and a butterfly comes to your finger (fireflies
-   at night). Nothing here is ever drawn behind the words: everything except
-   the sky's tint is clipped to the empty margins. It pauses when the tab is
+   at night). Nothing here is ever drawn behind the words: the whole scene, sky
+   included, is clipped to the empty margins. It pauses when the tab is
    hidden, stays still for "reduce motion", switches off below tablet width,
    and can be turned off from the buddy menu. Nothing is saved except that
    choice. */
@@ -576,8 +576,8 @@
 
     // paint
     ctx.clearRect(0, 0, W, H);
-    drawSky(p);
     ctx.save(); clipMargins();
+    drawSky(p);                       // the page itself stays crisp whatever the hour
     drawStars(p, now);
     drawSunMoon(p);
     shooting.forEach(s => {
