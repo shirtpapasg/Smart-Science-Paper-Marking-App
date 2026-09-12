@@ -395,16 +395,16 @@
   .sc .who{display:flex;align-items:center;gap:12px;background:var(--scglass);border:1px solid var(--scline);border-radius:18px;padding:13px}
   .sc .ava{flex:none;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 18px/1 var(--round);color:#08131f}
   .sc .big{font:900 24px/1 var(--round)} .sc .cap{font:600 9.5px/1 var(--body);color:var(--scfaint);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
-  .sc .code{flex:none;font:900 10.5px/1 var(--round);letter-spacing:.04em;padding:5px 7px;border-radius:6px;color:#08131f}
-  .sc .row{display:flex;align-items:center;gap:8px}
-  .sc .lbl{flex:1;min-width:0;font:800 13px/1.2 var(--round);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sc .pct{flex:none;font:900 15px/1 var(--round)}
-  .sc .tag{flex:none;font:700 9px/1 var(--round);letter-spacing:.08em;text-transform:uppercase;width:56px;text-align:right}
-  .sc .bars{margin-top:7px;display:flex;gap:4px}
-  .sc .bar{flex:1;min-width:0;text-align:center}
-  .sc .bar .col{height:34px;border-radius:6px;display:flex;align-items:flex-end;overflow:hidden;background:rgba(255,255,255,.06)}
-  .sc .bar .col i{display:block;width:100%}
-  .sc .bar small{display:block;margin-top:3px;font:700 8.5px/1 var(--round);color:var(--scfaint)}
+  .sc .scode{flex:none;font:900 10.5px/1 var(--round);letter-spacing:.04em;padding:5px 7px;border-radius:6px;color:#08131f}
+  .sc .srow{display:flex;align-items:center;gap:8px}
+  .sc .slbl{flex:1;min-width:0;font:800 13px/1.2 var(--round);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sc .spct{flex:none;font:900 15px/1 var(--round)}
+  .sc .stag{flex:none;font:700 9px/1 var(--round);letter-spacing:.08em;text-transform:uppercase;width:56px;text-align:right}
+  .sc .sbars{margin-top:7px;display:flex;gap:4px}
+  .sc .sbar{flex:1;min-width:0;text-align:center}
+  .sc .sbar .scol{height:34px;border-radius:6px;display:flex;align-items:flex-end;overflow:hidden;background:rgba(255,255,255,.06)}
+  .sc .sbar .scol i{display:block;width:100%}
+  .sc .sbar small{display:block;margin-top:3px;font:700 8.5px/1 var(--round);color:var(--scfaint)}
   .sc .hbar{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}.sc .hbar i{display:block;height:100%;border-radius:999px}
   .sc .box2{display:flex;gap:10px;align-items:flex-start;background:rgba(232,73,63,.12);border:1px solid rgba(232,73,63,.45);border-radius:14px;padding:11px 12px;margin-top:10px}
   .sc .box2.good{background:rgba(63,195,95,.12);border-color:rgba(94,224,122,.45)}
@@ -4243,15 +4243,15 @@ function topicsHtml(){
   // topics, weakest first
   h += '<div class="pn"><div class="pt y">Topics — weakest first</div><div class="blurb">One bar for each question you have answered in the topic; its height is your best score. Tap a topic\'s button to practise the questions that are not yet strong.</div><div class="grid2">';
   topics.forEach(t => { const tn = tone(t.mean);
-    h += '<div><div class="row"><span class="code" style="background:' + t.hue + '">' + esc(t.code) + '</span><span class="lbl">' + esc(t.label) + '</span><span class="pct" style="color:' + tn.col + '">' + pctStr(t.mean) + '</span><span class="tag" style="color:' + tn.col + '">' + tn.tag + '</span></div>' +
-      '<div class="bars">' + t.items.slice(-8).map((q, i) => { const qt = tone(q.best); return '<div class="bar" title="' + esc(q.q) + '"><div class="col"><i style="height:' + (q.best == null ? 8 : Math.max(6, Math.round(q.best * 100))) + '%;background:' + qt.fill + '"></i></div><small>' + (i + 1) + '</small></div>'; }).join('') + '</div>' +
+    h += '<div><div class="srow"><span class="scode" style="background:' + t.hue + '">' + esc(t.code) + '</span><span class="slbl">' + esc(t.label) + '</span><span class="spct" style="color:' + tn.col + '">' + pctStr(t.mean) + '</span><span class="stag" style="color:' + tn.col + '">' + tn.tag + '</span></div>' +
+      '<div class="sbars">' + t.items.slice(-8).map((q, i) => { const qt = tone(q.best); return '<div class="sbar" title="' + esc(q.q) + '"><div class="scol"><i style="height:' + (q.best == null ? 8 : Math.max(6, Math.round(q.best * 100))) + '%;background:' + qt.fill + '"></i></div><small>' + (i + 1) + '</small></div>'; }).join('') + '</div>' +
       (t.weak.length ? '<button class="scbtn ghost" data-topic="' + esc(t.label) + '">Practise ' + t.weak.length + (t.weak.length === 1 ? ' question' : ' questions') + '</button>' : '<div class="tiny" style="margin-top:8px">All strong here.</div>') + '</div>';
   });
   h += '</div></div>';
   // learning points that slip
   const slips = slipList(topics);
   h += '<div class="pn"><div class="pt r">Learning points that slip most</div><div class="blurb">The marking points still missing after your second try, most often first.</div>';
-  h += slips.length ? slips.map(r => '<div class="row" style="margin-top:8px"><span class="code" style="background:' + r.hue + '">' + esc(r.code) + '</span><span class="lbl" style="font-weight:700;color:var(--scsoft)">' + esc(r.phrase) + '</span><div class="hbar"><i style="width:' + Math.round(100 * r.n / slips[0].n) + '%;background:' + (r.n >= 3 ? '#e8493f' : '#ffb627') + '"></i></div><span class="pct" style="color:' + (r.n >= 3 ? '#ff6a5e' : '#ffd06b') + ';width:28px;text-align:right">' + r.n + '×</span><span class="tiny" style="width:64px;text-align:right">' + niceDay(r.last) + '</span></div>').join('')
+  h += slips.length ? slips.map(r => '<div class="srow" style="margin-top:8px"><span class="scode" style="background:' + r.hue + '">' + esc(r.code) + '</span><span class="slbl" style="font-weight:700;color:var(--scsoft)">' + esc(r.phrase) + '</span><div class="hbar"><i style="width:' + Math.round(100 * r.n / slips[0].n) + '%;background:' + (r.n >= 3 ? '#e8493f' : '#ffb627') + '"></i></div><span class="spct" style="color:' + (r.n >= 3 ? '#ff6a5e' : '#ffd06b') + ';width:28px;text-align:right">' + r.n + '×</span><span class="tiny" style="width:64px;text-align:right">' + niceDay(r.last) + '</span></div>').join('')
     : '<div class="tiny">Nothing is slipping on the second try. Good sign.</div>';
   h += '</div></div>';
   return h;
@@ -4265,8 +4265,8 @@ function recallPanelHtml(){
   const counts = [0, 0, 0, 0, 0]; cards.forEach(c => counts[Math.min(4, c.box)]++);
   const labels = ['New', 'Day 3', 'Week 1', 'Fortnight', 'Month'], hues = ['#e8493f', '#ffb627', '#ffd06b', '#3fc35f', '#5ee07a'];
   const max = Math.max(1, ...counts), topics = topicStats();
-  let h = '<div class="sc"><div class="pn"><div class="pt b">Where your recall stands</div><div class="blurb">Each card moves right when it comes back smoothly. The fortnight box and beyond count as fixed.</div><div class="bars">' +
-    counts.map((n, i) => '<div class="bar"><div class="col" style="height:44px"><i style="height:' + Math.round(100 * n / max) + '%;background:' + hues[i] + '"></i></div><small style="color:' + hues[i] + '">' + n + '</small><small>' + labels[i] + '</small></div>').join('') + '</div></div>';
+  let h = '<div class="sc"><div class="pn"><div class="pt b">Where your recall stands</div><div class="blurb">Each card moves right when it comes back smoothly. The fortnight box and beyond count as fixed.</div><div class="sbars">' +
+    counts.map((n, i) => '<div class="sbar"><div class="scol" style="height:44px"><i style="height:' + Math.round(100 * n / max) + '%;background:' + hues[i] + '"></i></div><small style="color:' + hues[i] + '">' + n + '</small><small>' + labels[i] + '</small></div>').join('') + '</div></div>';
   const byTopic = topics.map(t => ({ t, due: cards.filter(c => c.isDue && t.items.some(q => q.qi === c.qi)).length, all: cards.filter(c => t.items.some(q => q.qi === c.qi)) })).filter(x => x.all.length);
   if (byTopic.length) h += '<div class="pn"><div class="pt c">Practise a topic</div><div class="chips2">' + byTopic.map(x => '<button data-rtopic="' + esc(x.t.label) + '" style="background:' + x.t.hue + '">' + esc(x.t.code) + ' · ' + esc(x.t.label) + (x.due ? ' · ' + x.due + ' due' : '') + '</button>').join('') + '</div></div>';
   return h + '</div>';
