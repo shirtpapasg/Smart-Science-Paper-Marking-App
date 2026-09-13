@@ -93,6 +93,7 @@
     content = { l: r.left - 6, r: r.right + 6 };
     const nav = document.querySelector('.nav');
     navTop = nav && nav.offsetParent !== null ? nav.getBoundingClientRect().top : H;
+    if (typeof placeDoor === 'function') placeDoor();
   }
   // the hills sit above the fixed bottom bar, so nothing lives behind it
   let navTop = 0;
@@ -105,6 +106,7 @@
     const m = document.getElementById('pm-scene');
     if (m) m.innerHTML = enabled() ? '<span>🌤</span>Scenery off' : '<span>🌤</span>Scenery on';
     if (on && !running) { running = true; last = performance.now(); requestAnimationFrame(frame); }
+    placeDoor();
   }
 
   /* ── drawing ── */
@@ -251,7 +253,7 @@
   const pond = () => { const mw = marginW('right'); return { x: sideX('right', 0.5), y: groundY() + 56, rx: clamp(mw * 0.26, 34, 80), ry: 13 }; };
   const tree = () => ({ x: sideX('right', 0.84), y: hillY(sideX('right', 0.84)) + 4 });
   const soil = () => ({ x: sideX('left', 0.18), y: hillY(sideX('left', 0.18)) + 8 });
-  const rock = () => ({ x: sideX('left', 0.62), y: hillY(sideX('left', 0.62)) + 6 });
+  const rock = () => ({ x: sideX('left', 0.78), y: hillY(sideX('left', 0.78)) + 6 });
 
   function buildCreatures() {
     creatures = [];
@@ -263,7 +265,7 @@
     mk('mealworms', 'left', 0.18);
     mk('chicken', 'left', 0.80, { dir: -1 });
     mk('snail', 'left', 0.94, { dir: -1 });
-    mk('cockroach', 'left', 0.62, { hidden: true });
+    mk('cockroach', 'left', 0.78, { hidden: true });
     mk('cat', 'right', 0.22);
     mk('frog', 'right', 0.28);
     for (let i = 0; i < 3; i++) mk('mosquito', 'right', 0.5, { dx: rnd(-20, 20), dy: rnd(-26, -6), p: rnd(0, 6.28) });
@@ -389,6 +391,7 @@
     ctx.beginPath(); ctx.ellipse(so.x, so.y, 26, 7, 0, 0, 6.283); ctx.fill();
     const rk = rock(); ctx.fillStyle = night ? '#4a4d58' : '#8a8f9a';
     ctx.beginPath(); ctx.ellipse(rk.x, rk.y - 4, 16, 9, 0, 0, 6.283); ctx.fill();
+    drawLab(now, night);
   }
 
   const E = (x, y, rx, ry, col, rot) => { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot || 0, 0, 6.283); ctx.fill(); };
@@ -648,6 +651,125 @@
   }
   document.addEventListener('pointerup', release);
   document.addEventListener('pointercancel', release);
+
+  /* -- the members' lab ---------------------------------------------------
+     A field lab on the far ridge, so the rabbit and the little ones pass in
+     front of it. It needs room: on a narrow window there is no margin to put a
+     building in, so it is left out and the tab in the bottom bar is the way in.
+     The door is a real button over the drawing, which gives it a cursor, a
+     focus ring and a name a screen reader can read. */
+  const LAB_MIN_MARGIN = 150;
+  const ridgeY = x => groundY() + 30 - Math.sin(x / 260) * 22 - Math.cos(x / 97) * 6;
+  function labBox() {
+    const mw = marginW('left');
+    if (mw < LAB_MIN_MARGIN) return null;
+    const w = clamp(mw * 0.52, 84, 152), h = w * 1.14;
+    const x = sideX('left', 0.5), base = ridgeY(x) + 4;
+    return { x, base, w, h, l: x - w / 2, t: base - h, w2: w, h2: base - (base - h) };
+  }
+  function roundRect(x, y, w, h, r, col) {
+    ctx.fillStyle = col; ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill();
+  }
+  function drawLab(now, night) {
+    const b = labBox(); if (!b) return;
+    const w = b.w, h = b.h, x = b.x, base = b.base, t = reduced ? 0 : now / 1000;
+    const wallW = w * 0.82, wallH = h * 0.52, wallL = x - wallW / 2, wallT = base - wallH;
+    const roofH = h * 0.30, roofT = wallT - roofH;
+
+    E(x, base + 2, wallW * 0.60, 5, night ? 'rgba(0,0,0,.28)' : 'rgba(60,90,60,.16)');
+
+    // chimney, with a slow curl of smoke
+    const chW = w * 0.10, chX = wallL + wallW * 0.74, chT = roofT + roofH * 0.34;
+    ctx.fillStyle = night ? '#38446a' : '#8c7862'; ctx.fillRect(chX, chT, chW, wallT - chT + 2);
+    if (!reduced) for (let i = 0; i < 3; i++) {
+      const k = (t * 0.32 + i / 3) % 1;
+      C(chX + chW / 2 + Math.sin(k * 4 + i) * 6, chT - k * h * 0.40, w * 0.05 * (0.55 + k),
+        (night ? 'rgba(185,195,220,' : 'rgba(255,255,255,') + (0.45 * (1 - k)).toFixed(3) + ')');
+    }
+
+    // roof, then walls
+    ctx.fillStyle = night ? '#2e3a5e' : '#4a6fa5';
+    ctx.beginPath(); ctx.moveTo(wallL - w * 0.08, wallT + 2); ctx.lineTo(x, roofT);
+    ctx.lineTo(wallL + wallW + w * 0.08, wallT + 2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = night ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.22)';
+    ctx.beginPath(); ctx.moveTo(x, roofT); ctx.lineTo(wallL + wallW + w * 0.08, wallT + 2);
+    ctx.lineTo(x, wallT + 2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = night ? '#26304d' : '#f7f2e6'; ctx.fillRect(wallL, wallT, wallW, wallH);
+    ctx.strokeStyle = night ? 'rgba(255,255,255,.12)' : 'rgba(60,70,90,.20)';
+    ctx.lineWidth = 1; ctx.strokeRect(wallL + 0.5, wallT + 0.5, wallW - 1, wallH - 1);
+
+    // a window each side of the door; a flask bubbles away in the left one
+    const wnW = wallW * 0.20, wnH = wallH * 0.26, wnY = wallT + wallH * 0.40;
+    [wallL + wallW * 0.10, wallL + wallW * 0.70].forEach((wx, i) => {
+      ctx.fillStyle = night ? '#f6d79a' : '#cfe6f7'; ctx.fillRect(wx, wnY, wnW, wnH);
+      ctx.strokeStyle = night ? 'rgba(40,50,80,.5)' : 'rgba(70,90,120,.45)';
+      ctx.beginPath(); ctx.moveTo(wx + wnW / 2, wnY); ctx.lineTo(wx + wnW / 2, wnY + wnH);
+      ctx.moveTo(wx, wnY + wnH / 2); ctx.lineTo(wx + wnW, wnY + wnH / 2); ctx.stroke();
+      ctx.strokeRect(wx + 0.5, wnY + 0.5, wnW - 1, wnH - 1);
+      if (i === 0) {
+        const fx = wx + wnW / 2, fb = wnY + wnH * 0.86, fw = wnW * 0.42;
+        ctx.fillStyle = night ? 'rgba(120,220,190,.95)' : '#3fb28a';
+        ctx.beginPath(); ctx.moveTo(fx - fw * 0.18, fb - wnH * 0.52); ctx.lineTo(fx - fw * 0.5, fb);
+        ctx.lineTo(fx + fw * 0.5, fb); ctx.lineTo(fx + fw * 0.18, fb - wnH * 0.52); ctx.closePath(); ctx.fill();
+        if (!reduced) for (let k = 0; k < 2; k++) {
+          const u = (t * 0.6 + k / 2) % 1;
+          C(fx + Math.sin(u * 6 + k) * fw * 0.2, fb - u * wnH * 0.75, Math.max(0.8, fw * 0.13 * (1 - u * 0.5)),
+            'rgba(255,255,255,' + (0.7 * (1 - u)).toFixed(3) + ')');
+        }
+      }
+    });
+
+    // the door, with the light of the lab behind it
+    const dW = wallW * 0.30, dH = wallH * 0.54, dL = x - dW / 2, dT = base - dH;
+    if (night) { const g = ctx.createRadialGradient(x, dT + dH * 0.5, 1, x, dT + dH * 0.5, dW * 1.9);
+      g.addColorStop(0, 'rgba(255,214,140,.5)'); g.addColorStop(1, 'rgba(255,214,140,0)');
+      ctx.fillStyle = g; ctx.fillRect(x - dW * 2, dT - dW, dW * 4, dH + dW * 2); }
+    ctx.fillStyle = night ? '#f3c579' : '#9a6b3f';
+    ctx.beginPath(); ctx.moveTo(dL, base); ctx.lineTo(dL, dT + dW * 0.42);
+    ctx.quadraticCurveTo(x, dT - dW * 0.14, dL + dW, dT + dW * 0.42); ctx.lineTo(dL + dW, base);
+    ctx.closePath(); ctx.fill();
+    C(x, dT + dW * 0.34, dW * 0.16, night ? 'rgba(60,45,25,.55)' : 'rgba(255,255,255,.55)');
+    C(dL + dW * 0.80, base - dH * 0.44, Math.max(1.2, dW * 0.07), night ? '#7a5a2e' : '#f0d9a4');
+    // two steps down to the grass
+    ctx.fillStyle = night ? 'rgba(210,218,238,.20)' : 'rgba(255,255,255,.5)';
+    for (let i = 0; i < 2; i++) ctx.fillRect(x - dW * (0.62 + i * 0.22), base + i * 3.2, dW * (1.24 + i * 0.44), 3);
+
+    // the sign over the door
+    const fs = clamp(w * 0.118, 8.5, 13.5);
+    ctx.font = '700 ' + fs.toFixed(1) + 'px Fredoka, ui-rounded, system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const label = 'Members\u2019 lab';
+    const sgW = Math.min(ctx.measureText(label).width + fs * 1.2, wallW - 4), sgH = fs * 1.72;
+    const sgY = wallT + wallH * 0.17;
+    roundRect(x - sgW / 2, sgY - sgH / 2, sgW, sgH, sgH * 0.36, night ? '#f0d9a4' : '#1d2a44');
+    ctx.fillStyle = night ? '#20304f' : '#fdf6e3';
+    ctx.fillText(label, x, sgY + 0.5);
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
+  }
+
+  /* The door is a real button sitting over the drawing. */
+  let door = null;
+  function placeDoor() {
+    const b = on ? labBox() : null;
+    if (!b) { if (door) door.style.display = 'none'; return; }
+    if (!door) {
+      door = document.createElement('button');
+      door.id = 'lab-door'; door.type = 'button';
+      door.title = 'Members\u2019 lab';
+      door.setAttribute('aria-label', 'Members\u2019 lab, go in');
+      door.onclick = () => {
+        const r = door.getBoundingClientRect();
+        if (typeof window.enterLab === 'function') window.enterLab(r);
+        else location.href = 'lab.html';
+      };
+      document.body.appendChild(door);
+    }
+    door.style.display = 'block';
+    door.style.left = b.l + 'px'; door.style.top = b.t + 'px';
+    door.style.width = b.w + 'px'; door.style.height = (b.base - b.t) + 'px';
+  }
 
   /* ── wiring ── */
   addEventListener('resize', resize);
