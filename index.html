@@ -610,6 +610,25 @@
   /* The lab is a place, not a view, so its tab carries the door rather than a
      panel of its own. The name is long for a tab, hence the smaller type. */
   #nav-lab{font-size:12px;letter-spacing:-.02em}
+  /* ── the Genie ──────────────────────────────────────────────────
+     A card in Practice that glows a little, and a full-screen window over
+     the app, the same shape as the lab bench, with a bar to come back. */
+  .genie-card{display:flex;align-items:center;gap:14px;width:100%;margin:18px 0 0;padding:14px 16px;min-height:0;text-align:left;
+    border-radius:16px;border:1.5px solid rgba(102,204,255,.55);background:linear-gradient(135deg,#0f1b2d,#17263f);color:#eef3fb;
+    box-shadow:0 0 0 3px rgba(102,204,255,.10),0 10px 28px rgba(15,27,45,.35);transition:transform .2s,box-shadow .3s}
+  .genie-card:hover{transform:translateY(-2px);box-shadow:0 0 0 4px rgba(102,204,255,.18),0 14px 34px rgba(15,27,45,.45)}
+  .genie-card .g-lamp{font-size:34px;line-height:1;flex:none;filter:drop-shadow(0 0 10px rgba(102,204,255,.7));animation:genie-bob 2.6s ease-in-out infinite}
+  .genie-card .g-txt{flex:1;min-width:0;font-family:var(--body);font-weight:400;font-size:14px;line-height:1.45;color:#a9b8d1}
+  .genie-card .g-txt b{display:block;font-family:var(--round);font-weight:700;font-size:17px;color:#66ccff;margin-bottom:3px}
+  .genie-card .g-go{font-family:var(--round);font-weight:700;font-size:22px;color:#66ccff;flex:none}
+  @keyframes genie-bob{50%{transform:translateY(-4px)}}
+  #geniewin{position:fixed;inset:0;z-index:66;background:#070d15;display:none;flex-direction:column}
+  #geniewin.on{display:flex}
+  #geniewin .bar{display:flex;align-items:center;gap:12px;padding:8px 12px;background:#0d1826;color:#eef1f7;font-family:var(--round);font-weight:600;font-size:15px}
+  #geniewin .bar button{width:auto;margin:0;min-height:38px;font-size:14px;padding:6px 14px;background:#1f8a4c;color:#fff;border:0;border-radius:999px}
+  #geniewin .bar a{margin-left:auto;color:#66ccff;font-size:13px}
+  #geniewin iframe{flex:1;border:0;width:100%;background:#070d15}
+  @media (prefers-reduced-motion:reduce){ .genie-card .g-lamp{animation:none} }
   #nav-lab b{display:flex;justify-content:center;height:17px;align-items:center}
   @media (max-width:360px){ #nav-lab{font-size:11px} }
   /* ── a phone held sideways ──────────────────────────────────────
@@ -709,6 +728,14 @@
   <div id="stage-ask">
     <h1>Let's have a go.</h1>
     <p class="muted">Pick a question. Write your answer like you would on paper. I will show you the good bits and what to add.</p>
+    <!-- The Genie: the CECL way of answering, taught one part at a time. It is
+         its own page, opened over the app the way the lab bench is. -->
+    <button class="genie-card" id="genie-open" type="button">
+      <span class="g-lamp" aria-hidden="true">🧞</span>
+      <span class="g-txt"><b>Not sure how to answer? Learn the CECL way.</b>
+      <span>The Genie breaks a question into Choice, Evidence, Concept and Link, shows you each part, then lets you try. Members only.</span></span>
+      <span class="g-go" aria-hidden="true">→</span>
+    </button>
     <div style="margin-top:24px"><label for="q">Choose a question</label><select id="q"></select><div id="q-tag" class="muted" style="margin-top:9px;font-size:14px"></div><div id="q-err"></div></div>
     <div id="mk-dgm"></div>
     <div style="margin-top:24px"><label for="a1">Your answer</label>
@@ -1254,6 +1281,9 @@
 </div>
 
 <div id="pip" role="button" tabindex="0" aria-label="Your buddy — tap for practice, music, notes, dark mode and help"><div id="pip-say"></div></div>
+
+<!-- the Genie opens full-screen over the app, and comes back -->
+<div id="geniewin"><div class="bar"><button id="geniewin-back" type="button">← Back to Practice</button><span>The Genie · the CECL way</span><a id="geniewin-tab" href="genie/" target="_blank" rel="noopener">Open in its own tab</a></div><iframe id="geniewin-frame" aria-label="The Genie" allow="camera;fullscreen"></iframe></div>
 
 <div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
 
@@ -2371,6 +2401,16 @@ $('pip').addEventListener('keydown', e => {
 
 $('pm-progress').onclick = e => { e.stopPropagation(); pmOpen(false); goView('stats'); };
 $('pm-practice').onclick = e => { e.stopPropagation(); pmOpen(false); goView('mark'); };
+/* The Genie opens over the app; back returns to Practice with nothing lost. */
+function openGenie(){
+  $('geniewin-frame').src = 'genie/'; $('geniewin').classList.add('on'); document.body.style.overflow = 'hidden';
+}
+function closeGenie(){
+  if (!$('geniewin').classList.contains('on')) return;
+  $('geniewin').classList.remove('on'); $('geniewin-frame').src = 'about:blank'; document.body.style.overflow = '';
+}
+$('genie-open').onclick = openGenie;
+$('geniewin-back').onclick = closeGenie;
 $('pm-music').onclick = e => { e.stopPropagation(); pmTap('m-fab'); };
 $('pm-notes').onclick = e => { e.stopPropagation(); pmTap('n-fab'); };
 $('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
