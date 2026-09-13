@@ -41,6 +41,18 @@ export default async function handler(req, res) {
         for (let i = 0; i + 1 < flat.length; i += 2) { try { store[flat[i]] = JSON.parse(flat[i + 1]); } catch (e) { /* skip a bad row */ } }
         return res.status(200).json({ ok: true, store, at: Date.now() });
       }
+      if (action === 'store-one') {
+        const key = String(req.body.key || '');
+        if (!STORE_KEY_OK.test(key)) return res.status(400).json({ error: 'Bad key' });
+        const raw = await kv('HGET', hk, key);
+        let item = null; try { item = raw ? JSON.parse(raw) : null; } catch (e) { item = null; }
+        return res.status(200).json({ ok: true, item });
+      }
+      if (action === 'store-del') {
+        const keys = (Array.isArray(req.body.keys) ? req.body.keys : []).map(String).filter(k => STORE_KEY_OK.test(k)).slice(0, STORE_MAX_KEYS);
+        if (keys.length) await kv('HDEL', hk, ...keys);
+        return res.status(200).json({ ok: true, deleted: keys.length });
+      }
       if (action === 'store-put') {
         const items = Array.isArray(req.body.items) ? req.body.items.slice(0, STORE_MAX_KEYS) : [];
         const args = [];

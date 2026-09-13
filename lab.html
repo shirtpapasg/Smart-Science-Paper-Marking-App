@@ -1211,8 +1211,12 @@ async function markExplain(a, key){
     if (state.attempt === 1){
       if (gaps.length) h += '<div style="margin-top:8px"><span class="eyebrow hd" data-ico="🔎">Worth adding</span>' + gapRows(gaps) + '</div>';
       if (r.ponder) h += '<div class="dark"><span class="eyebrow">Something to think about</span><div style="margin-top:6px">' + esc(r.ponder) + '</div></div>';
-      box._state = { attempt: 2, first: answer }; ta.value = ''; ta.placeholder = 'Write the whole answer again…';
+      // Their own words stay put: a pupil who has to retype everything spends
+      // the effort on typing instead of on the idea that was missing.
+      box._state = { attempt: 2, first: answer };
+      ta.value = answer; ta.placeholder = 'Add the missing ideas to your answer…';
       btn.disabled = false; btn.textContent = "That's my answer";
+      try { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); } catch(e){}
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: '' });
     } else {
       if (!full && missed.length) h += '<div style="margin-top:8px"><span class="eyebrow hd" data-ico="🔎">Still to add</span>' + gapRows(missed) + '</div>';
@@ -1236,7 +1240,7 @@ async function markExplain(a, key){
     if (state.attempt === 1){
       const lead = document.createElement('div'); lead.className = 'retry-lead';
       lead.innerHTML = '<span class="eyebrow hd" data-ico="✍️">Now write the whole answer again</span>' +
-        '<div class="muted">' + (hits.length ? 'All of it in one go: what you kept, plus what was missing.' : 'Use the underlined line above. Say what happens, then why.') + '</div>';
+        '<div class="muted">' + (hits.length ? 'Your answer is still here. Add what was missing, then read the whole thing through.' : 'Your words are still here. Use the underlined line above: say what happens, then why.') + '</div>';
       again.insertBefore(lead, again.firstChild);
       out.appendChild(again);
     } else {
