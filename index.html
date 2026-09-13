@@ -612,6 +612,19 @@
   #nav-lab{font-size:12px;letter-spacing:-.02em}
   #nav-lab b{display:flex;justify-content:center;height:17px;align-items:center}
   @media (max-width:360px){ #nav-lab{font-size:11px} }
+  /* ── a phone held sideways ──────────────────────────────────────
+     Under 500px of height the bar and the buddy took a third of the screen
+     between them. Both shrink, and the buddy's menu opens as a row. */
+  @media (max-height:500px){
+    .nav{padding:4px 8px calc(4px + env(safe-area-inset-bottom))}
+    .nav button{min-height:44px;padding:4px 2px;font-size:11px} .nav b{font-size:15px;margin-bottom:0}
+    #nav-lab b{height:15px}
+    #pip{width:70px;height:70px;right:10px;bottom:calc(var(--nav-h, 60px) + 8px)}
+    #pip-say{right:66px;bottom:12px;font-size:12.5px}
+    #pip-menu{bottom:calc(var(--nav-h, 60px) + 86px);right:10px;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:calc(100vw - 20px)}
+    #pip-menu button{padding:8px 12px;font-size:14px}
+    .wrap{padding-top:12px}
+  }
   body.sheet-open #sky{display:none !important}
   .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;
     background:var(--margin);opacity:.55;pointer-events:none}
