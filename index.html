@@ -609,9 +609,9 @@
   }
   /* The lab is a place, not a view, so its tab carries the door rather than a
      panel of its own. The name is long for a tab, hence the smaller type. */
-  #nav-lab{font-size:10.5px;letter-spacing:-.03em}
+  #nav-lab{font-size:12px;letter-spacing:-.02em}
   #nav-lab b{display:flex;justify-content:center;height:17px;align-items:center}
-  @media (max-width:360px){ #nav-lab{font-size:9.5px} }
+  @media (max-width:360px){ #nav-lab{font-size:11px} }
   body.sheet-open #sky{display:none !important}
   .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;
     background:var(--margin);opacity:.55;pointer-events:none}
@@ -1233,17 +1233,19 @@
   <button id="pm-music"><span>♪</span>Study music</button>
   <button id="pm-notes"><span>✎</span>My notes</button>
   <button id="pm-theme"><span>◐</span>Dark mode</button>
+  <!-- Practice lives with the buddy. The bottom bar keeps the lab, because on a
+       phone there is no scenery to walk in through, so the tab is the only door. -->
+  <button id="pm-practice"><span>✎</span>Practice</button>
   <button id="pm-admin"><span>⚙</span>Admin login</button>
   <button id="pm-help"><span>?</span>Help me</button>
 </div>
 
-<div id="pip" role="button" tabindex="0" aria-label="Your buddy — tap for music, notes, dark mode and help"><div id="pip-say"></div></div>
+<div id="pip" role="button" tabindex="0" aria-label="Your buddy — tap for practice, music, notes, dark mode and help"><div id="pip-say"></div></div>
 
 <div id="nudge"><span class="n-ico">✦</span><div class="n-txt"></div><span class="n-x" id="nudge-x">×</span></div>
 
 <nav class="nav">
   <button class="on" data-v="qs"><b>▤</b>Questions</button>
-  <button data-v="mark"><b>✎</b>Answer</button>
   <button data-v="mist"><b>◷</b>Mistakes</button>
   <button data-v="prac"><b>↻</b>Recall<span class="cnt" id="nav-due" hidden>0</span></button>
   <!-- The tab carries the building itself, so the way in looks the same on a
@@ -2355,6 +2357,7 @@ $('pip').addEventListener('keydown', e => {
 });
 
 $('pm-progress').onclick = e => { e.stopPropagation(); pmOpen(false); goView('stats'); };
+$('pm-practice').onclick = e => { e.stopPropagation(); pmOpen(false); goView('mark'); };
 $('pm-music').onclick = e => { e.stopPropagation(); pmTap('m-fab'); };
 $('pm-notes').onclick = e => { e.stopPropagation(); pmTap('n-fab'); };
 $('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
@@ -2871,7 +2874,7 @@ const STOPS = [
     text: 'Everything begins with a question. Add one from a paper, or take a photo. I work out what a good answer needs.' },
   { sel: '#qs-add', tab: 'qs', title: 'One way in',
     text: 'Photograph the question, however many pages it runs to. I work out whether it is written or multiple choice, and you can correct me.' },
-  { sel: '.nav button[data-v="mark"]', tab: 'mark', title: 'Then answer it',
+  { sel: '#pm-practice', tab: 'mark', menu: true, title: 'Then practise it',
     text: 'You get two goes at every question. The first time I say what is missing. I never say the words. That is the whole point.' },
   { sel: '#q', tab: 'mark', title: 'Your questions come first',
     text: 'Anything you have added sits at the top of this list, then the practice you have approved, then hundreds I already know.' },
