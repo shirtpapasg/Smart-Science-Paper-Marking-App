@@ -35,6 +35,18 @@
     background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
     background-size:28px 28px;background-attachment:fixed}
   .wrap{max-width:720px;margin:0 auto;padding:22px 22px 80px 44px;position:relative}
+  /* Arriving through the door of the lab in the grass: the light of the doorway
+     fades and the page settles, so going in reads as one move over two pages. */
+  #lab-arrive{position:fixed;inset:0;z-index:95;pointer-events:none;
+    background:radial-gradient(circle at 50% 62%, #fff6e0 0%, #f4e5c4 38%, #c9a978 100%);
+    animation:lab-arrive .52s ease-out forwards}
+  @keyframes lab-arrive{from{opacity:1}to{opacity:0}}
+  html.arriving .wrap,html.arriving #gate{animation:lab-step-in .52s cubic-bezier(.2,.7,.3,1) both}
+  @keyframes lab-step-in{from{transform:scale(1.06);opacity:.35}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){
+    #lab-arrive{display:none}
+    html.arriving .wrap,html.arriving #gate{animation:none}
+  }
   .wrap::before{content:'';position:absolute;top:0;bottom:0;left:22px;width:2px;background:var(--margin);opacity:.55}
   @media (max-width:400px){ .wrap{padding-left:34px} .wrap::before{left:15px} }
   h1,h2,h3{font-family:var(--round);font-weight:600;letter-spacing:-.01em;margin:0;line-height:1.2}
@@ -131,6 +143,18 @@
   #labwin .bar{display:flex;align-items:center;gap:12px;padding:8px 12px;background:#0d1826;color:#eef1f7;font-family:var(--round);font-weight:600;font-size:15px}
   #labwin .bar button{width:auto;margin:0;min-height:38px;font-size:14px;padding:6px 14px;background:#1f8a4c;color:#fff}
   #labwin .bar a{margin-left:auto;color:#66ccff;font-size:13px}
+  /* The way back is the way on: the bar says which part is being tested and
+     carries a lit button that closes the bench and lands on "what did you see". */
+  #labwin .bar{flex-wrap:wrap;row-gap:6px}
+  #labwin .bar .guide{font-size:13px;color:#a9b8d1;font-weight:600;margin-left:6px}
+  #labwin .bar #labwin-done{background:linear-gradient(90deg,#39b6e8,#5fd3ff);color:#06202e;box-shadow:0 0 0 2px rgba(95,211,255,.3),0 0 18px rgba(95,211,255,.45);animation:beckon 1.8s ease-in-out infinite}
+  #labwin .bar #labwin-done.lit{background:linear-gradient(90deg,#4fc47f,#7fe0a4);box-shadow:0 0 0 2px rgba(79,196,127,.35),0 0 22px rgba(79,196,127,.6)}
+  #labwin .bar #labwin-done[hidden]{display:none}
+  #labwin-toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);z-index:2;max-width:min(92vw,560px);display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;border-radius:14px;background:#12213a;color:#eef3fb;border:1px solid rgba(255,180,87,.5);box-shadow:0 12px 40px rgba(0,0,0,.5);font-family:var(--round);font-weight:600;font-size:15px;animation:box-in .4s both}
+  #labwin-toast[hidden]{display:none}
+  #labwin-toast button{width:auto;margin:0;min-height:40px;font-size:14px;padding:8px 14px;background:#ffb457;color:#3a2200}
+  #labwin{position:fixed}
   #labwin iframe{flex:1;border:0;width:100%;background:#08131f}
   /* the celebration and the badges */
   #confetti{position:fixed;inset:0;z-index:80;pointer-events:none;display:none}
@@ -158,9 +182,256 @@
   #gate.on{display:flex} #gate .g-box{max-width:420px;width:100%}
   #gate input{width:100%;font-family:var(--body);font-size:17px;padding:14px 16px;border:1.5px solid var(--rule);border-radius:10px;background:var(--card);color:var(--ink);margin-top:18px}
   .g-msg{margin-top:14px;font-size:15px;color:var(--mid)} .g-msg.err{color:var(--warn);border:0;background:none;padding:0}
+  /* ── the console: inside the lab the lights are different ─────────────
+     The list is the exercise book. An activity is an instrument panel: one
+     screen at a time, a rail that shows where you are, a bench that opens the
+     moment you have predicted. Deep navy rather than black, so it stays soft on
+     a child's eyes; the app's green still means done and right; the safety
+     strip is amber; the badge is gold. The same faces as the app, so it is
+     still one product. */
+  :root{
+    --lab-bg:#0b1626; --lab-panel:#12213a; --lab-panel-2:#182c4a; --lab-line:rgba(120,190,255,.18);
+    --lab-ink:#eef3fb; --lab-mid:#a9b8d1; --lab-faint:#6f7f9c;
+    --glow:#5fd3ff; --glow-soft:rgba(95,211,255,.16);
+    --lab-ok:#4fc47f; --lab-ok-soft:rgba(79,196,127,.16); --lab-ok-dark:#1e6b40;
+    --lab-warn:#ffb457; --lab-warn-soft:rgba(255,180,87,.14);
+    --lab-gold:#ffd84d; --lab-gold-soft:rgba(255,216,77,.14);
+  }
+  body.in-lab{overflow:hidden}
+  #con-bg{position:fixed;inset:0;z-index:1;display:none;background:var(--lab-bg)}
+  body.in-lab #con-bg{display:block}
+  #act.console{position:fixed;inset:0;z-index:2;color:var(--lab-ink);display:grid;grid-template-columns:250px minmax(0,1fr);grid-template-rows:100%;overflow:hidden}
+  #act.console > .busy,#act.console > .err,#act.console > .ghost{grid-column:1 / -1;align-self:start;margin:40px auto 0;max-width:520px;color:var(--lab-mid)}
+
+  /* the rail: where you are in the mission */
+  .rail{display:flex;flex-direction:column;gap:18px;padding:22px 18px;border-right:1px solid var(--lab-line);
+    background:linear-gradient(180deg,rgba(18,33,58,.92),rgba(11,22,38,.72));backdrop-filter:blur(6px);overflow:auto;min-height:0}
+  .rail .out{color:var(--glow);text-decoration:none;font-family:var(--round);font-weight:600;font-size:14px}
+  .rail .mission .eyebrow{color:var(--glow);letter-spacing:.16em}
+  .rail .mission b{display:block;font-family:var(--round);font-weight:600;font-size:18px;line-height:1.25;margin-top:4px;text-wrap:balance}
+  .nodes{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;position:relative}
+  .nodes::before{content:'';position:absolute;left:15px;top:16px;bottom:16px;width:2px;background:var(--lab-line)}
+  .node{display:flex;align-items:center;gap:12px;padding:7px 0;cursor:pointer;color:var(--lab-mid);font-family:var(--round);font-weight:600;font-size:15px;
+    position:relative;background:none;border:0;text-align:left;min-height:0;margin:0;width:100%;line-height:1.2}
+  .node i{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-style:normal;font-size:13px;
+    border:2px solid var(--lab-line);background:var(--lab-bg);position:relative;z-index:1;transition:box-shadow .3s,border-color .3s,background .3s}
+  .node.done i{border-color:var(--lab-ok);background:var(--lab-ok);color:#06281a}
+  .node.now{color:var(--lab-ink)}
+  .node.now i{border-color:var(--glow);color:var(--glow);box-shadow:0 0 0 4px var(--glow-soft),0 0 18px var(--glow);animation:node-pulse 2.2s ease-in-out infinite}
+  .node.now.done i{color:#06281a}
+  @keyframes node-pulse{50%{box-shadow:0 0 0 7px var(--glow-soft),0 0 26px var(--glow)}}
+  .node small{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--lab-faint);margin-top:1px}
+  .node:focus-visible{outline:2px solid var(--glow);outline-offset:2px;border-radius:8px}
+  .rail-foot{margin-top:auto;padding:14px;border:1px solid var(--lab-line);border-radius:14px;display:flex;gap:12px;align-items:center;opacity:.6;transition:opacity .4s,box-shadow .4s}
+  .rail-foot.got{opacity:1;border-color:var(--lab-gold);box-shadow:0 0 22px rgba(255,216,77,.25)}
+  .rail-foot .ico{font-size:30px;line-height:1;filter:grayscale(1)} .rail-foot.got .ico{filter:none}
+  .rail-foot .eyebrow{font-size:10px;color:var(--lab-faint)} .rail-foot.got .eyebrow{color:var(--lab-gold)}
+  .rail-foot b{display:block;font-family:var(--round);font-weight:600;font-size:14px;line-height:1.25}
+
+  /* the stage: one screen at a time */
+  .stage{display:grid;grid-template-rows:auto minmax(0,1fr) auto;min-height:0;position:relative}
+  .hud{display:flex;align-items:center;gap:16px;padding:16px 28px 0;max-width:820px;width:100%;margin:0 auto}
+  .hud .counter{font-family:var(--round);font-weight:700;font-size:12px;letter-spacing:.16em;color:var(--glow);white-space:nowrap}
+  .hud .bar{flex:1;height:4px;border-radius:2px;background:var(--lab-line);overflow:hidden}
+  .hud .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--lab-ok),var(--glow));box-shadow:0 0 12px var(--glow);transition:width .5s cubic-bezier(.2,.7,.3,1)}
+  .hud .pct{font-family:var(--round);font-weight:700;font-size:12px;color:var(--lab-mid);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .screens{position:relative;overflow:auto;padding:18px 28px 24px;-webkit-overflow-scrolling:touch}
+  .scr{display:none;max-width:764px;margin:0 auto;padding:26px 30px 30px;border:1px solid var(--lab-line);border-radius:18px;
+    background:linear-gradient(160deg,var(--lab-panel),rgba(18,33,58,.55));box-shadow:0 0 0 1px rgba(95,211,255,.05),0 24px 60px rgba(0,0,0,.38);position:relative}
+  .scr::before,.scr::after{content:'';position:absolute;width:22px;height:22px;border:2px solid var(--glow);opacity:.6;pointer-events:none}
+  .scr::before{left:9px;top:9px;border-right:0;border-bottom:0}
+  .scr::after{right:9px;bottom:9px;border-left:0;border-top:0}
+  .scr.on{display:block;animation:scr-in .38s cubic-bezier(.2,.7,.3,1) both}
+  .scr.on.back{animation-name:scr-in-back}
+  @keyframes scr-in{from{opacity:0;transform:translateX(40px) scale(.985)}to{opacity:1;transform:none}}
+  @keyframes scr-in-back{from{opacity:0;transform:translateX(-40px) scale(.985)}to{opacity:1;transform:none}}
+
+  /* what is on a screen */
+  .console .eyebrow{color:var(--glow);letter-spacing:.16em}
+  .console h1{font-size:34px;line-height:1.15;margin-top:8px;text-wrap:balance}
+  .console h2{font-size:26px;margin-top:8px;text-wrap:balance}
+  .console .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .console .badge{background:var(--lab-panel-2);color:var(--lab-mid);border:1px solid var(--lab-line);margin:0}
+  .console .badge.kind{background:var(--lab-gold-soft);color:var(--lab-gold);border-color:rgba(255,216,77,.3)}
+  .console .card,.console .step{margin-top:16px;border:1px solid var(--lab-line);border-left-width:4px;border-radius:0 14px 14px 0;background:rgba(255,255,255,.035);padding:16px 18px;color:var(--lab-ink)}
+  .console .card.idea{border-left-color:var(--glow);background:var(--glow-soft)}
+  .console .card.warn{border-left-color:var(--lab-warn);background:var(--lab-warn-soft)} .console .card.warn .eyebrow{color:var(--lab-warn)}
+  .console .card .big{font-family:var(--round);font-weight:600;font-size:20px;line-height:1.5;margin-top:6px}
+  .console .how{margin-top:16px;padding:12px 16px;border-radius:12px;background:var(--lab-panel-2);color:var(--lab-mid);font-size:15px;display:flex;gap:12px;align-items:center}
+  .console .how .dot{width:12px;height:12px;border-radius:50%;background:var(--glow);box-shadow:0 0 12px var(--glow);flex:none}
+  .console .step{border-left-width:1px;border-radius:14px;padding:20px 22px}
+  .console .step.has-say,.console .card.has-say{padding-right:54px}
+  .console .step .do{font-size:18px;line-height:1.55;color:var(--lab-mid);margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--lab-line)}
+  .console .step .q{font-family:var(--round);font-weight:600;font-size:22px;line-height:1.4;margin-top:4px;color:var(--lab-ink)}
+  .console .step.note{border-style:dashed;background:rgba(255,216,77,.06);border-color:rgba(255,216,77,.35)} .console .step.note .eyebrow{color:var(--lab-gold)}
+  .console ul.need li{margin:5px 0}
+  .console .opt{background:var(--lab-panel-2);color:var(--lab-ink);border:1.5px solid var(--lab-line);font-size:17px}
+  .console .opt:hover:not(:disabled){border-color:var(--glow);box-shadow:0 0 0 3px var(--glow-soft)}
+  .console .opt.picked{border:2px solid transparent;background:linear-gradient(var(--lab-panel-2),var(--lab-panel-2)) padding-box,
+      linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f) border-box;background-size:100% 100%,300% 100%}
+  .console .opt.right{border-color:var(--lab-ok);background:var(--lab-ok-soft)}
+  .console .opt.right.picked{background:linear-gradient(rgba(31,110,60,.55),rgba(31,110,60,.55)) padding-box,
+      linear-gradient(90deg,#e8493f,#ffb627,#3fc35f,#66ccff,#b557e6,#e8493f) border-box;background-size:100% 100%,300% 100%}
+  .console .verdict{color:var(--lab-ok)}
+  .console textarea{background:var(--lab-bg);color:var(--lab-ink);border-color:var(--lab-line)}
+  .console textarea:focus{border-color:var(--glow);box-shadow:0 0 0 3px var(--glow-soft)}
+  .console input.blank{background:transparent;color:var(--lab-ink);border-bottom-color:var(--glow)}
+  .console input.blank.ok{color:var(--lab-ok);border-bottom-color:var(--lab-ok)} .console input.blank.no{border-bottom-color:var(--lab-warn)}
+  .console .primary{background:var(--lab-ok);box-shadow:0 3px 0 var(--lab-ok-dark)}
+  .console .primary:active{box-shadow:0 1px 0 var(--lab-ok-dark)}
+  .console [data-lab]{background:linear-gradient(90deg,#39b6e8,#5fd3ff);color:#06202e;box-shadow:0 0 0 2px rgba(95,211,255,.3),0 0 26px rgba(95,211,255,.45);animation:beckon 1.8s ease-in-out infinite}
+  @keyframes beckon{50%{box-shadow:0 0 0 6px rgba(95,211,255,.18),0 0 34px rgba(95,211,255,.6)}}
+  .console .secondary{background:var(--lab-panel-2);color:var(--lab-ink);border-color:var(--lab-line)}
+  .console .ghost{color:var(--glow)}
+  .console .muted{color:var(--lab-mid)}
+  .console .dark{background:var(--lab-panel-2);color:var(--lab-ink)} .console .dark .eyebrow{color:var(--lab-gold)}
+  .console .row{border-top-color:var(--lab-line)} .console .tick{background:var(--lab-ok)}
+  .console .tick.open::before,.console .tick.open::after{background:var(--lab-warn)}
+  .console .err{background:var(--lab-warn-soft);border-left-color:var(--lab-warn)}
+  .console .ach{border-color:var(--lab-gold);background:var(--lab-gold-soft);box-shadow:0 0 30px rgba(255,216,77,.22)}
+  .console .ach .eyebrow{color:var(--lab-gold) !important}
+  .console button.say{background:var(--lab-panel-2);color:var(--lab-mid);border-color:var(--lab-line)}
+  .console button.say:hover,.console .reading button.say{color:var(--glow);border-color:var(--glow)}
+  .console .reading{--rb:var(--lab-panel)}
+  .console .w.now{color:#3a2d00}
+  .console .dgm{background:#fff;border-color:var(--lab-line)} .console .dgm svg{filter:none}
+  .console .benchhint{margin-top:10px;font-size:14px}
+  /* ── the marked answer ──────────────────────────────────────────
+     Full marks: a gold cheer, the box pulses gold, confetti falls and the chime
+     plays. Short of it: a cyan cheer for the effort, the box pulses once, each
+     kept point ticks in, and each missing point draws an amber line under
+     itself, one after another, so what to add is the most visible thing. */
+  .console .cheer{display:flex;gap:14px;align-items:center;margin:14px 0 8px;padding:14px 16px;border-radius:14px;border:1px solid;animation:cheer-in .6s cubic-bezier(.3,1.4,.4,1) both}
+  .console .cheer .ico{font-size:34px;line-height:1;animation:cheer-bounce 1.3s ease-in-out infinite}
+  .console .cheer b{display:block;font-family:var(--round);font-weight:700;font-size:20px;line-height:1.2}
+  .console .cheer span:not(.ico){font-size:15px;color:var(--lab-mid)}
+  .console .cheer.full{background:var(--lab-gold-soft);border-color:var(--lab-gold);box-shadow:0 0 30px rgba(255,216,77,.25)} .console .cheer.full b{color:var(--lab-gold)}
+  .console .cheer.nearly{background:var(--glow-soft);border-color:rgba(95,211,255,.5)} .console .cheer.nearly b{color:var(--glow)}
+  @keyframes cheer-in{from{opacity:0;transform:scale(.8) translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes cheer-bounce{50%{transform:translateY(-5px) rotate(-8deg)}}
+  .console .step.win{border-color:var(--lab-gold);animation:win-pulse 1.5s ease-out 3}
+  @keyframes win-pulse{0%{box-shadow:0 0 0 0 rgba(255,216,77,.65)}100%{box-shadow:0 0 0 26px rgba(255,216,77,0)}}
+  .console .step.nudge{animation:nudge-pulse 1.5s ease-out 2}
+  @keyframes nudge-pulse{0%{box-shadow:0 0 0 0 rgba(95,211,255,.55)}100%{box-shadow:0 0 0 20px rgba(95,211,255,0)}}
+  .console .row.hit,.console .row.gap{animation:box-in .5s both;animation-delay:calc(var(--n,0) * .22s + .35s)}
+  .console .row.hit .tick{animation:pop .5s cubic-bezier(.3,1.6,.4,1) both;animation-delay:calc(var(--n,0) * .22s + .5s)}
+  .console .row.gap .tick.open{animation:tick-blink 1.1s ease-in-out 3;animation-delay:calc(var(--n,0) * .22s + .7s)}
+  @keyframes tick-blink{50%{box-shadow:0 0 0 6px rgba(255,180,87,.35)}}
+  .console .row.gap .ul{font-weight:600;color:var(--lab-ink);padding-bottom:3px;border-radius:2px;
+    background:linear-gradient(90deg,var(--lab-warn),var(--lab-gold)) no-repeat 0 100%;background-size:0% 3px;
+    animation:ul-draw .9s cubic-bezier(.2,.7,.3,1) forwards;animation-delay:calc(var(--n,0) * .22s + .8s)}
+  @keyframes ul-draw{to{background-size:100% 3px}}
+  @media (prefers-reduced-motion:reduce){
+    .console .cheer,.console .cheer .ico,.console .step.win,.console .step.nudge,.console .row.hit,.console .row.gap,.console .row.hit .tick,.console .row.gap .tick.open{animation:none}
+    .console .row.gap .ul{animation:none;background-size:100% 3px}
+  }
+  .console .todo{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .console .todo button{width:100%;text-align:left;margin:0;min-height:0;padding:12px 16px;background:var(--lab-panel-2);color:var(--lab-ink);border:1.5px solid var(--lab-line);font-size:15px;display:flex;gap:12px;align-items:center}
+  .console .todo button:hover{border-color:var(--glow)}
+  .console .todo .k{color:var(--glow);font-size:12px;letter-spacing:.12em;text-transform:uppercase;flex:none;width:96px}
+  @media (prefers-reduced-motion:reduce){
+    .scr.on{animation:none} .node.now i{animation:none} .console [data-lab]{animation:none} .hud .bar i{transition:none}
+  }
+
+  /* ── the headings announce themselves ─────────────────────────────
+     Every box carries a plate: an icon, the name, a rim of its own colour. When
+     a screen arrives the boxes come in one after another, each plate lands with
+     its letters closing up, a light runs across it, and a charge runs down the
+     box's edge. Read-aloud keeps its own glow, so a box being read is left alone. */
+  .console .hd{display:inline-flex;align-items:center;gap:8px;padding:6px 13px 6px 9px;border-radius:999px;font-size:12.5px;letter-spacing:.18em;
+    background:rgba(95,211,255,.10);border:1px solid rgba(95,211,255,.38);color:var(--glow);position:relative;overflow:hidden;margin:0 0 10px;
+    box-shadow:0 0 0 0 rgba(95,211,255,0),inset 0 0 12px rgba(95,211,255,.08)}
+  .console .hd::before{content:attr(data-ico);font-size:15px;letter-spacing:0;line-height:1;filter:drop-shadow(0 0 6px rgba(95,211,255,.7))}
+  .console .hd::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.38) 50%,transparent 70%);transform:translateX(-130%)}
+  .console .card.warn .hd{background:rgba(255,180,87,.12);border-color:rgba(255,180,87,.5);color:var(--lab-warn);box-shadow:inset 0 0 12px rgba(255,180,87,.10)}
+  .console .card.warn .hd::before{filter:drop-shadow(0 0 6px rgba(255,180,87,.8))}
+  .console .step.note .hd{background:rgba(255,216,77,.10);border-color:rgba(255,216,77,.45);color:var(--lab-gold)}
+  .console .step.note .hd::before{filter:drop-shadow(0 0 6px rgba(255,216,77,.8))}
+  .scr.on .card:not(.reading),.scr.on .step:not(.reading){animation:box-in .55s cubic-bezier(.2,.8,.3,1) both;animation-delay:calc(var(--n,0) * .13s + .08s)}
+  @keyframes box-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .scr.on .hd{animation:hd-in .6s cubic-bezier(.2,.8,.3,1) both;animation-delay:calc(var(--n,0) * .13s + .18s)}
+  @keyframes hd-in{from{opacity:0;transform:translateX(-10px);letter-spacing:.42em}60%{letter-spacing:.14em}to{opacity:1;transform:none;letter-spacing:.18em}}
+  .scr.on .hd::after{animation:hd-shine 1s ease-out both;animation-delay:calc(var(--n,0) * .13s + .55s)}
+  @keyframes hd-shine{to{transform:translateX(130%)}}
+  .console .card::before,.console .step::before{content:'';position:absolute;left:-4px;top:0;width:4px;height:100%;border-radius:3px;pointer-events:none;opacity:0;
+    background:linear-gradient(180deg,#fff,rgba(255,255,255,.2));box-shadow:0 0 14px var(--glow)}
+  .console .step::before{left:-1px;width:2px}
+  .console .card.warn::before{box-shadow:0 0 14px var(--lab-warn)} .console .step.note::before{box-shadow:0 0 14px var(--lab-gold)}
+  .scr.on .card::before,.scr.on .step::before{animation:charge 1s ease-out both;animation-delay:calc(var(--n,0) * .13s + .2s)}
+  @keyframes charge{0%{clip-path:inset(0 0 100% 0);opacity:1}65%{clip-path:inset(0);opacity:.9}100%{clip-path:inset(0);opacity:0}}
+  .scr > .eyebrow{display:inline-block} .scr.on > .eyebrow{animation:hd-in .6s cubic-bezier(.2,.8,.3,1) both}
+  .scr.on > h1,.scr.on > h2{animation:box-in .5s cubic-bezier(.2,.8,.3,1) both;animation-delay:.06s}
+
+  /* ── the rail is alive ───────────────────────────────────────────
+     The line fills with light as far as the screen you are on, and a bright
+     bead rides its tip when you move. The node you are on wears a scanning
+     ring; a node that is done flips its letter to a tick with a small pop; the
+     badge floats once it is yours. */
+  .nodes::after{content:'';position:absolute;left:15px;top:16px;width:2px;height:var(--fill,0px);border-radius:1px;
+    background:linear-gradient(180deg,var(--lab-ok),var(--glow));box-shadow:0 0 10px var(--glow);transition:height .7s cubic-bezier(.2,.7,.3,1)}
+  .nodes .bead{position:absolute;left:12px;top:calc(var(--fill,0px) + 8px);width:8px;height:8px;border-radius:50%;background:#fff;
+    box-shadow:0 0 12px 3px var(--glow);transition:top .7s cubic-bezier(.2,.7,.3,1);z-index:2;pointer-events:none}
+  .node .lbl{transition:transform .35s cubic-bezier(.2,.8,.3,1),color .3s} .node.now .lbl{transform:translateX(5px)}
+  .node i{overflow:visible}
+  .node.now i::before{content:'';position:absolute;inset:-7px;border-radius:50%;pointer-events:none;
+    background:conic-gradient(from 0deg,transparent 0 62%,rgba(95,211,255,.15) 74%,var(--glow) 100%);
+    -webkit-mask:radial-gradient(circle,transparent 58%,#000 60%);mask:radial-gradient(circle,transparent 58%,#000 60%);animation:orbit 2.6s linear infinite}
+  @keyframes orbit{to{transform:rotate(360deg)}}
+  .node.done i{color:transparent;animation:pop .55s cubic-bezier(.3,1.6,.4,1) both}
+  .node.done i::after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#06281a;font-weight:800;font-size:15px}
+  @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.18)}100%{transform:none}}
+  .rail-foot.got{animation:float 3.4s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-4px)}}
+  @media (prefers-reduced-motion:reduce){
+    .scr.on .card,.scr.on .step,.scr.on .hd,.scr.on .hd::after,.scr.on .card::before,.scr.on .step::before,.scr.on > .eyebrow,.scr.on > h1,.scr.on > h2,
+    .node.now i::before,.node.done i,.rail-foot.got{animation:none}
+    .console .card::before,.console .step::before{display:none} .nodes::after,.nodes .bead{transition:none}
+  }
+  @media (max-width:900px){ .nodes::after,.nodes .bead{display:none} .node.now .lbl{transform:none} }
+
+  /* the controls: one way forward, one way back */
+  .ctl{display:flex;align-items:center;gap:12px;padding:12px 28px 18px;max-width:820px;width:100%;margin:0 auto}
+  .ctl button{width:auto;margin:0;min-height:48px}
+  .ctl .back{background:transparent;color:var(--lab-mid);border:1.5px solid var(--lab-line);font-size:15px}
+  .ctl .back:hover:not(:disabled){border-color:var(--glow);color:var(--lab-ink)}
+  .ctl .msg{flex:1;text-align:right;font-size:14px;color:var(--lab-faint);line-height:1.35}
+  .ctl .next{background:var(--lab-ok);color:#fff;box-shadow:0 3px 0 var(--lab-ok-dark);padding:12px 26px}
+  .ctl .next:disabled{opacity:.35}
+  .ctl .next.finish{background:linear-gradient(90deg,#ffb627,var(--lab-gold));color:#3a2d00;box-shadow:0 3px 0 #8a6d00}
+  .ctl .skip{color:var(--lab-mid);font-size:14px;min-height:0;padding:6px 10px}
+  .ctl [hidden]{display:none !important}
+
+  /* a phone has no room for a rail down the side: the nodes go across the top */
+  @media (max-width:900px){
+    #act.console{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+    .rail{flex-direction:row;align-items:center;gap:10px;padding:10px 12px;border-right:0;border-bottom:1px solid var(--lab-line);overflow-x:auto;overflow-y:hidden}
+    .rail .out{flex:none;font-size:13px} .rail .mission{display:none} .rail-foot{display:none}
+    .nodes{flex-direction:row;gap:2px;margin:0;flex:none} .nodes::before{display:none}
+    .node{padding:2px 3px;width:auto} .node i{width:30px;height:30px;font-size:12px} .node .lbl{display:none}
+    .hud{padding:12px 14px 0} .ctl{padding:10px 14px 14px} .screens{padding:12px 12px 18px}
+    .scr{padding:22px 18px 24px} .scr::before,.scr::after{width:16px;height:16px}
+    .console h1{font-size:28px} .console h2{font-size:22px} .console .step .q{font-size:20px} .console .card .big{font-size:18px}
+    .ctl .msg{font-size:13px}
+  }
 </style>
 </head>
 <body>
+<script>
+/* Came in through the door rather than by typing the address: play the other
+   half of that move once, then forget it. */
+(function () {
+  var came = false;
+  try { came = sessionStorage.getItem('sm-lab-enter') === '1'; sessionStorage.removeItem('sm-lab-enter'); } catch (e) {}
+  if (!came || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.documentElement.classList.add('arriving');
+  addEventListener('DOMContentLoaded', function () {
+    var a = document.createElement('div');
+    a.id = 'lab-arrive';
+    document.body.appendChild(a);
+    setTimeout(function () { a.remove(); document.documentElement.classList.remove('arriving'); }, 720);
+  });
+})();
+</script>
 <div id="gate">
   <div class="g-box">
     <span class="eyebrow">Science Marking · Lab</span>
@@ -175,7 +446,10 @@
 </div>
 
 <canvas id="confetti"></canvas>
-<div id="labwin"><div class="bar"><button id="labwin-back" type="button">← Back to the steps</button><span id="labwin-title"></span><a id="labwin-tab" href="#" target="_blank" rel="noopener">Open in its own tab</a></div><iframe id="labwin-frame" title="3D lab" allow="fullscreen"></iframe></div>
+<div id="labwin"><div class="bar"><button id="labwin-back" type="button">← Back to the steps</button><span id="labwin-title"></span>
+  <span class="guide" id="labwin-guide"></span><button id="labwin-done" type="button" hidden>I have seen it · say what I saw →</button>
+  <a id="labwin-tab" href="#" target="_blank" rel="noopener">Open in its own tab</a></div>
+<div id="labwin-toast" hidden><span class="t-txt"></span><button type="button" id="labwin-go"></button></div><iframe id="labwin-frame" title="3D lab" allow="fullscreen"></iframe></div>
 
 <div class="wrap">
   <div class="top"><span class="eyebrow">Science Marking · Lab</span><a href="./">← Back to marking</a></div>
@@ -246,7 +520,7 @@ addEventListener('pagehide', () => LOG.end(true));
 /* ── progress on this device ── */
 const PK = 'sm-lab-progress-v1';
 const prog = () => { try { return JSON.parse(localStorage.getItem(PK) || '{}'); } catch(e){ return {}; } };
-const setProg = (id, key, val) => { const p = prog(); p[id] = p[id] || {}; p[id][key] = val; try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){} LSYNC.touch(); };
+const setProg = (id, key, val) => { const p = prog(); p[id] = p[id] || {}; p[id][key] = val; try { localStorage.setItem(PK, JSON.stringify(p)); } catch(e){} LSYNC.touch(); if (typeof conRefresh === 'function') conRefresh(); };
 /* Progress and badges follow the pupil: while signed in, this key is kept on
    the account too and merged on arrival (a badge earned anywhere is earned). */
 const LSYNC = {
@@ -325,7 +599,7 @@ function wireReviewer(){
 const tags = a => (a.cc21 || []).map(t => '<span class="badge kind">' + esc(t) + '</span>').join('') +
                   (a.skills || []).map(t => '<span class="badge soon">' + esc(t) + '</span>').join('');
 async function renderList(){
-  ttsStop();
+  ttsStop(); conLeave();
   $('act').classList.add('hide'); $('list').classList.remove('hide');
   $('list').innerHTML = '<h1>Every experiment<br>in the book.</h1><p class="muted">Primary 4. Predict what will happen, run it, then explain it in your own words and get it marked.</p><div class="busy">Loading…</div>';
   try {
@@ -354,7 +628,8 @@ async function renderList(){
 /* ── one activity ── */
 let A = null;
 async function openActivity(id){
-  $('list').classList.add('hide'); $('act').classList.remove('hide');
+  $('list').classList.add('hide'); $('act').className = 'console';
+  document.body.classList.add('in-lab'); CONBG.start();
   $('act').innerHTML = '<div class="busy">Loading…</div>';
   try {
     const d = await api('/api/lab', { action:'get', id });
@@ -362,72 +637,282 @@ async function openActivity(id){
   } catch(e){ $('act').innerHTML = '<button class="ghost" onclick="location.hash=\'\'">← All experiments</button><div class="err">' + esc(e.message) + '</div>'; }
 }
 
+/* ── the console ─────────────────────────────────────────────────
+   An activity is a run of screens, one at a time: the briefing, then each part
+   (its heading, then every step of it), the conclusion, the real-life
+   questions, and the badge at the end. A rail down the side shows the run and
+   where you are. Nothing is thrown at the pupil at once; the next thing
+   appears only when they ask for it, and a question has to be answered before
+   the way forward opens. The bench still opens the moment a prediction is made.
+   Every element keeps the id and data attribute the rest of this page already
+   looks for, so marking, picks, the locks and the badge work unchanged. */
+const CON = { a: null, scr: [], groups: [], i: 0 };
+const SCR_KEY = id => 'sm-lab-scr:' + id;
+
 function renderActivity(a){
-  let h = '<button class="ghost" style="width:auto;padding-left:0" onclick="location.hash=\'\'">← All experiments</button>' +
+  CON.a = a; CON.scr = []; CON.groups = []; CON.i = 0;
+  const scr = CON.scr, groups = CON.groups;
+  const covered = pid => !!(a.sim && a.sim.page && (a.sim.covers || []).indexOf(pid) >= 0);
+  const label = (a.sim && a.sim.label) || "Let's test it now!";
+
+  // the briefing
+  groups.push({ id: 'brief', mark: 'i', name: 'Briefing' });
+  scr.push({ id: 'brief', group: 'brief', kind: 'brief', html:
     '<span class="eyebrow">' + esc(a.chapter) + ' · ' + esc(a.code) + (a.minutes ? ' · about ' + a.minutes + ' minutes' : '') + '</span>' +
-    '<h1 style="margin-top:8px">' + esc(a.title) + '</h1>' +
-    '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 0">' + tags(a).replace(/margin-left:8px/g, '') + '</div>' +
-    '<div class="card idea"><span class="eyebrow" style="color:var(--accent)">The big idea</span><div style="margin-top:6px;font-family:var(--round);font-weight:600;font-size:18px">' + esc(a.bigIdea) + '</div></div>' +
-    '<p style="margin-top:16px"><b>What we are finding out.</b> ' + esc(a.aim) + '</p>';
-  if (a.safety && a.safety.length) h += '<div class="card warn"><span class="eyebrow" style="color:var(--warn)">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>';
-  h += '<div id="ach"></div>';
-  if (a.sim && a.sim.page) h += '<div class="item" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div style="flex:1"><h3>How to unlock the 3D bench</h3>' +
-    '<div class="muted">Predict first. The moment you make a prediction, a <b>' + esc(a.sim.label || "Let's test it now!") + '</b> button appears beside it. Press it to open the bench for that part, watch what happens, then come back and answer the steps. Each part unlocks with its own first prediction.</div><div class="lockhint" data-lockhint></div></div>' +
-    '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><button class="ghost" data-reset id="reset-top" type="button" disabled style="width:auto;margin:0">↺ Start this experiment again</button><span class="muted" data-resethint style="font-size:12.5px;text-align:right"></span></div></div>';
-  (a.parts || []).forEach((p, pi) => {
-    const covered = a.sim && a.sim.page && (a.sim.covers || []).indexOf(p.id) >= 0;
-    h += '<div class="part' + (pi === 0 ? ' open' : '') + '" data-part="' + p.id + '" style="margin-top:28px">' +
-      '<div class="part-hd"><span class="chev">▶</span><div style="flex:1"><span class="eyebrow">Part ' + p.id.toUpperCase() + ' · ' + esc(p.who) + '</span><h2 style="margin-top:4px">' + esc(p.title) + '</h2></div>' +
-      '</div><div class="part-body">';
-    if (p.need) h += '<div class="card"><span class="eyebrow">What you need</span><ul class="need">' + p.need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>';
-    if (p.diagram) h += svgFor(p.diagram);
-    let n = 0;
-    (p.steps || []).forEach((s, si) => {
-      const key = p.id + ':' + si;
-      if (s.note){ h += '<div class="step note"><span class="eyebrow">Worth knowing</span><div style="margin-top:4px">' + esc(s.note) + '</div></div>'; return; }
+    '<h1>' + esc(a.title) + '</h1><div class="tags">' + tags(a).replace(/margin-left:8px/g, '') + '</div>' +
+    '<div class="card idea"><span class="eyebrow hd" data-ico="💡">The big idea</span><div class="big">' + esc(a.bigIdea) + '</div></div>' +
+    '<div class="card"><span class="eyebrow hd" data-ico="🔭">What we are finding out</span><div style="margin-top:6px">' + esc(a.aim) + '</div></div>' +
+    (a.safety && a.safety.length ? '<div class="card warn"><span class="eyebrow hd" data-ico="⚠️">Stay safe</span>' + a.safety.map(s => '<div style="margin-top:6px">' + esc(s) + '</div>').join('') + '</div>' : '') +
+    (a.sim && a.sim.page ? '<div class="how"><span class="dot"></span><div>Predict first. The moment you make a prediction, <b>' + esc(label) + '</b> lights up and the 3D bench opens for that part.</div></div>' : '') });
+
+  // the parts, a screen per step
+  (a.parts || []).forEach(p => {
+    const P = p.id.toUpperCase();
+    groups.push({ id: p.id, mark: P, name: 'Part ' + P });
+    scr.push({ id: 'part-' + p.id, group: p.id, kind: 'part', html:
+      '<span class="eyebrow">Part ' + P + ' · ' + esc(p.who) + '</span><h2>' + esc(p.title) + '</h2>' +
+      (p.need ? '<div class="card"><span class="eyebrow hd" data-ico="🧰">What you need</span><ul class="need">' + p.need.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul></div>' : '') +
+      (p.diagram ? svgFor(p.diagram) : '') });
+    const steps = p.steps || [];
+    let n = 0, carry = '';
+    steps.forEach((s, si) => {
+      const key = p.id + ':' + si, isQ = s.predict || s.observe || s.explain;
+      // a thing worth knowing sits under the step before it
+      if (s.note){
+        const h = '<div class="step note"><span class="eyebrow hd" data-ico="✨">Worth knowing</span><div style="margin-top:4px">' + esc(s.note) + '</div></div>';
+        const last = scr[scr.length - 1];
+        if (last && last.group === p.id && last.kind !== 'part') last.html += h;
+        else scr.push({ id: 'n-' + cssKey(key), group: p.id, kind: 'note', html: h });
+        return;
+      }
+      // an instruction on its own leads into the question that follows it
+      if (!isQ){
+        const nxt = steps[si + 1];
+        if (s.do && nxt && (nxt.predict || nxt.observe || nxt.explain)){ carry = s.do; return; }
+        if (s.do) scr.push({ id: 's-' + cssKey(key), group: p.id, kind: 'do', html:
+          '<span class="eyebrow">Part ' + P + ' · do this</span><div class="step"><span class="eyebrow hd" data-ico="🧪">Do this</span><div class="q">' + esc(s.do) + '</div></div>' });
+        return;
+      }
       n++;
-      h += '<div class="step" data-key="' + key + '"><span class="n">' + n + '</span>';
-      if (s.do) h += esc(s.do);
+      const doTxt = [carry, s.do].filter(Boolean).join(' '); carry = '';
+      let h = '<span class="eyebrow">Part ' + P + ' · step ' + n + '</span><div class="step" data-key="' + key + '">';
+      if (doTxt) h += '<div class="do">' + esc(doTxt) + '</div>';
       if (s.predict || s.observe){
         const t = s.predict || s.observe, kind = s.predict ? 'predict' : 'observe';
-        const benchHere = s.predict && covered;   // a prediction made is a prediction to test
-        h += '<span class="eyebrow" style="display:block;margin-bottom:4px">' + (s.predict ? 'Predict' : 'What did you see?') + '</span>' + '<div class="q">' + esc(t.q) + '</div>' +
+        const benchHere = s.predict && covered(p.id);   // a prediction made is a prediction to test
+        h += '<span class="eyebrow hd" data-ico="' + (s.predict ? '🔮' : '👀') + '">' + (s.predict ? 'Predict' : 'What did you see?') + '</span><div class="q">' + esc(t.q) + '</div>' +
           '<div class="opts">' + t.options.map((o, i) => '<button class="opt" data-pick="' + key + '" data-i="' + i + '" data-kind="' + kind + '">' + esc(o) + '</button>').join('') + '</div>' +
           '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div class="verdict" id="v-' + cssKey(key) + '" style="flex:1"></div>' +
-          (benchHere ? '<button class="primary" data-lab data-step="' + key + '" type="button" style="width:auto;margin-top:10px" hidden>' + esc(a.sim.label || "Let's test it now!") + '</button>' : '') + '</div>';
+          (benchHere ? '<button class="primary" data-lab data-step="' + key + '" type="button" style="width:auto;margin-top:10px" hidden>' + esc(label) + '</button>' : '') + '</div>' +
+          (benchHere ? '<div class="benchhint muted" hidden>On the bench, watch what happens. Then come back here and the next screen asks what you saw.</div>' : '');
       }
       if (s.explain) h += explainHtml(key, s.explain.q, s.explain.marks, { part: p.id, step: si }, getProg(a.id, key) === 'done');
       h += '</div>';
+      scr.push({ id: 's-' + cssKey(key), group: p.id, kind: s.explain ? 'explain' : 'pick', key, html: h });
     });
-    h += '</div></div>';
   });
+
+  // the conclusion
   if (a.conclude && a.conclude.length){
-    h += '<div style="margin-top:32px"><span class="eyebrow">Let\'s conclude</span><h2 style="margin-top:6px">Fill in the missing words.</h2>';
+    groups.push({ id: 'conclude', mark: '✎', name: "Let's conclude" });
+    let h = '<span class="eyebrow">Let\'s conclude</span><h2>Fill in the missing words.</h2>';
     a.conclude.forEach((c, ci) => {
       let k = 0;
       h += '<div class="step" style="font-size:17px">' + c.text.split('___').map((seg, i, arr) => esc(seg) + (i < arr.length - 1 ? '<input class="blank" data-c="' + ci + '" data-k="' + (k++) + '" autocomplete="off" autocapitalize="off">' : '')).join('') + '</div>';
     });
-    h += '<button class="primary" id="c-check">Check my words</button><div id="c-out"></div></div>';
+    h += '<button class="primary" id="c-check" style="margin-top:16px">Check my words</button><div id="c-out"></div>';
+    scr.push({ id: 'conclude', group: 'conclude', kind: 'conclude', html: h });
   }
+
+  // real life, one question a screen
   if (a.check && a.check.length){
-    h += '<div style="margin-top:32px"><span class="eyebrow">Now use it</span><h2 style="margin-top:6px">Two questions from real life.</h2>';
-    a.check.forEach((c, ci) => { h += '<div class="step" data-key="check:' + ci + '"><span class="n">' + (ci + 1) + '</span>' + explainHtml('check:' + ci, c.q, c.marks, { check: ci }, getProg(a.id, 'check:' + ci) === 'done') + '</div>'; });
-    h += '</div>';
+    groups.push({ id: 'check', mark: '?', name: 'Now use it' });
+    a.check.forEach((c, ci) => scr.push({ id: 'check-' + ci, group: 'check', kind: 'explain', key: 'check:' + ci, html:
+      '<span class="eyebrow">Now use it · ' + (ci + 1) + ' of ' + a.check.length + '</span>' +
+      '<div class="step" data-key="check:' + ci + '">' + explainHtml('check:' + ci, c.q, c.marks, { check: ci }, getProg(a.id, 'check:' + ci) === 'done') + '</div>' }));
   }
-  h += '<button class="secondary" id="done-btn" style="margin-top:32px">Back to the list</button>' +
-    '<button class="ghost" id="reset-btn" data-reset type="button">↺ Start this experiment again</button>' +
-    '<div class="muted" style="font-size:13.5px;margin-top:2px">Clears every prediction, observation and answer here so you can redo it. A badge you have earned stays yours.</div>';
-  $('act').innerHTML = h;
-  wireActivity(a);
-  addReaders(a);
-  refreshGates(a);
-  window.scrollTo(0, 0);
+
+  // the end
+  groups.push({ id: 'badge', mark: '★', name: 'The badge' });
+  scr.push({ id: 'badge', group: 'badge', kind: 'badge', html:
+    '<span class="eyebrow">The end of the lab</span><h2 id="end-h"></h2><div id="ach"></div><div id="todo"></div>' +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center">' +
+    '<button class="secondary" id="done-btn" style="width:auto;margin:0">← All experiments</button>' +
+    '<button class="ghost" data-reset id="reset-top" type="button" disabled style="width:auto;margin:0">↺ Start this experiment again</button></div>' +
+    '<div class="muted" data-resethint style="font-size:13.5px;margin-top:6px"></div>' });
+
+  const foot = a.badge ? '<div class="rail-foot" id="rail-badge"><span class="ico">' + a.badge.icon + '</span><div><span class="eyebrow">Badge to earn</span><b>' + esc(a.badge.name) + '</b></div></div>' : '';
+  $('act').className = 'console';
+  $('act').innerHTML =
+    '<aside class="rail"><a class="out" href="#">← All experiments</a>' +
+    '<div class="mission"><span class="eyebrow">' + esc(a.chapter) + ' · ' + esc(a.code) + '</span><b>' + esc(a.title) + '</b></div>' +
+    '<ol class="nodes"><span class="bead"></span>' + groups.map(g => '<li><button class="node" type="button" data-group="' + g.id + '"><i>' + g.mark + '</i><span class="lbl">' + esc(g.name) + '<small></small></span></button></li>').join('') + '</ol>' + foot + '</aside>' +
+    '<section class="stage"><div class="hud"><span class="counter" id="con-count"></span><div class="bar"><i id="con-bar"></i></div><span class="pct" id="con-pct"></span></div>' +
+    '<div class="screens" id="con-screens">' + scr.map(s => '<div class="scr" data-scr="' + s.id + '">' + s.html + '</div>').join('') + '</div>' +
+    '<div class="ctl"><button class="back" id="con-back" type="button">← Back</button><span class="msg" id="con-msg"></span>' +
+    '<button class="ghost skip" id="con-skip" type="button" hidden>Skip for now →</button><button class="next" id="con-next" type="button">Next →</button></div></section>';
+  document.body.classList.add('in-lab'); CONBG.start();
+  // boxes and their plates arrive one after another, in the order they sit
+  $('act').querySelectorAll('.scr').forEach(sc => sc.querySelectorAll('.card, .step').forEach((el, n) => {
+    el.style.setProperty('--n', n); el.querySelectorAll('.hd').forEach(h => h.style.setProperty('--n', n));
+  }));
+  wireActivity(a); addReaders(a); refreshGates(a);
+  $('con-back').onclick = () => conShow(CON.i - 1, 'back');
+  $('con-next').onclick = () => { if (!$('con-next').disabled) conShow(CON.i + 1); };
+  $('con-skip').onclick = () => conShow(CON.i + 1);
+  $('act').querySelectorAll('.node').forEach(b => b.onclick = () => conShow(scr.findIndex(s => s.group === b.dataset.group)));
+  conShow(conResume(a));
 }
 const cssKey = k => k.replace(/[^a-z0-9]/gi, '_');
 
+// A screen is satisfied when what it asks for has been done.
+const isTask = s => s.kind === 'pick' || s.kind === 'explain' || s.kind === 'conclude';
+function satisfied(s){
+  const a = CON.a;
+  if (s.kind === 'pick') return getProg(a.id, s.key) != null;
+  if (s.kind === 'explain') return getProg(a.id, s.key) === 'done';
+  if (s.kind === 'conclude') return !!getProg(a.id, 'cdone');
+  return true;
+}
+// Where to open: a fresh activity starts at the briefing; one in progress comes
+// back to the screen it was on, or failing that to the first thing still to do.
+function conResume(a){
+  const p = prog()[a.id] || {};
+  const touched = Object.keys(p).some(k => k !== 'tested' && k !== 'badge');
+  if (!touched) return 0;
+  let saved = -1; try { saved = +sessionStorage.getItem(SCR_KEY(a.id)); } catch(e){}
+  if (saved >= 0 && saved < CON.scr.length) return saved;
+  const first = CON.scr.findIndex(s => isTask(s) && !satisfied(s));
+  return first >= 0 ? first : CON.scr.length - 1;
+}
+function conShow(i, dir){
+  const scr = CON.scr; if (!scr.length || !$('con-screens')) return;
+  i = Math.max(0, Math.min(scr.length - 1, i)); CON.i = i;
+  ttsStop();
+  [...$('con-screens').children].forEach((el, k) => {
+    el.classList.remove('on', 'back');
+    if (k === i){ el.classList.add('on'); if (dir === 'back') el.classList.add('back'); }
+  });
+  $('con-screens').scrollTop = 0;
+  try { sessionStorage.setItem(SCR_KEY(CON.a.id), String(i)); } catch(e){}
+  if (scr[i].kind === 'badge') conEnd();
+  conRefresh();
+}
+// The rail, the bar and the buttons follow the progress record, so they are
+// right after every pick, every marked answer and every reset.
+function conRefresh(){
+  const a = CON.a, scr = CON.scr;
+  if (!a || !scr.length || !$('con-next')) return;
+  const i = CON.i, s = scr[i], last = i === scr.length - 1;
+  const tasks = scr.filter(isTask), done = tasks.filter(satisfied).length;
+  $('con-count').textContent = 'Screen ' + (i + 1) + ' of ' + scr.length;
+  $('con-bar').style.width = (tasks.length ? Math.round(done / tasks.length * 100) : 0) + '%';
+  $('con-pct').textContent = done + ' of ' + tasks.length + ' done';
+  // the rail
+  CON.groups.forEach(g => {
+    const b = $('act').querySelector('.node[data-group="' + g.id + '"]'); if (!b) return;
+    const mine = scr.filter(x => x.group === g.id), tk = mine.filter(isTask);
+    const lastIdx = scr.lastIndexOf(mine[mine.length - 1]);
+    const isDone = g.id === 'badge' ? !!getProg(a.id, 'badge') : tk.length ? tk.every(satisfied) : lastIdx < i;
+    b.classList.toggle('done', isDone); b.classList.toggle('now', s.group === g.id);
+    const sm = b.querySelector('small'); if (sm) sm.textContent = tk.length ? tk.filter(satisfied).length + ' of ' + tk.length + ' done' : '';
+    b.setAttribute('aria-current', s.group === g.id ? 'step' : 'false');
+  });
+  const rb = $('rail-badge'); if (rb) rb.classList.toggle('got', !!getProg(a.id, 'badge'));
+  $('act').querySelectorAll('[data-lab]').forEach(b => { const h = b.parentElement.nextElementSibling; if (h && h.classList.contains('benchhint')) h.hidden = b.hidden; });
+  // the line down the rail fills with light as far as the screen you are on
+  const nodes = $('act').querySelector('.nodes'), now = nodes && nodes.querySelector('.node.now');
+  if (nodes && now){ const ni = now.querySelector('i'); nodes.style.setProperty('--fill', (now.offsetTop + ni.offsetTop + ni.offsetHeight / 2 - 16) + 'px'); }
+  // the way forward
+  const ok = satisfied(s), next = $('con-next'), skip = $('con-skip'), msg = $('con-msg');
+  $('con-back').hidden = i === 0;
+  next.hidden = last; skip.hidden = true; msg.textContent = '';
+  next.classList.toggle('finish', i === scr.length - 2);
+  next.textContent = i === scr.length - 2 ? 'Finish ★' : 'Next →';
+  if (!last && !ok){
+    next.disabled = true;
+    if (s.kind === 'pick') msg.textContent = 'Choose an answer to go on.';
+    else if (s.kind === 'conclude'){ msg.textContent = 'Check your words, or come back to this later.'; skip.hidden = false; }
+    else { msg.textContent = 'Check your answer, or come back to it later.'; skip.hidden = false; }
+  } else next.disabled = false;
+}
+// The last screen: the badge if it is earned, otherwise what is left to do,
+// each a button that takes you straight there.
+function conEnd(){
+  const a = CON.a, h = $('end-h'), todo = $('todo'); if (!h) return;
+  const got = !!getProg(a.id, 'badge');
+  const left = CON.scr.map((s, i) => ({ s, i })).filter(x => isTask(x.s) && !satisfied(x.s));
+  if (got){ h.textContent = 'You did it.'; todo.innerHTML = ''; if ($('ach') && !$('ach').innerHTML && a.badge) $('ach').innerHTML = achHtml(a); return; }
+  h.textContent = left.length ? (left.length === 1 ? 'One thing left.' : left.length + ' things left.') : 'Nearly there.';
+  todo.innerHTML = '<div class="muted" style="margin-top:8px">' + (a.badge ? 'The badge <b>' + esc(a.badge.name) + '</b> is yours when every step is done.' : 'Finish every step to complete the lab.') + '</div>' +
+    '<div class="todo">' + left.map(x => {
+      const g = CON.groups.find(g => g.id === x.s.group), k = g ? g.name : x.s.group;
+      const what = x.s.kind === 'pick' ? 'A question to answer' : x.s.kind === 'conclude' ? 'The missing words' : 'An explanation to check';
+      return '<button type="button" data-goto="' + x.i + '"><span class="k">' + esc(k) + '</span><span>' + what + '</span></button>';
+    }).join('') + '</div>';
+  todo.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => conShow(+b.dataset.goto, 'back'));
+}
+function conLeave(){
+  document.body.classList.remove('in-lab'); CONBG.stop();
+  CON.a = null; CON.scr = []; CON.groups = [];
+  $('act').className = 'hide';
+}
+// Arrow keys move between screens when nothing is being typed.
+document.addEventListener('keydown', e => {
+  if (!CON.a || !document.body.classList.contains('in-lab') || $('labwin').classList.contains('on')) return;
+  const t = e.target; if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT')) return;
+  if (e.key === 'ArrowRight'){ const n = $('con-next'); if (n && !n.disabled && !n.hidden) conShow(CON.i + 1); }
+  if (e.key === 'ArrowLeft') conShow(CON.i - 1, 'back');
+});
+
+/* Behind the console: a faint grid, a glow from the far corner, and slow motes
+   drifting up like dust in a beam. Still under "reduce motion", and asleep
+   whenever the tab is hidden. */
+const CONBG = {
+  c: null, ctx: null, dots: [], raf: 0, on: false, W: 0, H: 0,
+  start(){
+    if (!this.c){
+      this.c = document.createElement('canvas'); this.c.id = 'con-bg'; this.c.setAttribute('aria-hidden', 'true');
+      document.body.insertBefore(this.c, document.body.firstChild); this.ctx = this.c.getContext('2d');
+      addEventListener('resize', () => { if (this.on) this.size(); });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden && this.on && !this.raf) this.raf = requestAnimationFrame(t => this.frame(t)); });
+    }
+    this.on = true; this.size();
+  },
+  stop(){ this.on = false; if (this.raf) cancelAnimationFrame(this.raf); this.raf = 0; },
+  size(){
+    const d = Math.min(2, devicePixelRatio || 1); this.W = innerWidth; this.H = innerHeight;
+    this.c.width = this.W * d; this.c.height = this.H * d; this.ctx.setTransform(d, 0, 0, d, 0, 0);
+    this.dots = []; for (let i = 0; i < 70; i++) this.dots.push({ x: Math.random() * this.W, y: Math.random() * this.H, r: Math.random() * 1.6 + .5, v: Math.random() * 9 + 3, p: Math.random() * 6.28 });
+    if (this.raf) cancelAnimationFrame(this.raf); this.raf = 0;
+    this.frame(performance.now(), true);
+  },
+  frame(t, once){
+    if (!this.on && !once){ this.raf = 0; return; }
+    const ctx = this.ctx, W = this.W, H = this.H, still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(95,211,255,.07)'; ctx.lineWidth = 1;
+    for (let x = 0.5; x <= W; x += 48){ ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0.5; y <= H; y += 48){ ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    const g = ctx.createRadialGradient(W * .88, -H * .12, 10, W * .88, -H * .12, H * .95);
+    g.addColorStop(0, 'rgba(95,211,255,.20)'); g.addColorStop(1, 'rgba(95,211,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const g2 = ctx.createRadialGradient(0, H, 10, 0, H, H * .7);
+    g2.addColorStop(0, 'rgba(79,196,127,.10)'); g2.addColorStop(1, 'rgba(79,196,127,0)');
+    ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+    this.dots.forEach(d => {
+      if (!still){ d.y -= d.v * 0.016; if (d.y < -4){ d.y = H + 4; d.x = Math.random() * W; } }
+      const a = .32 + .28 * Math.sin(t / 900 + d.p);
+      ctx.fillStyle = 'rgba(160,225,255,' + a.toFixed(2) + ')';
+      ctx.beginPath(); ctx.arc(d.x + (still ? 0 : Math.sin(t / 1400 + d.p) * 6), d.y, d.r, 0, 6.283); ctx.fill();
+    });
+    if (this.on && !still && !document.hidden) this.raf = requestAnimationFrame(tt => this.frame(tt)); else this.raf = 0;
+  }
+};
+
 function explainHtml(key, q, marks, where, done){
   const id = cssKey(key);
-  return '<span class="eyebrow" style="display:block;margin-bottom:4px">Explain · ' + marks + (marks === 1 ? ' mark' : ' marks') + '</span>' + '<div class="q">' + esc(q) + '</div>' +
+  return '<span class="eyebrow hd" data-ico="✍️">Explain · ' + marks + (marks === 1 ? ' mark' : ' marks') + '</span>' + '<div class="q">' + esc(q) + '</div>' +
     (done ? '<div class="verdict">✓ Marked. Your explanation has been checked.</div>' :
     '<div id="x-' + id + '" data-where=\'' + esc(JSON.stringify(where)) + '\'>' +
     '<textarea id="t-' + id + '" maxlength="800" placeholder="Write your explanation in full sentences…"></textarea>' +
@@ -462,6 +947,7 @@ function refreshGates(a){
   $('act').querySelectorAll('[data-lab][data-step]').forEach(b => {
     const made = getProg(a.id, b.dataset.step) != null;
     b.hidden = !(made || got || adm); if (made) anyOpen = true;
+    const hh = b.parentElement.nextElementSibling; if (hh && hh.classList.contains('benchhint')) hh.hidden = b.hidden;
   });
   (a.parts || []).forEach(p => { if (predsDone(a, p)) anyOpen = true; });
   const tested = !!getProg(a.id, 'tested');
@@ -481,7 +967,7 @@ function checkAchievement(a){
   setProg(a.id, 'badge', { ts: Date.now(), icon: a.badge ? a.badge.icon : '🏅', name: a.badge ? a.badge.name : a.title, code: a.code }); setProg(a.id, 'done', true);
   if ($('ach') && a.badge) $('ach').innerHTML = achHtml(a);
   refreshGates(a); celebrate();
-  $('ach') && $('ach').scrollIntoView({ behavior:'smooth', block:'center' });
+  conShow(CON.scr.length - 1);
   LOG.event('lab', { code: a.code, what: 'achievement unlocked', badge: a.badge ? a.badge.name : a.title });
 }
 
@@ -521,13 +1007,53 @@ function openLab(a, pid){
   const url = page + '?unlock=' + encodeURIComponent(unlockList(a, page));
   $('labwin-frame').src = url; $('labwin-title').textContent = a.title; $('labwin-tab').href = url;
   $('labwin').classList.add('on'); document.body.style.overflow = 'hidden';
+  CON.bench = pid || null; labGuide(a, pid);
   if (!getProg(a.id, 'tested')){ setProg(a.id, 'tested', true); refreshGates(a); }
   LOG.event('lab', { code: a.code, what: 'opened the 3D lab' });
 }
 function closeLab(){
   if (!$('labwin').classList.contains('on')) return;
   $('labwin').classList.remove('on'); $('labwin-frame').src = 'about:blank'; document.body.style.overflow = '';
+  $('labwin-toast').hidden = true;
+  conReturn();
 }
+// Which part the bench is open for, said plainly in the bar, with the way on lit.
+function labGuide(a, pid){
+  const g = $('labwin-guide'), d = $('labwin-done');
+  if (!pid){ g.textContent = ''; d.hidden = true; return; }
+  g.textContent = 'Testing Part ' + pid.toUpperCase() + '. When you have seen it:';
+  d.hidden = false; d.classList.remove('lit'); d.textContent = 'I have seen it · say what I saw →';
+}
+$('labwin-done').onclick = () => { LOG.event('lab', { code: CON.a ? CON.a.code : '', what: 'back from the bench by the lit button' }); closeLab(); };
+// Back from the bench: land on the first thing in that part still to do,
+// which straight after a prediction is "what did you see".
+function conReturn(){
+  const a = CON.a, pid = CON.bench; CON.bench = null;
+  if (!a || !pid || !CON.scr.length) return;
+  const i = CON.scr.findIndex(x => x.group === pid && isTask(x) && !satisfied(x));
+  if (i >= 0 && i !== CON.i) conShow(i);
+}
+/* A bench can talk to the steps. Two messages, both optional:
+     parent.postMessage({ type: 'lab:done', step: 'plan' }, '*')    the station is finished
+     parent.postMessage({ type: 'lab:locked', step: 'run' }, '*')   a locked pill was tapped
+   Done lights the button in the bar green. Locked shows, over the bench, which
+   prediction opens that station and a button that goes straight to it. */
+addEventListener('message', e => {
+  const d = e.data || {}; const a = CON.a;
+  if (!a || !$('labwin').classList.contains('on') || typeof d.type !== 'string') return;
+  if (d.type === 'lab:done'){
+    const b = $('labwin-done'); b.hidden = false; b.classList.add('lit'); b.textContent = 'Station done ✓ · say what I saw →';
+    $('labwin-guide').textContent = 'Nice. Now back to the steps:';
+  }
+  if (d.type === 'lab:locked'){
+    const pid = (a.sim && a.sim.covers || []).find(p => { const m = simFor(a, p); return m && m.step === d.step; });
+    const t = $('labwin-toast'); if (!pid) return;
+    t.querySelector('.t-txt').textContent = '🔒 That station opens after your Part ' + pid.toUpperCase() + ' prediction.';
+    const go = $('labwin-go'); go.textContent = 'Go and predict →';
+    go.onclick = () => { CON.bench = null; closeLab(); const i = CON.scr.findIndex(x => x.group === pid && x.kind === 'pick' && !satisfied(x)); if (i >= 0) conShow(i); };
+    t.hidden = false; clearTimeout(t._t); t._t = setTimeout(() => { t.hidden = true; }, 8000);
+  }
+});
 $('labwin-back').onclick = closeLab;
 
 function wireActivity(a){
@@ -564,7 +1090,7 @@ function wireActivity(a){
     LOG.event('lab', { code: a.code, what: 'conclusion', words: filled.join(' | '), right, total });
     if (right === total || tries >= 2) { setProg(a.id, 'cdone', true); checkAchievement(a); }
   };
-  $('done-btn').onclick = () => { location.hash = ''; };
+  const db = $('done-btn'); if (db) db.onclick = () => { location.hash = ''; };
   // Redo from the top. Progress for this activity is cleared; an earned badge is kept.
   $('act').querySelectorAll('[data-reset]').forEach(b => b.onclick = () => {
     if (b.disabled) return;
@@ -607,17 +1133,27 @@ async function markExplain(a, key){
     const r = await api('/api/lab', { action:'mark', id: a.id, ...where, answer, attempt: state.attempt, firstAnswer: state.first });
     if (r.deflect){ out.innerHTML = '<div class="card">' + esc(r.deflect) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; return; }
     const hits = (r.keywords || []).filter(k => k.hit).map(k => k.phrase), gaps = r.gaps || [];
-    let h = '<div class="verdict">' + esc(r.verdict || 'Checked') + '</div><div>' + esc(r.headline || '') + '</div>';
-    if (hits.length) h += '<div style="margin-top:8px"><span class="eyebrow">Keep all of this</span>' + hits.map(x => '<div class="row"><span class="tick"></span><div>' + esc(x) + '</div></div>').join('') + '</div>';
+    const missed = (r.keywords || []).filter(k => k.hit === false).map(k => k.phrase);
+    const max = r.maxMarks ?? null, got = r.marks ?? null, full = max != null && got != null && got >= max;
+    const score = (got != null && max != null) ? got + ' of ' + max + (max === 1 ? ' mark' : ' marks') : '';
+    // Full marks is a moment: a cheer, confetti and the chime. Anything less is
+    // met with encouragement, and what is missing is underlined so it cannot be missed.
+    let h = full
+      ? '<div class="cheer full"><span class="ico">🏆</span><div><b>Full marks!</b><span>' + esc(score) + (score ? '. ' : '') + 'A complete answer. Well done.</span></div></div>'
+      : '<div class="cheer nearly"><span class="ico">💪</span><div><b>Good effort. Keep going.</b><span>' + esc(score) + (score ? '. ' : '') + 'The underlined lines are what to add.</span></div></div>';
+    h += '<div class="verdict">' + esc(r.verdict || 'Checked') + '</div><div>' + esc(r.headline || '') + '</div>';
+    const gapRows = list => list.map((x, i) => '<div class="row gap" style="--n:' + i + '"><span class="tick open"></span><div><span class="ul">' + esc(x) + '</span></div></div>').join('');
+    if (hits.length) h += '<div style="margin-top:8px"><span class="eyebrow hd" data-ico="✅">Keep all of this</span>' + hits.map((x, i) => '<div class="row hit" style="--n:' + i + '"><span class="tick"></span><div>' + esc(x) + '</div></div>').join('') + '</div>';
     if (state.attempt === 1){
-      if (gaps.length) h += '<div style="margin-top:8px"><span class="eyebrow">Worth adding</span>' + gaps.map(x => '<div class="row"><span class="tick open"></span><div>' + esc(x) + '</div></div>').join('') + '</div>';
+      if (gaps.length) h += '<div style="margin-top:8px"><span class="eyebrow hd" data-ico="🔎">Worth adding</span>' + gapRows(gaps) + '</div>';
       if (r.ponder) h += '<div class="dark"><span class="eyebrow">Something to think about</span><div style="margin-top:6px">' + esc(r.ponder) + '</div></div>';
       h += '<div class="muted" style="margin-top:10px">Now write the whole answer again, all of it, in the box above.</div>';
       box._state = { attempt: 2, first: answer }; ta.value = ''; ta.placeholder = 'Write the whole answer again…';
       btn.disabled = false; btn.textContent = "That's my answer";
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: '' });
     } else {
-      if (r.modelAnswer) h += '<div class="card" style="margin-top:12px"><span class="eyebrow">A full answer</span><div style="margin-top:6px;font-family:var(--round);font-weight:600">' + esc(r.modelAnswer) + '</div>' +
+      if (!full && missed.length) h += '<div style="margin-top:8px"><span class="eyebrow hd" data-ico="🔎">Still to add</span>' + gapRows(missed) + '</div>';
+      if (r.modelAnswer) h += '<div class="card" style="margin-top:12px"><span class="eyebrow hd" data-ico="📝">A full answer</span><div style="margin-top:6px;font-family:var(--round);font-weight:600">' + esc(r.modelAnswer) + '</div>' +
         '<div class="muted" style="margin-top:8px;font-size:14px">This is how I would write it. Your teacher might say it differently. That is fine.</div></div>';
       if (r.misconception) h += '<div class="card warn"><span class="eyebrow">Lots of people mix this up</span><div style="margin-top:6px">' + esc(r.misconception.belief) + '</div><div class="muted" style="margin-top:6px">Corrected by: ' + esc(r.misconception.fix) + '</div></div>';
       ta.disabled = true; btn.remove();
@@ -626,6 +1162,11 @@ async function markExplain(a, key){
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: state.first, a2: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: r.modelAnswer || '' });
     }
     out.innerHTML = h;
+    const stepEl = box.closest('.step');
+    if (stepEl){ stepEl.classList.remove('win', 'nudge'); void stepEl.offsetWidth; stepEl.classList.add(full ? 'win' : 'nudge'); }
+    if (full) celebrate();
+    try { out.firstElementChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(x){}
+    LOG.event('lab', { code: a.code, what: full ? 'full marks' : 'marks short', marks: got, max });
   } catch(e){ out.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; }
 }
 
