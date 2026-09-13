@@ -114,6 +114,11 @@
   .reading button.say{color:var(--accent);border-color:var(--accent)}
   button.readpart,button.readspeed,button.readsound{width:auto;min-height:38px;font-size:14px;padding:6px 14px;margin:0 8px 6px 0;display:inline-flex;gap:8px;align-items:center}
   .readrow{display:flex;flex-wrap:wrap;align-items:center}
+  .console .hud{flex-wrap:wrap;row-gap:6px}
+  .console .hud .aids{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .console .hud .aids button{width:auto;min-height:30px;font-size:12.5px;padding:4px 10px;margin:0;border-radius:999px;color:var(--lab-mid);border:1px solid var(--lab-line);background:transparent}
+  .console .hud .aids button.lit{color:var(--glow);border-color:rgba(95,211,255,.5)}
+  @media (max-width:560px){ .console .hud .aids button{font-size:11.5px;padding:3px 8px} }
   .w{border-radius:4px;transition:background .12s}
   .w.now{background:var(--hl-soft);box-shadow:0 0 0 3px var(--hl-soft);color:var(--hl-ink);font-weight:700}
   html[data-theme="dark"] .w.now{color:var(--hl-ink)}
@@ -1308,7 +1313,7 @@ const ttsRate = () => ttsSlow() ? 0.72 : 0.9;
 // Wrap every word of a segment in a span once, so the word being spoken can
 // light up. Buttons that are options are read as "Option 1: …"; other controls
 // are skipped. Returns the words in reading order with their place in the text.
-const TTS_SKIP = 'button.say, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg, button.readpart, button.readspeed, button.readsound, .readrow, button.primary, button.ghost, button.secondary, button.mic';
+const TTS_SKIP = 'button.say, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg, button.readpart, button.readspeed, button.readsound, .readrow, .aids, .hud, button.primary, button.ghost, button.secondary, button.mic';
 const BLOCKY = { DIV:1, P:1, H2:1, H3:1, LI:1, BUTTON:1, SPAN:0 };
 function ttsWords(el){
   const words = []; let text = '';
@@ -1418,7 +1423,7 @@ function ttsStop(){
 function ttsClear(){
   if (TTS.el){ ttsMark(TTS.el, null); TTS.el.classList.remove('reading'); const b = TTS.el.querySelector('button.say'); if (b) { b.textContent = '🔊'; b.setAttribute('aria-label', 'Read this to me'); } }
   TTS.el = null;
-  $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this part'; });
+  $('act').querySelectorAll('button.readpart').forEach(b => { b.textContent = '🔊 Read this screen'; });
 }
 function ttsNext(){
   const el = TTS.queue.shift();
@@ -1441,32 +1446,34 @@ function addReaders(a){
     };
     el.appendChild(b);
   });
-  $('act').querySelectorAll('.part-body').forEach(body => {
-    const row = document.createElement('div'); row.className = 'readrow';
-    const sp = document.createElement('button');
-    sp.className = 'ghost readspeed'; sp.type = 'button';
-    const label = () => { sp.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; sp.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); };
-    label();
-    sp.onclick = e => { e.stopPropagation(); try { localStorage.setItem(TTS_SLOW, ttsSlow() ? '0' : '1'); } catch(x){} if (TTS.audio) TTS.audio.playbackRate = ttsSlow() ? 0.8 : 1; $('act').querySelectorAll('button.readspeed').forEach(x => { x.textContent = ttsSlow() ? '🐢 Slow voice · on' : '🐢 Slow voice · off'; x.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); }); };
-    const b = document.createElement('button');
-    b.className = 'ghost readpart'; b.type = 'button'; b.textContent = '🔊 Read this part';
-    b.onclick = e => {
+  // The aids live in the stage's top bar, so they are on every screen:
+  // read this screen aloud, the slow voice, and the sounds switch.
+  const hud = $('act').querySelector('.hud');
+  if (hud && !hud.querySelector('.aids')){
+    const row = document.createElement('div'); row.className = 'aids';
+    const rd = document.createElement('button'); rd.className = 'ghost readpart'; rd.type = 'button'; rd.textContent = '🔊 Read this screen'; rd.title = 'Read everything on this screen aloud';
+    rd.onclick = e => {
       e.stopPropagation();
-      if (TTS.queue.length || (TTS.el && body.contains(TTS.el))) { ttsStop(); return; }
+      const scr = $('act').querySelector('.scr.on');
+      if (TTS.queue.length || (TTS.el && scr && scr.contains(TTS.el))) { ttsStop(); return; }
       ttsStop();
-      TTS.queue = [...body.querySelectorAll('.step, .card')];
-      b.textContent = '⏹ Stop reading';
-      LOG.event('lab', { code: a.code, what: 'read part aloud' });
+      TTS.queue = scr ? [...scr.querySelectorAll('.step, .card')] : [];
+      if (!TTS.queue.length) return;
+      rd.textContent = '⏹ Stop reading';
+      LOG.event('lab', { code: a.code, what: 'read screen aloud' });
       ttsNext();
     };
-    const so = document.createElement('button');
-    so.className = 'ghost readsound'; so.type = 'button';
-    const soLabel = x => { x.textContent = sfxOn() ? '🔈 Sounds · on' : '🔇 Sounds · off'; x.setAttribute('aria-pressed', sfxOn() ? 'true' : 'false'); };
-    soLabel(so);
-    so.onclick = e => { e.stopPropagation(); try { localStorage.setItem(SFX_KEY, sfxOn() ? 'off' : 'on'); } catch(x){} $('act').querySelectorAll('button.readsound').forEach(soLabel); if (sfxOn()) sfx('pick'); };
-    row.appendChild(b); row.appendChild(sp); row.appendChild(so);
-    body.insertBefore(row, body.firstChild);
-  });
+    const sp = document.createElement('button'); sp.className = 'ghost readspeed'; sp.type = 'button'; sp.title = 'A slower voice for reading aloud';
+    const spLabel = () => { sp.textContent = ttsSlow() ? '🐢 Slow voice: on' : '🐢 Slow voice: off'; sp.setAttribute('aria-pressed', ttsSlow() ? 'true' : 'false'); sp.classList.toggle('lit', ttsSlow()); };
+    spLabel();
+    sp.onclick = e => { e.stopPropagation(); try { localStorage.setItem(TTS_SLOW, ttsSlow() ? '0' : '1'); } catch(x){} if (TTS.audio) TTS.audio.playbackRate = ttsSlow() ? 0.8 : 1; spLabel(); };
+    const so = document.createElement('button'); so.className = 'ghost readsound'; so.type = 'button'; so.title = 'The little sounds when you answer';
+    const soLabel = () => { so.textContent = sfxOn() ? '🔈 Sounds: on' : '🔇 Sounds: off'; so.setAttribute('aria-pressed', sfxOn() ? 'true' : 'false'); so.classList.toggle('lit', sfxOn()); };
+    soLabel();
+    so.onclick = e => { e.stopPropagation(); try { localStorage.setItem(SFX_KEY, sfxOn() ? 'off' : 'on'); } catch(x){} soLabel(); if (sfxOn()) sfx('pick'); };
+    row.appendChild(rd); row.appendChild(sp); row.appendChild(so);
+    hud.appendChild(row);
+  }
 }
 addEventListener('hashchange', ttsStop);
 addEventListener('pagehide', ttsStop);
