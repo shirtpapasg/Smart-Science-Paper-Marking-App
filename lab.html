@@ -612,9 +612,13 @@ async function markExplain(a, key){
     if (state.attempt === 1){
       if (gaps.length) h += '<div style="margin-top:8px"><span class="eyebrow">Worth adding</span>' + gaps.map(x => '<div class="row"><span class="tick open"></span><div>' + esc(x) + '</div></div>').join('') + '</div>';
       if (r.ponder) h += '<div class="dark"><span class="eyebrow">Something to think about</span><div style="margin-top:6px">' + esc(r.ponder) + '</div></div>';
-      h += '<div class="muted" style="margin-top:10px">Now write the whole answer again, all of it, in the box above.</div>';
-      box._state = { attempt: 2, first: answer }; ta.value = ''; ta.placeholder = 'Write the whole answer again…';
+      h += '<div class="muted" style="margin-top:10px">Your answer is still in the box above. Add what is missing, then read the whole thing through so it works as one answer.</div>';
+      // Their own words stay put: a pupil who has to retype everything spends
+      // the effort on typing instead of on the idea that was missing.
+      box._state = { attempt: 2, first: answer };
+      ta.value = answer; ta.placeholder = 'Add the missing ideas to your answer…';
       btn.disabled = false; btn.textContent = "That's my answer";
+      try { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); } catch(e){}
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: '' });
     } else {
       if (r.modelAnswer) h += '<div class="card" style="margin-top:12px"><span class="eyebrow">A full answer</span><div style="margin-top:6px;font-family:var(--round);font-weight:600">' + esc(r.modelAnswer) + '</div>' +

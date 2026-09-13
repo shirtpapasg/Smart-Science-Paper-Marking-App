@@ -693,15 +693,13 @@
 
   <div id="stage-2nd" class="hide">
 <h2>Give it another go.</h2>
-    <div class="card"><span class="eyebrow" style="color:var(--mid)">First attempt</span>
-      <div id="first-again" style="margin-top:8px"></div></div>
     <div class="dark"><span class="eyebrow">Keep this in mind</span>
       <div id="ponder2" style="margin-top:8px;font-size:18px"></div></div>
-    <div style="margin-top:24px"><label for="a2">Your answer, all of it this time</label>
-      <textarea id="a2" maxlength="800" placeholder="Write the whole answer again…"></textarea></div>
-    <div class="hint"><b>?</b><div>Why write the whole thing again?
-      <div class="hint-more">The marks come from joining your ideas up. You only get better at that by writing the whole thing.<br><br>
-      Adding one word to the end skips the bit you are practising.</div></div></div>
+    <div style="margin-top:24px"><label for="a2">Your answer — add what is missing</label>
+      <textarea id="a2" maxlength="800" placeholder="Add the missing ideas to your answer…"></textarea></div>
+    <div class="hint"><b>?</b><div>Your first answer is already in the box
+      <div class="hint-more">Put the missing ideas where they belong, rather than tacking a word on the end.<br><br>
+      The marks come from joining your ideas up, so read the whole thing through before you send it.</div></div></div>
     <button class="primary" id="go3">That's my answer</button>
   </div>
 
@@ -1735,9 +1733,12 @@ $('go1').onclick = async () => {
 };
 
 $('go2').onclick = () => {
-  $('first-again').textContent = a1txt;
   $('ponder2').textContent = r1.ponder || '';
+  // Their first attempt, ready to edit. Retyping it costs effort that belongs
+  // to the missing idea, and costs most for the pupils who write slowest.
+  $('a2').value = a1txt;
   show('2nd');
+  try { $('a2').focus({ preventScroll: true }); $('a2').setSelectionRange(a1txt.length, a1txt.length); } catch(e){}
 };
 
 $('peek').onclick = () => {
