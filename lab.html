@@ -147,9 +147,21 @@
      carries a lit button that closes the bench and lands on "what did you see". */
   #labwin .bar{flex-wrap:wrap;row-gap:6px}
   #labwin .bar .guide{font-size:13px;color:#a9b8d1;font-weight:600;margin-left:6px}
-  #labwin .bar #labwin-done{background:linear-gradient(90deg,#39b6e8,#5fd3ff);color:#06202e;box-shadow:0 0 0 2px rgba(95,211,255,.3),0 0 18px rgba(95,211,255,.45);animation:beckon 1.8s ease-in-out infinite}
-  #labwin .bar #labwin-done.lit{background:linear-gradient(90deg,#4fc47f,#7fe0a4);box-shadow:0 0 0 2px rgba(79,196,127,.35),0 0 22px rgba(79,196,127,.6)}
-  #labwin .bar #labwin-done[hidden]{display:none}
+  /* The way on sits at the bottom centre of every bench, this one and every one
+     to come, because it belongs to the steps page and not to the bench. Quiet
+     until the bench says the station is done; then it lights, grows and beckons. */
+  #labwin-dock{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:3;pointer-events:none;width:max-content;max-width:94vw}
+  #labwin-dock #labwin-done{pointer-events:auto;width:auto;margin:0;min-height:52px;padding:12px 26px;font-size:17px;border-radius:999px;
+    background:rgba(18,33,58,.92);color:#5fd3ff;border:1.5px solid rgba(95,211,255,.55);backdrop-filter:blur(8px);
+    box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 0 2px rgba(95,211,255,.12);transition:transform .3s,box-shadow .3s}
+  #labwin-dock #labwin-done:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(95,211,255,.4)}
+  #labwin-dock #labwin-done.lit{background:linear-gradient(90deg,#4fc47f,#7fe0a4);color:#06281a;border-color:transparent;font-size:19px;padding:14px 32px;min-height:58px;
+    box-shadow:0 0 0 3px rgba(79,196,127,.35),0 0 34px rgba(79,196,127,.65),0 12px 30px rgba(0,0,0,.4);animation:dock-land .6s cubic-bezier(.3,1.5,.4,1) both,dock-beckon 1.6s ease-in-out .6s infinite}
+  @keyframes dock-land{from{transform:translateY(40px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+  @keyframes dock-beckon{50%{box-shadow:0 0 0 9px rgba(79,196,127,.18),0 0 44px rgba(79,196,127,.85),0 12px 30px rgba(0,0,0,.4)}}
+  #labwin-dock #labwin-done[hidden]{display:none}
+  @media (prefers-reduced-motion:reduce){ #labwin-dock #labwin-done.lit{animation:none} }
+  @media (max-width:600px){ #labwin-dock{bottom:14px} #labwin-dock #labwin-done{font-size:15px;padding:11px 18px} #labwin-dock #labwin-done.lit{font-size:16px;padding:12px 22px} }
   #labwin-toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);z-index:2;max-width:min(92vw,560px);display:flex;gap:12px;align-items:center;flex-wrap:wrap;
     padding:12px 16px;border-radius:14px;background:#12213a;color:#eef3fb;border:1px solid rgba(255,180,87,.5);box-shadow:0 12px 40px rgba(0,0,0,.5);font-family:var(--round);font-weight:600;font-size:15px;animation:box-in .4s both}
   #labwin-toast[hidden]{display:none}
@@ -447,9 +459,10 @@
 
 <canvas id="confetti"></canvas>
 <div id="labwin"><div class="bar"><button id="labwin-back" type="button">← Back to the steps</button><span id="labwin-title"></span>
-  <span class="guide" id="labwin-guide"></span><button id="labwin-done" type="button" hidden>I have seen it · say what I saw →</button>
+  <span class="guide" id="labwin-guide"></span>
   <a id="labwin-tab" href="#" target="_blank" rel="noopener">Open in its own tab</a></div>
-<div id="labwin-toast" hidden><span class="t-txt"></span><button type="button" id="labwin-go"></button></div><iframe id="labwin-frame" title="3D lab" allow="fullscreen"></iframe></div>
+<div id="labwin-toast" hidden><span class="t-txt"></span><button type="button" id="labwin-go"></button></div><iframe id="labwin-frame" aria-label="3D lab" allow="fullscreen"></iframe>
+<div id="labwin-dock"><button id="labwin-done" type="button" hidden>Say what I saw →</button></div></div>
 
 <div class="wrap">
   <div class="top"><span class="eyebrow">Science Marking · Lab</span><a href="./">← Back to marking</a></div>
@@ -1021,8 +1034,8 @@ function closeLab(){
 function labGuide(a, pid){
   const g = $('labwin-guide'), d = $('labwin-done');
   if (!pid){ g.textContent = ''; d.hidden = true; return; }
-  g.textContent = 'Testing Part ' + pid.toUpperCase() + '. When you have seen it:';
-  d.hidden = false; d.classList.remove('lit'); d.textContent = 'I have seen it · say what I saw →';
+  g.textContent = 'Testing Part ' + pid.toUpperCase() + '.';
+  d.hidden = false; d.classList.remove('lit'); d.textContent = 'Finished on the bench? Say what I saw →';
 }
 $('labwin-done').onclick = () => { LOG.event('lab', { code: CON.a ? CON.a.code : '', what: 'back from the bench by the lit button' }); closeLab(); };
 // Back from the bench: land on the first thing in that part still to do,
@@ -1042,8 +1055,8 @@ addEventListener('message', e => {
   const d = e.data || {}; const a = CON.a;
   if (!a || !$('labwin').classList.contains('on') || typeof d.type !== 'string') return;
   if (d.type === 'lab:done'){
-    const b = $('labwin-done'); b.hidden = false; b.classList.add('lit'); b.textContent = 'Station done ✓ · say what I saw →';
-    $('labwin-guide').textContent = 'Nice. Now back to the steps:';
+    const b = $('labwin-done'); b.hidden = false; b.classList.add('lit'); b.textContent = 'Station done ✓  Say what I saw →';
+    $('labwin-guide').textContent = 'Testing Part ' + (CON.bench || '').toUpperCase() + '. Done!';
   }
   if (d.type === 'lab:locked'){
     const pid = (a.sim && a.sim.covers || []).find(p => { const m = simFor(a, p); return m && m.step === d.step; });
