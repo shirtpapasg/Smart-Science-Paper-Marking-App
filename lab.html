@@ -309,6 +309,10 @@
   .console .dgm{background:#fff;border-color:var(--lab-line)} .console .dgm svg{filter:none}
   .console .benchhint{margin-top:10px;font-size:14px}
   .console .enterhint{font-size:12.5px;margin:-4px 0 6px;color:var(--lab-faint)}
+  .console .retry{margin-top:18px;padding-top:16px;border-top:1px dashed var(--lab-line);animation:box-in .5s .9s both}
+  .console .retry .retry-lead{margin-bottom:10px} .console .retry .retry-lead .muted{font-size:15px;margin-top:4px}
+  .console .retry textarea:disabled{opacity:.85}
+  @media (prefers-reduced-motion:reduce){ .console .retry{animation:none} }
   /* ── the marked answer ──────────────────────────────────────────
      Full marks: a gold cheer, the box pulses gold, confetti falls and the chime
      plays. Short of it: a cyan cheer for the effort, the box pulses once, each
@@ -1170,7 +1174,6 @@ async function markExplain(a, key){
     if (state.attempt === 1){
       if (gaps.length) h += '<div style="margin-top:8px"><span class="eyebrow hd" data-ico="🔎">Worth adding</span>' + gapRows(gaps) + '</div>';
       if (r.ponder) h += '<div class="dark"><span class="eyebrow">Something to think about</span><div style="margin-top:6px">' + esc(r.ponder) + '</div></div>';
-      h += '<div class="muted" style="margin-top:10px">Now write the whole answer again, all of it, in the box above.</div>';
       box._state = { attempt: 2, first: answer }; ta.value = ''; ta.placeholder = 'Write the whole answer again…';
       btn.disabled = false; btn.textContent = "That's my answer";
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: '' });
@@ -1184,7 +1187,25 @@ async function markExplain(a, key){
       refreshGates(a); checkAchievement(a);
       LOG.event('answer', { q: (stepOf(a, key) || {}).explain ? stepOf(a, key).explain.q : (a.check[where.check] || {}).q, a1: state.first, a2: answer, marks: r.marks ?? null, max: r.maxMarks ?? null, model: r.modelAnswer || '' });
     }
+    // The box to write in follows the reading. After the first check it moves
+    // under the feedback, so the pupil reads down and writes where they land.
+    // After the second it sits above the marking with their answer still in it.
+    let again = box.querySelector('.retry');
+    if (!again){
+      again = document.createElement('div'); again.className = 'retry';
+      [...box.children].filter(n => n !== out).forEach(n => again.appendChild(n));
+    }
     out.innerHTML = h;
+    if (state.attempt === 1){
+      const lead = document.createElement('div'); lead.className = 'retry-lead';
+      lead.innerHTML = '<span class="eyebrow hd" data-ico="✍️">Now write the whole answer again</span>' +
+        '<div class="muted">All of it in one go: what you kept, plus what was missing.</div>';
+      again.insertBefore(lead, again.firstChild);
+      out.appendChild(again);
+    } else {
+      const lead = again.querySelector('.retry-lead'); if (lead) lead.remove();
+      out.insertBefore(again, out.firstChild);
+    }
     const stepEl = box.closest('.step');
     if (stepEl){ stepEl.classList.remove('win', 'nudge'); void stepEl.offsetWidth; stepEl.classList.add(full ? 'win' : 'nudge'); }
     if (full) celebrate();
