@@ -112,7 +112,7 @@
   .card.idea.reading{--rb:var(--accent-bg)}
   .card.warn.reading{--rb:var(--warn-bg)}
   .reading button.say{color:var(--accent);border-color:var(--accent)}
-  button.readpart,button.readspeed{width:auto;min-height:38px;font-size:14px;padding:6px 14px;margin:0 8px 6px 0;display:inline-flex;gap:8px;align-items:center}
+  button.readpart,button.readspeed,button.readsound{width:auto;min-height:38px;font-size:14px;padding:6px 14px;margin:0 8px 6px 0;display:inline-flex;gap:8px;align-items:center}
   .readrow{display:flex;flex-wrap:wrap;align-items:center}
   .w{border-radius:4px;transition:background .12s}
   .w.now{background:var(--hl-soft);box-shadow:0 0 0 3px var(--hl-soft);color:var(--hl-ink);font-weight:700}
@@ -1031,7 +1031,35 @@ function celebrate(){
   })(t0);
 }
 let actx = null;
+/* ── a sound for every answer ──────────────────────────────
+   Short synthesised notes, so the page never feels dead when a pupil acts:
+   a pop when a prediction is chosen, a rising whoosh when an answer is sent,
+   a bright ding for a right observation, a soft low pair for a wrong one, a
+   warm third for marks that fall short, a gentle drop for none, and the full
+   chime for full marks and the badge. One switch turns them all off. */
+const SFX_KEY = 'sm-sfx-v1';
+const sfxOn = () => { try { return localStorage.getItem(SFX_KEY) !== 'off'; } catch(e){ return true; } };
+function tone(f, t, dur, type, vol, slide){
+  const o = actx.createOscillator(), g = actx.createGain(); o.type = type || 'sine';
+  o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol || .08, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .05);
+}
+function sfx(kind){
+  if (!sfxOn()) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime + .01;
+    if (kind === 'pick'){ tone(620, t, .09, 'sine', .07, 880); }
+    else if (kind === 'send'){ tone(440, t, .08, 'triangle', .06, 660); tone(660, t + .07, .12, 'triangle', .06); }
+    else if (kind === 'right'){ tone(784, t, .12, 'triangle', .08); tone(1046.5, t + .11, .22, 'triangle', .08); }
+    else if (kind === 'wrong'){ tone(330, t, .14, 'sine', .06); tone(262, t + .13, .26, 'sine', .06); }
+    else if (kind === 'partial'){ tone(523.25, t, .11, 'triangle', .07); tone(659.25, t + .1, .2, 'triangle', .07); }
+    else if (kind === 'none'){ tone(392, t, .14, 'sine', .06); tone(330, t + .13, .24, 'sine', .06); }
+  } catch(e){}
+}
 function successSound(){
+  if (!sfxOn()) return;
   actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume();
   const t0 = actx.currentTime + .02;
   [[523.25, 0], [659.25, .13], [783.99, .26], [1046.5, .39]].forEach(([f, dt]) => {
@@ -1138,6 +1166,7 @@ function wireActivity(a){
       if (ok) right++; else if (tries >= 2) inp.value = want, inp.classList.add('ok');
       filled.push(inp.value);
     });
+    sfx(right === total ? 'right' : right > 0 ? 'partial' : 'wrong');
     $('c-out').innerHTML = '<div class="verdict">' + (right === total ? 'All ' + total + ' right.' : right + ' of ' + total + ' right.' + (tries >= 2 ? ' The missing words are filled in for you.' : ' Try the amber ones again.')) + '</div>';
     LOG.event('lab', { code: a.code, what: 'conclusion', words: filled.join(' | '), right, total });
     if (right === total || tries >= 2) { setProg(a.id, 'cdone', true); checkAchievement(a); }
@@ -1170,6 +1199,7 @@ function showPick(a, key, i, fresh){
   if (s.predict) v.textContent = 'Prediction noted. Now test it and see.';
   else v.textContent = i === right ? 'That is what happens.' : 'Look again — ' + t.options[right].toLowerCase() + '.';
   if (fresh){
+    sfx(s.predict ? 'pick' : (i === right ? 'right' : 'wrong'));
     LOG.event('lab', { code: a.code, what: s.predict ? 'predicted' : 'observed', q: t.q, chose: t.options[i], correct: s.observe ? i === right : null });
     refreshGates(a); checkAchievement(a);
   }
@@ -1180,7 +1210,7 @@ async function markExplain(a, key){
   const where = JSON.parse(box.dataset.where);
   const answer = ta.value.trim(); if (!answer) return;
   const state = box._state || { attempt: 1, first: '' };
-  btn.disabled = true; btn.textContent = 'Checking…';
+  btn.disabled = true; btn.textContent = 'Checking…'; sfx('send');
   try {
     const r = await api('/api/lab', { action:'mark', id: a.id, ...where, answer, attempt: state.attempt, firstAnswer: state.first });
     if (r.deflect){ out.innerHTML = '<div class="card">' + esc(r.deflect) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; return; }
@@ -1249,7 +1279,7 @@ async function markExplain(a, key){
     }
     const stepEl = box.closest('.step');
     if (stepEl){ stepEl.classList.remove('win', 'nudge'); void stepEl.offsetWidth; stepEl.classList.add(full ? 'win' : 'nudge'); }
-    if (full) celebrate();
+    if (full) celebrate(); else sfx(none ? 'none' : 'partial');
     try { out.firstElementChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(x){}
     LOG.event('lab', { code: a.code, what: full ? 'full marks' : 'marks short', marks: got, max });
   } catch(e){ out.innerHTML = '<div class="err">' + esc(e.message) + '</div>'; btn.disabled = false; btn.textContent = 'Check my answer'; }
@@ -1278,7 +1308,7 @@ const ttsRate = () => ttsSlow() ? 0.72 : 0.9;
 // Wrap every word of a segment in a span once, so the word being spoken can
 // light up. Buttons that are options are read as "Option 1: …"; other controls
 // are skipped. Returns the words in reading order with their place in the text.
-const TTS_SKIP = 'button.say, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg, button.readpart, button.readspeed, .readrow, button.primary, button.ghost, button.secondary, button.mic';
+const TTS_SKIP = 'button.say, textarea, input, .verdict, .n, [data-lockhint], [data-resethint], .badges, .bdg, button.readpart, button.readspeed, button.readsound, .readrow, button.primary, button.ghost, button.secondary, button.mic';
 const BLOCKY = { DIV:1, P:1, H2:1, H3:1, LI:1, BUTTON:1, SPAN:0 };
 function ttsWords(el){
   const words = []; let text = '';
@@ -1429,7 +1459,12 @@ function addReaders(a){
       LOG.event('lab', { code: a.code, what: 'read part aloud' });
       ttsNext();
     };
-    row.appendChild(b); row.appendChild(sp);
+    const so = document.createElement('button');
+    so.className = 'ghost readsound'; so.type = 'button';
+    const soLabel = x => { x.textContent = sfxOn() ? '🔈 Sounds · on' : '🔇 Sounds · off'; x.setAttribute('aria-pressed', sfxOn() ? 'true' : 'false'); };
+    soLabel(so);
+    so.onclick = e => { e.stopPropagation(); try { localStorage.setItem(SFX_KEY, sfxOn() ? 'off' : 'on'); } catch(x){} $('act').querySelectorAll('button.readsound').forEach(soLabel); if (sfxOn()) sfx('pick'); };
+    row.appendChild(b); row.appendChild(sp); row.appendChild(so);
     body.insertBefore(row, body.firstChild);
   });
 }
