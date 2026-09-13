@@ -324,6 +324,7 @@
   .console .cheer span:not(.ico){font-size:15px;color:var(--lab-mid)}
   .console .cheer.full{background:var(--lab-gold-soft);border-color:var(--lab-gold);box-shadow:0 0 30px rgba(255,216,77,.25)} .console .cheer.full b{color:var(--lab-gold)}
   .console .cheer.nearly{background:var(--glow-soft);border-color:rgba(95,211,255,.5)} .console .cheer.nearly b{color:var(--glow)}
+  .console .cheer.none{background:rgba(255,255,255,.04);border-color:var(--lab-line)} .console .cheer.none b{color:var(--lab-ink)}
   @keyframes cheer-in{from{opacity:0;transform:scale(.8) translateY(10px)}to{opacity:1;transform:none}}
   @keyframes cheer-bounce{50%{transform:translateY(-5px) rotate(-8deg)}}
   .console .step.win{border-color:var(--lab-gold);animation:win-pulse 1.5s ease-out 3}
@@ -1165,8 +1166,20 @@ async function markExplain(a, key){
     const score = (got != null && max != null) ? got + ' of ' + max + (max === 1 ? ' mark' : ' marks') : '';
     // Full marks is a moment: a cheer, confetti and the chime. Anything less is
     // met with encouragement, and what is missing is underlined so it cannot be missed.
+    // Three moods, and the words must match the marks. Full marks is a cheer.
+    // Some marks is praise for what is there and a pointer to what is not.
+    // No marks is neither: no trophy, no flexing arm, just a warm nudge to have a
+    // go, because "good effort" over a blank would ring false.
+    const none = !full && !(got > 0);
+    const bare = answer.split(/\s+/).filter(Boolean).length < 5;
+    const noneLine = bare
+      ? 'No marks yet, and that is fine. Say what you think happens and why. Any idea is a start.'
+      : (gaps.length ? 'Not there yet, and that is fine. The lines below show what the answer needs. Try again with those.'
+                     : 'Not there yet, and that is fine. Think about what you saw on the bench, then try again.');
     let h = full
       ? '<div class="cheer full"><span class="ico">🏆</span><div><b>Full marks!</b><span>' + esc(score) + (score ? '. ' : '') + 'A complete answer. Well done.</span></div></div>'
+      : none
+      ? '<div class="cheer none"><div><b>Every answer starts somewhere.</b><span>' + esc(noneLine) + '</span></div></div>'
       : '<div class="cheer nearly"><span class="ico">💪</span><div><b>Good effort. Keep going.</b><span>' + esc(score) + (score ? '. ' : '') + 'The underlined lines are what to add.</span></div></div>';
     h += '<div class="verdict">' + esc(r.verdict || 'Checked') + '</div><div>' + esc(r.headline || '') + '</div>';
     const gapRows = list => list.map((x, i) => '<div class="row gap" style="--n:' + i + '"><span class="tick open"></span><div><span class="ul">' + esc(x) + '</span></div></div>').join('');
@@ -1199,7 +1212,7 @@ async function markExplain(a, key){
     if (state.attempt === 1){
       const lead = document.createElement('div'); lead.className = 'retry-lead';
       lead.innerHTML = '<span class="eyebrow hd" data-ico="✍️">Now write the whole answer again</span>' +
-        '<div class="muted">All of it in one go: what you kept, plus what was missing.</div>';
+        '<div class="muted">' + (hits.length ? 'All of it in one go: what you kept, plus what was missing.' : 'Use the underlined line above. Say what happens, then why.') + '</div>';
       again.insertBefore(lead, again.firstChild);
       out.appendChild(again);
     } else {
