@@ -1349,6 +1349,7 @@
   <!-- Practice lives with the buddy. The bottom bar keeps the lab, because on a
        phone there is no scenery to walk in through, so the tab is the only door. -->
   <button id="pm-practice"><span>✎</span>Practice</button>
+  <button id="pm-tips"><span>💬</span>Buddy tips: on</button>
   <button id="pm-admin"><span>⚙</span>Admin login</button>
   <button id="pm-help"><span>?</span>Help me</button>
 </div>
@@ -2518,6 +2519,57 @@ $('pm-music').onclick = e => { e.stopPropagation(); pmTap('m-fab'); };
 $('pm-notes').onclick = e => { e.stopPropagation(); pmTap('n-fab'); };
 $('pm-theme').onclick = e => { e.stopPropagation(); pmTap('t-fab'); };
 $('pm-help').onclick  = e => { e.stopPropagation(); pmTap('h-fab'); };
+
+/* ── the buddy talks about the app ─────────────────────────
+   Every fifteen seconds, when nothing else is being said and the pupil is not
+   typing, the buddy mentions one thing the app can do. The tips come in a
+   shuffled deck so the same one does not come round twice in a row, and a
+   switch in the menu turns them off for this device. */
+const TIPS_KEY = 'sm-tips-v1';
+const tipsOn = () => { try { return localStorage.getItem(TIPS_KEY) !== 'off'; } catch(e){ return true; } };
+const wide = () => innerWidth >= 760;
+const TIPS = [
+  { t: 'Studying? Tap me and choose Study music — lo-fi from Spotify, Apple Music or YouTube.' },
+  { t: 'Eyes tired? Dark mode is in my menu. Tap me.' },
+  { t: 'The School Lab has 3D experiments. Predict first, then press "Let\'s test it now!"' },
+  { t: 'Got a question wrong in your homework? Photograph it into My Log and I will write the answer.' },
+  { t: 'Recall brings tricky questions back on a schedule. Watch for the red number on the tab.' },
+  { t: 'Every step in the lab has a 🔊. I can read it to you, slowly if you like.' },
+  { t: 'Hard to type? Press "Say it instead" and speak your answer.' },
+  { t: 'Finish every part of an experiment and its badge is yours. Rainbow confetti included.' },
+  { t: 'My notes is your own notebook, with folders. It is in my menu.' },
+  { t: 'My progress shows your topics from strongest to weakest, and the badges you have earned.' },
+  { t: 'Add your own question from a paper, or take a photo of it. I work out what a full answer needs.' },
+  { t: 'Mistakes keeps everything you have worked on, dated. Nothing there ever disappears.' },
+  { t: 'Tap the empty space beside the page. A bird takes off. Hold on the grass and a flower grows.', when: wide },
+  { t: 'Watch the sky beside the page: the sun goes down over a sitting, and the night animals come out.', when: wide },
+  { t: 'On a wrong answer you get a second go. Your words stay in the box — just add what is missing.' },
+  { t: 'Practice is in my menu: I mark your answer and show you which points came back.' },
+];
+let tipDeck = [];
+function nextTip(){
+  if (!tipDeck.length){
+    tipDeck = TIPS.filter(x => !x.when || x.when()).map(x => x.t);
+    for (let i = tipDeck.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [tipDeck[i], tipDeck[j]] = [tipDeck[j], tipDeck[i]]; }
+  }
+  return tipDeck.shift();
+}
+function tipTick(){
+  if (!tipsOn() || document.hidden) return false;
+  const el = $('pip'); if (!el || !PIP.frames || !PIP.frames.length) return false;
+  if (el.classList.contains('talk') || pmIsOpen()) return false;                       // something else is being said, or the menu is open
+  const ae = document.activeElement; if (ae && /^(TEXTAREA|INPUT)$/.test(ae.tagName)) return false;   // the pupil is typing
+  if (document.body.classList.contains('sheet-open') || $('gate').classList.contains('on')) return false;
+  const msg = nextTip(); if (!msg) return false;
+  $('pip-say').textContent = msg;
+  el.classList.add('on', 'talk'); PIP.step();
+  clearTimeout(PIP.hideT); PIP.hideT = setTimeout(() => el.classList.remove('talk'), 7000);
+  return true;
+}
+setInterval(tipTick, 15000);
+function renderTipsItem(){ const m = $('pm-tips'); if (m) m.innerHTML = tipsOn() ? '<span>💬</span>Buddy tips: on' : '<span>💬</span>Buddy tips: off'; }
+$('pm-tips').onclick = e => { e.stopPropagation(); try { localStorage.setItem(TIPS_KEY, tipsOn() ? 'off' : 'on'); } catch(x){} renderTipsItem(); pmOpen(false); if (tipsOn()) tipTick(); };
+renderTipsItem();
 
 /* ── admin login, for testing ───────────────────────────── */
 // Admin mode: the site owner, logged in from the buddy menu to test the app.
