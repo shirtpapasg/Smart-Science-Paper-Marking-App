@@ -308,6 +308,7 @@
   .console .w.now{color:#3a2d00}
   .console .dgm{background:#fff;border-color:var(--lab-line)} .console .dgm svg{filter:none}
   .console .benchhint{margin-top:10px;font-size:14px}
+  .console .enterhint{font-size:12.5px;margin:-4px 0 6px;color:var(--lab-faint)}
   /* ── the marked answer ──────────────────────────────────────────
      Full marks: a gold cheer, the box pulses gold, confetti falls and the chime
      plays. Short of it: a cyan cheer for the effort, the box pulses once, each
@@ -929,6 +930,7 @@ function explainHtml(key, q, marks, where, done){
     (done ? '<div class="verdict">✓ Marked. Your explanation has been checked.</div>' :
     '<div id="x-' + id + '" data-where=\'' + esc(JSON.stringify(where)) + '\'>' +
     '<textarea id="t-' + id + '" maxlength="800" placeholder="Write your explanation in full sentences…"></textarea>' +
+    '<div class="muted enterhint">Enter sends it. Shift + Enter for a new line.</div>' +
     '<button class="primary" data-mark="' + key + '">Check my answer</button><div id="o-' + id + '"></div></div>');
 }
 
@@ -1086,6 +1088,14 @@ function wireActivity(a){
   // written explanations
   $('act').querySelectorAll('[data-mark]').forEach(b => b.onclick = () => markExplain(a, b.dataset.mark));
   $('act').querySelectorAll('textarea').forEach(t => attachMic(t));
+  // Enter sends the answer, the way it does in a chat; Shift+Enter makes a new line.
+  $('act').querySelectorAll('textarea[id^="t-"]').forEach(t => t.onkeydown = e => {
+    if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+    e.preventDefault();
+    const b = t.parentElement.querySelector('[data-mark]'); if (b && !b.disabled && t.value.trim()) b.click();
+  });
+  // and in the missing-words boxes, Enter checks the words
+  $('act').querySelectorAll('input.blank').forEach(inp => inp.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); const c = $('c-check'); if (c) c.click(); } });
   // conclude
   const cc = $('c-check');
   if (cc) cc.onclick = () => {
