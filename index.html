@@ -418,6 +418,39 @@
   @media (max-width:560px){.sc .grid2{grid-template-columns:1fr}}
   .sc .chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .sc .chips2 button{width:auto;min-height:30px;margin:0;padding:4px 10px;border-radius:999px;font:800 11px/1 var(--round);letter-spacing:.04em;color:#08131f;border:none}
+  .sc .chips2 button.off{background:rgba(255,255,255,.08);color:var(--scsoft)}
+  /* My Learning Log */
+  .lg-add{display:flex;gap:10px;flex-wrap:wrap;position:relative}
+  .lg-add label{flex:1;min-width:150px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 12px;border-radius:14px;background:rgba(255,255,255,.05);
+    border:1px dashed rgba(255,255,255,.28);cursor:pointer;color:#fff;font:800 13px/1.2 var(--round);text-align:center;margin:0}
+  .lg-add label:hover{border-color:#6aa9f0;background:rgba(74,144,226,.12)}
+  .lg-add label span{font-size:26px;line-height:1}
+  .lg-add input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .lg-steps{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+  .lg-steps div{display:flex;gap:9px;align-items:center;font:600 13px/1.3 var(--body);color:var(--scmuted)}
+  .lg-steps div.on{color:#fff}.lg-steps div.done{color:#5ee07a}
+  .lg-steps i{flex:none;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}
+  .lg-steps .on i{background:#6aa9f0;animation:lgpulse .9s infinite alternate}.lg-steps .done i{background:#5ee07a}
+  @keyframes lgpulse{from{opacity:.35}to{opacity:1}}
+  .lg-entry{display:flex;gap:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:10px 12px;margin-top:8px}
+  .lg-thumb{flex:none;width:84px;height:84px;border-radius:10px;background:rgba(255,255,255,.06);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:zoom-in}
+  .lg-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .lg-q{font:800 13.5px/1.4 var(--round);color:#fff;white-space:pre-wrap}
+  .lg-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .lg-tag{font:800 9.5px/1 var(--round);letter-spacing:.06em;text-transform:uppercase;padding:4px 7px;border-radius:6px;color:#08131f}
+  .lg-tag.soft{background:rgba(255,255,255,.1);color:var(--scsoft)}
+  .lg-ans{margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(63,195,95,.1);border:1px solid rgba(94,224,122,.35);font:400 13.5px/1.5 var(--body);color:var(--scsoft)}
+  .lg-ans b{display:block;font:800 10px/1 var(--round);letter-spacing:.08em;text-transform:uppercase;color:#5ee07a;margin:0 0 5px}
+  .lg-ans b.p{color:#ffd06b;margin-top:10px}
+  .lg-ans ul{margin:4px 0 0 18px;padding:0}
+  .lg-meta{font:400 11px/1.3 var(--body);color:var(--scfaint);margin-top:6px}
+  .lg-search{width:100%;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font:600 13px var(--body)}
+  .lg-search::placeholder{color:var(--scfaint)}
+  .lg-full{position:fixed;inset:0;z-index:80;background:rgba(4,7,12,.92);display:flex;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
+  .lg-full img{max-width:100%;max-height:100%;border-radius:12px}
+  textarea.lg-edit{width:100%;min-height:110px;margin:8px 0 0;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font:400 14px/1.5 var(--body);padding:10px;box-sizing:border-box}
+  .lg-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .lg-row button{margin:0}
   .bdg-row .bdg{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--hl-soft);color:var(--hl-ink);font-family:var(--round);font-weight:700;font-size:15px}
   .wrap{padding-bottom:calc(var(--nav-h, 96px) + 28px)}
   .stat{display:flex;margin-top:20px;border:1.5px solid var(--rule);border-radius:12px;overflow:hidden;background:#fff}
@@ -947,6 +980,14 @@
   </div>
 </section>
 
+<!-- ══ MY LEARNING LOG ══ -->
+<section id="v-log" class="hide">
+  <div class="hd"><span class="eyebrow">My Learning Log</span><span class="syncpill" data-sync></span></div>
+  <h1>Every question you<br>got wrong, kept.</h1>
+  <p class="muted">Photograph a question from your homework or a paper. I read it, write a full answer, tag it by topic and by the thinking it asks for, and keep it here with the date. It is yours for as long as you are a member.</p>
+  <div id="lg-body"></div>
+</section>
+
 <!-- ══ CLASS ══ -->
 <section id="v-stats" class="hide">
   <div class="hd"><span class="eyebrow">How it's going</span></div>
@@ -1201,6 +1242,7 @@
   <button id="pm-notes"><span>✎</span>My notes</button>
   <button id="pm-theme"><span>◐</span>Dark mode</button>
   <button id="pm-lab"><span>⚗</span>Members' lab</button>
+  <button id="pm-log"><span>📷</span>My Learning Log</button>
   <button id="pm-admin"><span>⚙</span>Admin login</button>
   <button id="pm-help"><span>?</span>Help me</button>
 </div>
@@ -1214,6 +1256,7 @@
   <button data-v="mark"><b>✎</b>Answer</button>
   <button data-v="mist"><b>◷</b>Mistakes</button>
   <button data-v="prac"><b>↻</b>Recall<span class="cnt" id="nav-due" hidden>0</span></button>
+  <button data-v="log"><b>📷</b>My Log</button>
 </nav>
 <script src="syllabus-map.js"></script>
 <script>
@@ -1413,12 +1456,13 @@ function goView(v){
   $('sheet').classList.add('hide'); document.body.classList.remove('sheet-open');
   document.querySelectorAll('.nav button').forEach(x =>
     x.classList.toggle('on', x.dataset.v === v));
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
+  ['qs','mark','mist','prac','stats','log'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
   curView = v; armIdle();
   if (v === 'qs' && !qsResume()) renderQs();
   if (v === 'mist') renderMistakes();
   if (v === 'prac') renderPractice();
+  if (v === 'log') renderLog();
   if (v === 'stats'){ renderStats(); renderBuddyPick(); renderReport(); renderReportTo(); }
 }
 
@@ -2309,6 +2353,7 @@ function adminChanged(){
   if (typeof renderAdmBar === 'function') renderAdmBar();
   if (typeof renderQs === 'function') renderQs();
 }
+$('pm-log').onclick = e => { e.stopPropagation(); pmOpen(false); goView('log'); };
 $('pm-admin').onclick = e => {
   e.stopPropagation(); pmOpen(false);
   if (isSiteAdmin()){ try { localStorage.removeItem(ADMIN_ON); } catch(x){} adminChanged(); return; }
@@ -4021,7 +4066,7 @@ async function sheetScan(d){
 
 function openSheet(){
   sheetFrom = curView;
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.add('hide'));
+  ['qs','mark','mist','prac','stats','log'].forEach(n => $('v-'+n).classList.add('hide'));
   $('sheet').classList.remove('hide');
   document.body.classList.add('sheet-open');
   window.scrollTo(0,0);
@@ -4033,7 +4078,7 @@ function closeSheet(){
   $('sheet').classList.add('hide');
   document.body.classList.remove('sheet-open');
   const v = sheetFrom || 'mark';
-  ['qs','mark','mist','prac','stats'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
+  ['qs','mark','mist','prac','stats','log'].forEach(n => $('v-'+n).classList.toggle('hide', n !== v));
   window.scrollTo(0,0);
 }
 
@@ -4066,7 +4111,7 @@ var SYNC = {
   META: 'sm-meta-v1',
   deny: ['sm-session-v1', 'sm-adm-v1', 'sm-adm-open', 'sm-admin-v1', 'sm-theme-v1', 'sm-scenery-v1', 'sm-tts-slow-v1', 'sm-sid', 'sm-scans', 'sm-meta-v1'],
   timer: null, dirty: new Set(), state: 'off', last: 0, pulled: false, busy: false,
-  syncable(k){ return /^sm-/.test(k) && !this.deny.includes(k); },
+  syncable(k){ return /^sm-/.test(k) && !this.deny.includes(k) && !/^sm-logimg-/.test(k); },
   meta(){ try { return JSON.parse(localStorage.getItem(this.META) || '{}'); } catch(e){ return {}; } },
   setMeta(m){ try { localStorage.setItem(this.META, JSON.stringify(m)); } catch(e){} },
   on(){ return gateLocked && !!sessionToken(); },
@@ -4128,7 +4173,7 @@ function mergeKey(k, localRaw, remoteRaw, lt, rt){
   if (localRaw == null) return { local: remoteRaw, pushBack: false };
   if (remoteRaw == null || localRaw === remoteRaw) return { local: localRaw, pushBack: remoteRaw == null };
   let L, R; try { L = JSON.parse(localRaw); R = JSON.parse(remoteRaw); } catch(e){ return rt > lt ? { local: remoteRaw, pushBack: false } : { local: localRaw, pushBack: true }; }
-  const ident = { 'sm-subs-v1': [400, x => x.ts + '|' + x.qi], 'sm-recall-v1': [300, x => x.ts + '|' + x.qi] }[k];
+  const ident = { 'sm-subs-v1': [400, x => x.ts + '|' + x.qi], 'sm-recall-v1': [300, x => x.ts + '|' + x.qi], 'sm-log-v1': [150, x => x.id] }[k];
   if (ident && Array.isArray(L) && Array.isArray(R)){
     const seen = new Set(), out = [];
     [...L, ...R].forEach(x => { const id = ident[1](x); if (!seen.has(id)) { seen.add(id); out.push(x); } });
@@ -4159,7 +4204,7 @@ function mergeLab(a, b){
   return out;
 }
 function rerenderView(){
-  if (curView === 'mist') renderMistakes(); else if (curView === 'prac') renderPractice(); else if (curView === 'stats') renderStats(); else if (curView === 'qs') renderQs();
+  if (curView === 'mist') renderMistakes(); else if (curView === 'prac') renderPractice(); else if (curView === 'stats') renderStats(); else if (curView === 'qs') renderQs(); else if (curView === 'log') renderLog();
   updateRecallBadge();
 }
 
@@ -4295,6 +4340,171 @@ function recallPanelHtml(){
   return h + '</div>';
 }
 
+/* ── My Learning Log ──────────────────────────────────────
+   A vault for the questions a pupil got wrong outside the app. A photo is
+   read (printed text only), a full answer and marking points are written,
+   the question is tagged with its syllabus topic, the Way of Thinking and
+   Doing it mainly asks for, and the process skills it needs, and the lot is
+   kept with the date. The list syncs with the account like the notebook; the
+   pictures are kept one per entry, on this device and on the account, and are
+   fetched only when looked at. Every logged question is also a Recall card. */
+var LOGK = 'sm-log-v1', LOG_MAX = 150;
+var WOTD = [
+  { name: 'Posing Questions', col: '#ff8833' }, { name: 'Designing Investigations', col: '#ffdd33' },
+  { name: 'Conducting Investigations', col: '#33cc77' }, { name: 'Analysing Data', col: '#33ddff' },
+  { name: 'Using Models', col: '#aa55ff' }, { name: 'Explaining & Designing', col: '#ff4455' },
+  { name: 'Communicating with Evidence', col: '#4488ff' }, { name: 'Informed Decisions', col: '#ff44aa' },
+];
+function wotdCol(name){ const w = WOTD.find(x => x.name === name); return w ? w.col : '#8a98a6'; }
+function logEntries(){ return load(LOGK); }
+var lgState = { stage: 'idle', step: 0, draft: null, err: '', theme: '', wotd: '', q: '', open: {} };
+
+// pictures: IndexedDB on the device, one key per entry on the account
+var IMG = {
+  mem: new Map(), dbp: null,
+  open(){ if (this.dbp) return this.dbp; this.dbp = new Promise(res => { try { const rq = indexedDB.open('sm-log', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('img'); rq.onsuccess = () => res(rq.result); rq.onerror = () => res(null); } catch(e){ res(null); } }); return this.dbp; },
+  async put(id, v){ this.mem.set(id, v); const db = await this.open(); if (!db) return; try { db.transaction('img', 'readwrite').objectStore('img').put(v, id); } catch(e){} },
+  async get(id){ if (this.mem.has(id)) return this.mem.get(id); const db = await this.open(); if (!db) return null;
+    return new Promise(res => { try { const rq = db.transaction('img').objectStore('img').get(id); rq.onsuccess = () => { if (rq.result) this.mem.set(id, rq.result); res(rq.result || null); }; rq.onerror = () => res(null); } catch(e){ res(null); } }); },
+  async del(id){ this.mem.delete(id); const db = await this.open(); if (!db) return; try { db.transaction('img', 'readwrite').objectStore('img').delete(id); } catch(e){} },
+};
+const lgId = () => (Date.now().toString(36) + Math.random().toString(36).slice(2, 7)).toLowerCase().replace(/[^a-z0-9]/g, '');
+async function lgThumb(file){
+  const bmp = await decode(file), scale = Math.min(1, 900 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.72);
+}
+const lgSlim = s => ({ q: s.q, level: s.level, topic: s.topic, questionType: s.questionType, marks: s.marks, concept: s.concept, markingPoints: s.markingPoints || [], modelAnswer: s.modelAnswer || '', alsoAccept: s.alsoAccept || [], doNotAccept: s.doNotAccept || [] });
+
+async function lgIngest(file){
+  if (!file) return;
+  if (logEntries().length >= LOG_MAX){ lgState.err = 'Your log is full at ' + LOG_MAX + ' questions. Remove some old ones to make room.'; renderLog(); return; }
+  lgState = { ...lgState, stage: 'work', step: 1, err: '', draft: null }; renderLog();
+  try {
+    const [b64, thumb] = await Promise.all([toJpeg(file), lgThumb(file)]);
+    const rd = await callApi('/api/read', { imageBase64: b64, mediaType: 'image/jpeg' });
+    if (!rd.question) throw new Error(rd.problem || 'I could not find a printed question in that picture. Try a closer, straighter photo with the whole question in it.');
+    lgState.step = 2; renderLog();
+    const text = rd.question + (rd.diagramNote ? '\n(Diagram: ' + rd.diagramNote + ')' : '');
+    const sch = await callApi('/api/derive', { questionText: text, format: rd.format, log: true });
+    lgState.step = 3; renderLog();
+    const ch = (typeof SYLLABUS !== 'undefined') ? SYLLABUS.chapterOf(sch.topic || '') : null, th = (typeof SYLLABUS !== 'undefined') ? SYLLABUS.themeOf(sch.topic || '') : null;
+    lgState.draft = { id: lgId(), ts: Date.now(), q: rd.question, diagram: rd.diagramNote || '', format: rd.format || 'written', level: sch.level || '', topic: sch.topic || '',
+      chapter: ch ? ch.name : '', theme: th ? th.key : '', wotd: sch.wotd || '', skills: sch.processSkills || [], marks: sch.marks || rd.marks || null,
+      answer: sch.modelAnswer || '', plain: sch.plainAnswer || '', points: (sch.markingPoints || []).map(p => p.point), scheme: lgSlim(sch), thumb };
+    lgState.stage = 'preview';
+  } catch(e){ lgState.stage = 'idle'; lgState.err = e.message; }
+  renderLog();
+}
+async function lgSave(){
+  const d = lgState.draft; if (!d) return;
+  const entry = { ...d }; delete entry.thumb; entry.hasImg = !!d.thumb;
+  save(LOGK, [entry, ...logEntries()].slice(0, LOG_MAX));
+  if (d.thumb){ await IMG.put(d.id, d.thumb); if (SYNC.on()) callApi('/api/access', { action: 'store-put', items: [{ key: 'sm-logimg-' + d.id, v: d.thumb, t: Date.now() }] }).catch(() => {}); }
+  LOG.event('log', { q: d.q, topic: d.topic, wotd: d.wotd, skills: d.skills });
+  lgState = { ...lgState, stage: 'idle', draft: null, err: '' };
+  renderLog(); updateRecallBadge();
+}
+async function lgImg(id){
+  let v = await IMG.get(id); if (v) return v;
+  if (!SYNC.on()) return null;
+  try { const d = await callApi('/api/access', { action: 'store-one', key: 'sm-logimg-' + id }); if (d.item && d.item.v){ await IMG.put(id, d.item.v); return d.item.v; } } catch(e){}
+  return null;
+}
+function lgDelete(id){
+  if (!confirm('Remove this question from your log? The answer and the picture go with it.')) return;
+  save(LOGK, logEntries().filter(e => e.id !== id)); IMG.del(id);
+  if (SYNC.on()) callApi('/api/access', { action: 'store-del', keys: ['sm-logimg-' + id] }).catch(() => {});
+  renderLog(); updateRecallBadge();
+}
+function lgFull(src){ const o = document.createElement('div'); o.className = 'lg-full'; o.innerHTML = '<img src="' + src + '" alt="The photographed question">'; o.onclick = () => o.remove(); document.body.appendChild(o); }
+const lgDate = ts => new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+function lgTags(e){
+  const th = (typeof SYLLABUS !== 'undefined' && e.theme) ? SYLLABUS.themes.find(t => t.key === e.theme) : null;
+  return '<div class="lg-tags">' +
+    (e.topic ? '<span class="lg-tag" style="background:' + (th ? th.col : '#8a98a6') + '">' + (th ? th.icon + ' ' : '') + esc(e.topic) + '</span>' : '') +
+    (e.wotd ? '<span class="lg-tag" style="background:' + wotdCol(e.wotd) + '">' + esc(e.wotd) + '</span>' : '') +
+    (e.skills || []).map(sk => '<span class="lg-tag soft">' + esc(sk) + '</span>').join('') +
+    (e.level ? '<span class="lg-tag soft">' + esc(e.level) + '</span>' : '') + (e.marks ? '<span class="lg-tag soft">' + e.marks + (e.marks === 1 ? ' mark' : ' marks') + '</span>' : '') + '</div>';
+}
+function lgAnswer(e){
+  return '<div class="lg-ans"><b>Standard answer</b>' + esc(e.answer || 'No answer was written for this one.') +
+    (e.plain ? '<b class="p">In plain words</b>' + esc(e.plain) : '') +
+    ((e.points || []).length ? '<b class="p">Marking points</b><ul>' + e.points.map(p => '<li>' + esc(p) + '</li>').join('') + '</ul>' : '') + '</div>';
+}
+function renderLog(){
+  const el = $('lg-body'); if (!el) return;
+  const all = logEntries(), st = lgState, now = Date.now(), month = all.filter(e => now - e.ts < 30 * 864e5).length;
+  const topics = new Set(all.map(e => e.topic).filter(Boolean));
+  SYNC.paint();
+  let h = '<div class="sc">';
+  h += '<div class="who"><div class="ava" style="background:#6aa9f0;box-shadow:0 0 18px #6aa9f066">📷</div><div style="flex:1;min-width:0"><div style="font:900 18px/1.1 var(--round);color:#fff">My Learning Log</div>' +
+    '<div class="tiny" style="margin-top:3px">' + (all.length ? month + ' added in the last month · ' + topics.size + (topics.size === 1 ? ' topic' : ' topics') + ' · every one is also a Recall card' : 'Nothing kept yet') + '</div></div>' +
+    '<div style="text-align:right"><div class="big" style="color:#6aa9f0">' + all.length + '</div><div class="cap">Kept</div></div></div>';
+  if (st.err) h += '<div class="box2"><span style="font-size:16px;line-height:1.2">⚠️</span><div><b>That did not work</b><div style="margin-top:4px;font:400 12px/1.45 var(--body);color:var(--scsoft)">' + esc(st.err) + '</div></div></div>';
+
+  if (st.stage === 'idle'){
+    h += '<div class="pn"><div class="pt b">Add a question from your homework</div><div class="blurb">Take a photo of one question you got wrong, or choose a picture. I read the printed question only; your handwriting is ignored.</div>' +
+      '<div class="lg-add"><label><span>📷</span>Take a photo<input type="file" id="lg-cam" accept="image/*" capture="environment"></label><label><span>🖼</span>Choose a picture<input type="file" id="lg-file" accept="image/*,.heic,.heif"></label></div>' +
+      '<div class="tiny" style="margin-top:8px">One question per picture. If a question runs over two pages, add the clearer page and edit the text before you save.</div></div>';
+  } else if (st.stage === 'work'){
+    const steps = ['Reading the printed question', 'Writing a full answer and marking points', 'Tagging the topic, the thinking it asks for, and the skills'];
+    h += '<div class="pn"><div class="pt b">Working on it</div><div class="lg-steps">' + steps.map((t, i) => '<div class="' + (i + 1 < st.step ? 'done' : i + 1 === st.step ? 'on' : '') + '"><i></i>' + t + (i + 1 < st.step ? ' ✓' : i + 1 === st.step ? '…' : '') + '</div>').join('') + '</div></div>';
+  } else if (st.stage === 'preview' && st.draft){
+    const d = st.draft;
+    h += '<div class="pn"><div class="pt y">Check it before it goes in</div><div class="blurb">Fix the question text if I misread anything. The answer was written for the text below.</div>' +
+      '<div style="display:flex;gap:12px;align-items:flex-start"><div class="lg-thumb" id="lg-draft-thumb">' + (d.thumb ? '<img src="' + d.thumb + '" alt="">' : '📄') + '</div>' +
+      '<div style="flex:1;min-width:0"><textarea class="lg-edit" id="lg-draft-q">' + esc(d.q) + '</textarea>' + (d.diagram ? '<div class="tiny" style="margin-top:4px">Diagram: ' + esc(d.diagram) + '</div>' : '') + '</div></div>' +
+      lgTags(d) + lgAnswer(d) +
+      '<div class="lg-row"><button class="scbtn" id="lg-save">Save to my log</button><button class="scbtn ghost" id="lg-cancel">Not this one</button></div></div>';
+  }
+
+  if (all.length){
+    const themes = [...new Set(all.map(e => e.theme).filter(Boolean))], wotds = [...new Set(all.map(e => e.wotd).filter(Boolean))];
+    h += '<div class="pn"><div class="pt c">Find a question</div><input class="lg-search" id="lg-q" placeholder="Search the words of a question…" value="' + esc(st.q) + '">';
+    if (themes.length > 1 || wotds.length > 1){
+      h += '<div class="chips2">' + [''].concat(themes).map(t => { const th = t && typeof SYLLABUS !== 'undefined' ? SYLLABUS.themes.find(x => x.key === t) : null; return '<button data-lgtheme="' + esc(t) + '" class="' + (st.theme === t ? '' : 'off') + '" style="' + (st.theme === t && th ? 'background:' + th.col : '') + '">' + (t ? (th ? th.icon + ' ' : '') + esc(t) : 'All topics') + '</button>'; }).join('') + '</div>';
+      if (wotds.length > 1) h += '<div class="chips2">' + [''].concat(wotds).map(w => '<button data-lgwotd="' + esc(w) + '" class="' + (st.wotd === w ? '' : 'off') + '" style="' + (st.wotd === w && w ? 'background:' + wotdCol(w) : '') + '">' + (w ? esc(w) : 'All ways of thinking') + '</button>').join('') + '</div>';
+    }
+    h += '</div>';
+    const q = st.q.trim().toLowerCase();
+    const rows = all.filter(e => (!st.theme || e.theme === st.theme) && (!st.wotd || e.wotd === st.wotd) && (!q || (e.q + ' ' + (e.answer || '') + ' ' + (e.topic || '')).toLowerCase().includes(q)));
+    h += '<div class="pn"><div class="pt g">' + (rows.length === all.length ? 'Everything you have kept' : rows.length + ' of ' + all.length) + '</div>';
+    let lastMonth = '';
+    rows.forEach(e => {
+      const m = new Date(e.ts).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      if (m !== lastMonth){ h += '<div class="tiny" style="margin-top:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">' + m + '</div>'; lastMonth = m; }
+      const open = !!st.open[e.id];
+      h += '<div class="lg-entry"><div class="lg-thumb" id="lgi-' + e.id + '" data-lgimg="' + e.id + '">' + (e.hasImg ? '⏳' : '📄') + '</div><div style="flex:1;min-width:0">' +
+        '<div class="lg-meta">' + lgDate(e.ts) + '</div><div class="lg-q">' + esc(e.q) + '</div>' + lgTags(e) +
+        (open ? lgAnswer(e) : '') +
+        '<div class="lg-row"><button class="scbtn ghost" data-lgopen="' + e.id + '">' + (open ? 'Hide the answer' : 'Show the answer') + '</button><button class="scbtn ghost" data-lgprac="' + e.id + '">Practise in Recall</button><button class="scbtn ghost" data-lgdel="' + e.id + '" style="color:#ff6a5e;border-color:rgba(255,106,94,.5)">Remove</button></div></div></div>';
+    });
+    if (!rows.length) h += '<div class="tiny" style="margin-top:8px">Nothing matches. Clear the search or the filters.</div>';
+    h += '</div>';
+  } else if (st.stage === 'idle') {
+    h += '<div class="box2 good"><span style="font-size:16px;line-height:1.2">📚</span><div><b>An empty vault</b><div style="margin-top:4px;font:400 12px/1.45 var(--body);color:var(--scsoft)">Photograph the first question you got wrong in your homework. From then on, every wrong question becomes a page in your own revision book.</div></div></div>';
+  }
+  h += '</div>';
+  el.innerHTML = h;
+
+  // wiring
+  ['lg-cam', 'lg-file'].forEach(id => { const inp = $(id); if (inp) inp.onchange = () => { const f = inp.files && inp.files[0]; inp.value = ''; if (f) lgIngest(f); }; });
+  const dq = $('lg-draft-q'); if (dq) dq.oninput = () => { if (lgState.draft){ lgState.draft.q = dq.value; lgState.draft.scheme.q = dq.value; } };
+  const dt = $('lg-draft-thumb'); if (dt && st.draft && st.draft.thumb) dt.onclick = () => lgFull(st.draft.thumb);
+  const sv = $('lg-save'); if (sv) sv.onclick = lgSave;
+  const cx = $('lg-cancel'); if (cx) cx.onclick = () => { lgState = { ...lgState, stage: 'idle', draft: null }; renderLog(); };
+  const sq = $('lg-q'); if (sq){ sq.oninput = () => { lgState.q = sq.value; clearTimeout(sq._t); sq._t = setTimeout(() => { const pos = sq.selectionStart; renderLog(); const n = $('lg-q'); if (n){ n.focus(); n.setSelectionRange(pos, pos); } }, 250); }; }
+  el.querySelectorAll('[data-lgtheme]').forEach(b => b.onclick = () => { lgState.theme = lgState.theme === b.dataset.lgtheme ? '' : b.dataset.lgtheme; renderLog(); });
+  el.querySelectorAll('[data-lgwotd]').forEach(b => b.onclick = () => { lgState.wotd = lgState.wotd === b.dataset.lgwotd ? '' : b.dataset.lgwotd; renderLog(); });
+  el.querySelectorAll('[data-lgopen]').forEach(b => b.onclick = () => { lgState.open[b.dataset.lgopen] = !lgState.open[b.dataset.lgopen]; renderLog(); });
+  el.querySelectorAll('[data-lgprac]').forEach(b => b.onclick = () => startRound(['log:' + b.dataset.lgprac]));
+  el.querySelectorAll('[data-lgdel]').forEach(b => b.onclick = () => lgDelete(b.dataset.lgdel));
+  el.querySelectorAll('[data-lgimg]').forEach(t => { const id = t.dataset.lgimg, e = all.find(x => x.id === id); if (!e || !e.hasImg){ t.textContent = '📄'; return; }
+    lgImg(id).then(v => { const now = $('lgi-' + id); if (!now) return; if (v){ now.innerHTML = '<img src="' + v + '" alt="">'; now.onclick = () => lgFull(v); } else now.textContent = '🖼'; }); });
+}
+
 /* ── mistake book ──────────────────────────────────────── */
 document.querySelectorAll('#v-mist .chip').forEach(c => c.onclick = () => {
   document.querySelectorAll('#v-mist .chip').forEach(x => x.classList.toggle('on', x === c));
@@ -4363,6 +4573,8 @@ function weakQuestions(){
     const score = ((s.missed2||[]).length ? 3 : 0) + (s.recovered ? 1 : 0) + (s.peeked ? 2 : 0);
     if (score > 0 && !seen.has(s.qi)) seen.set(s.qi, { qi:s.qi, q:s.q, level:s.level, chapter:s.chapter, model:s.modelAnswer, score });
   });
+  // every question in the learning log is a card as well
+  logEntries().forEach(e => { const qi = 'log:' + e.id; if (!seen.has(qi)) seen.set(qi, { qi, q: e.q, level: e.level || '', chapter: e.topic || e.chapter || '', model: e.answer || '', score: 2, fromLog: true }); });
   return [...seen.values()].sort((a,b)=>b.score-a.score);
 }
 
@@ -4418,7 +4630,8 @@ function showRecall(){
 // the marking only suggests one.
 $('p-check').onclick = async () => {
   const w = queue[qIdx], ans = $('p-a').value.trim();
-  const row = QS.find(x => String(x.i) === String(w.qi));
+  let row = QS.find(x => String(x.i) === String(w.qi));
+  if (!row && String(w.qi).startsWith('log:')){ const e = logEntries().find(x => 'log:' + x.id === w.qi); if (e && e.scheme) row = { scheme: e.scheme }; }
   let r = null;
   if (row && ans){
     $('p-check').disabled = true; $('p-check').textContent = 'Checking…';
